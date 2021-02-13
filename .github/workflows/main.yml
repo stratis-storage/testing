@@ -1,0 +1,54 @@
+---
+name: testing CI
+
+# yamllint disable-line rule:truthy
+on:
+  push:
+    branches:
+      - master
+  pull_request:
+    branches:
+      - master
+
+  # Allows you to run this workflow manually from the Actions tab
+  workflow_dispatch:
+
+jobs:
+  python-checks:
+    strategy:
+      matrix:
+        include:
+          # MANDATORY CHECKS USING CURRENT DEVELOPMENT INTERPRETER
+          - python-version: 3.8.6
+            dependencies: >
+              dbus-python==1.2.16
+              pylint==2.4.4
+              psutil==5.6.7
+            task: PYTHONPATH=./src make -f Makefile lint
+          - python-version: 3.8.6
+            dependencies: black==19.10b0 isort==4.3.21
+            task: make -f Makefile fmt-travis
+          # MANDATORY CHECKS USING LOWEST SUPPORTED INTERPRETER
+          - python-version: 3.6.8
+            dependencies: >
+              dbus-python==1.2.4
+              pylint==2.4.4
+              psutil==5.4.3
+            task: PYTHONPATH=./src make -f Makefile lint
+          # VERIFICATION OF TEST INFRASTRUCTURE
+          - python-version: 3.8.6
+            dependencies: yamllint==1.25.0
+            task: make -f Makefile yamllint
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v2
+      - uses: actions/setup-python@v2
+        with:
+          python-version: ${{ matrix.python-version }}
+      - name: Install dependencies
+        run: |
+          sudo apt-get -q update
+          sudo apt-get -y install libdbus-glib-1-dev
+          pip3 install ${{ matrix.dependencies }}
+      - name: Run test
+        run: ${{ matrix.task }}
