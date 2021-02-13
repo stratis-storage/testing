@@ -22,7 +22,7 @@ import sys
 import time
 import unittest
 
-# isort: THIRDPARTY
+# isort: LOCAL
 from testlib.dbus import fs_n, p_n
 from testlib.infra import KernelKey, clean_up
 from testlib.utils import (
