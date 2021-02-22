@@ -80,7 +80,10 @@ def make_test_filesystem(pool_path, fs_name):
     :return: Object path of the created filesystem
     """
     (
-        (filesystems_created, (array_of_tuples_with_obj_paths_and_names),),
+        (
+            filesystems_created,
+            (array_of_tuples_with_obj_paths_and_names),
+        ),
         return_code,
         msg,
     ) = StratisDbus.fs_create(pool_path, fs_name)
@@ -90,8 +93,9 @@ def make_test_filesystem(pool_path, fs_name):
     return array_of_tuples_with_obj_paths_and_names[0][0]
 
 
+# pylint: disable=bad-continuation
 def acquire_filesystem_symlink_targets(
-        pool_name, filesystem_name, pool_path, filesystem_path
+    pool_name, filesystem_name, pool_path, filesystem_path
 ):
     """
     Acquire the symlink targets of the "/dev/stratis" symlink,
