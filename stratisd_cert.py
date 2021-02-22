@@ -585,6 +585,8 @@ class StratisCertify(unittest.TestCase):  # pylint: disable=too-many-public-meth
         self._unittest_command(
             StratisDbus.fs_rename(fs_name, fs_name_rename), dbus.UInt16(0)
         )
+        # Settle after rename, to allow udev to recognize the filesystem rename
+        exec_command(["udevadm", "settle"])
 
         pool_name_rename = p_n()
 
