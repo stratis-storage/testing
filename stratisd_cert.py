@@ -91,7 +91,7 @@ def make_test_filesystem(pool_path, fs_name):
 
 
 def acquire_filesystem_symlink_targets(
-    pool_name, filesystem_name, pool_path, filesystem_path
+        pool_name, filesystem_name, pool_path, filesystem_path
 ):
     """
     Acquire the symlink targets of the "/dev/stratis" symlink,
