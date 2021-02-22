@@ -90,7 +90,9 @@ def make_test_filesystem(pool_path, fs_name):
     return array_of_tuples_with_obj_paths_and_names[0][0]
 
 
-def acquire_filesystem_symlink_targets(pool_path, filesystem_path):
+def acquire_filesystem_symlink_targets(
+    pool_name, filesystem_name, pool_path, filesystem_path
+):
     """
     Acquire the symlink targets of the "/dev/stratis" symlink,
     and the equivalent device-mapper "/dev/mapper" link, generated
@@ -98,6 +100,8 @@ def acquire_filesystem_symlink_targets(pool_path, filesystem_path):
     NOTE: This may require a preceding "udevadm settle" call, to
     ensure that up-to-date pool and filesystem information is being
     collected.
+    :param str pool_name: pool name
+    :param str filesystem_name: filesystem name
     :param str pool_path: pool path
     :param str filesystem_path: filesystem path
     :return: str fsdevdest, str fsdevmapperlinkdest
@@ -109,7 +113,7 @@ def acquire_filesystem_symlink_targets(pool_path, filesystem_path):
     filesystem_gmodata = objects[filesystem_path]
     filesystem_uuid = filesystem_gmodata[StratisDbus.FS_IFACE]["Uuid"]
 
-    filesystem_devnode = filesystem_gmodata[StratisDbus.FS_IFACE]["Devnode"]
+    filesystem_devnode = "/dev/stratis/" + pool_name + "/" + filesystem_name
 
     fs_devmapperlinkstr = (
         "/dev/mapper/stratis-1-" + pool_uuid + "-thin-fs-" + filesystem_uuid
@@ -520,7 +524,7 @@ class StratisCertify(unittest.TestCase):  # pylint: disable=too-many-public-meth
         filesystem_path = make_test_filesystem(pool_path, fs_name)
 
         fsdevdest, fsdevmapperlinkdest = acquire_filesystem_symlink_targets(
-            pool_path, filesystem_path
+            pool_name, fs_name, pool_path, filesystem_path
         )
         self.assertEqual(fsdevdest, fsdevmapperlinkdest)
 
@@ -543,7 +547,7 @@ class StratisCertify(unittest.TestCase):  # pylint: disable=too-many-public-meth
         exec_command(["udevadm", "settle"])
 
         fsdevdest, fsdevmapperlinkdest = acquire_filesystem_symlink_targets(
-            pool_path, filesystem_path
+            pool_name, fs_name_rename, pool_path, filesystem_path
         )
         self.assertEqual(fsdevdest, fsdevmapperlinkdest)
 
@@ -566,7 +570,7 @@ class StratisCertify(unittest.TestCase):  # pylint: disable=too-many-public-meth
         exec_command(["udevadm", "settle"])
 
         fsdevdest, fsdevmapperlinkdest = acquire_filesystem_symlink_targets(
-            pool_path, filesystem_path
+            pool_name_rename, fs_name, pool_path, filesystem_path
         )
         self.assertEqual(fsdevdest, fsdevmapperlinkdest)
 
@@ -597,7 +601,7 @@ class StratisCertify(unittest.TestCase):  # pylint: disable=too-many-public-meth
         exec_command(["udevadm", "settle"])
 
         fsdevdest, fsdevmapperlinkdest = acquire_filesystem_symlink_targets(
-            pool_path, filesystem_path
+            pool_name_rename, fs_name_rename, pool_path, filesystem_path
         )
         self.assertEqual(fsdevdest, fsdevmapperlinkdest)
 
