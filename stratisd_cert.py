@@ -226,7 +226,7 @@ class StratisCertify(unittest.TestCase):  # pylint: disable=too-many-public-meth
         """
         Test that GetManagedObjects returns a dict w/out failure.
         """
-        self._inequality_test(StratisDbus.get_managed_objects(), {})
+        self.assertIsInstance(StratisDbus.get_managed_objects(), type({}))
 
     def test_get_managed_objects_permissions(self):
         """
