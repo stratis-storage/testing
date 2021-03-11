@@ -22,7 +22,7 @@ jobs:
           - python-version: 3.8.6
             dependencies: >
               dbus-python==1.2.16
-              pylint==2.4.4
+              pylint==2.6.0
               psutil==5.6.7
             task: PYTHONPATH=./src make -f Makefile lint
           - python-version: 3.8.6
@@ -32,7 +32,7 @@ jobs:
           - python-version: 3.6.8
             dependencies: >
               dbus-python==1.2.4
-              pylint==2.4.4
+              pylint==2.6.0
               psutil==5.4.3
             task: PYTHONPATH=./src make -f Makefile lint
           # VERIFICATION OF TEST INFRASTRUCTURE
