@@ -1,0 +1,30 @@
+testing 2.4.0 (UNRELEASED)
+==========================
+Required stratisd version: 2.4.0
+Required stratis-cli version: 2.4.0
+
+Recommended Python interpreter: 3.8.6
+Lowest supported Python interpreter: 3.6.8
+Python linter: pylint (2.4.4)
+Python auto-formatter: black (20.8b1)
+Python import sorter: isort (4.3.21)
+YAML linter: yamllint (1.26.0)
+
+- Add tests for new engine state report command:
+  https://github.com/stratis-storage/stratis-cli/pull/703
+  https://github.com/stratis-storage/stratis-cli/pull/702
+
+- Calulate filesystem devlinks directly, not from stratisd D-Bus property:
+  https://github.com/stratis-storage/testing/pull/7
+
+- Bump stratisd interface revision numbers:
+  https://github.com/stratis-storage/testing/pull/11
+
+- Adapt test to accomodate bug fix in dbus crate:
+  https://github.com/stratis-storage/testing/pull/9
+
+- Tidies and Maintenance:
+  https://github.com/stratis-storage/testing/pull/10
+  https://github.com/stratis-storage/testing/pull/8
+  https://github.com/stratis-storage/testing/pull/3
+  https://github.com/stratis-storage/testing/pull/1
