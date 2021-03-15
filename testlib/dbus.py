@@ -68,8 +68,8 @@ def _get_timeout(value):
     try:
         timeout_int = int(value)
 
-    except ValueError:
-        raise RuntimeError("The timeout value provided is not an integer.")
+    except ValueError as err:
+        raise RuntimeError("The timeout value provided is not an integer.") from err
 
     # Ensure the integer is not too small
     if timeout_int < -1:
