@@ -225,7 +225,7 @@ class StratisDbus:
         return key_descriptions
 
     @staticmethod
-    def pool_create(pool_name, devices, key_desc, clevis_info):
+    def pool_create(pool_name, devices, *, key_desc=None, clevis_info=None):
         """
         Create a pool
         :param str pool_name: The name of the pool to create
