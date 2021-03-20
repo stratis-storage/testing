@@ -225,13 +225,15 @@ class StratisDbus:
         return key_descriptions
 
     @staticmethod
-    def pool_create(pool_name, devices, key_desc):
+    def pool_create(pool_name, devices, key_desc, clevis_info):
         """
         Create a pool
         :param str pool_name: The name of the pool to create
         :param str devices: A list of devices that can be used to create the pool
         :param key_desc: Key description
         :type key_desc: str or NoneType
+        :param clevis_info: pin identifier and JSON clevis configuration
+        :type clevis_info: str * str OR NoneType
         :return: The return values of the CreatePool call
         :rtype: The D-Bus types (b(oao)), q, and s
         """
@@ -244,6 +246,7 @@ class StratisDbus:
             (dbus.Boolean(False), dbus.UInt16(0)),
             devices,
             (True, key_desc) if key_desc is not None else (False, ""),
+            (True, clevis_info) if clevis_info is not None else (False, ("", "")),
             timeout=StratisDbus._TIMEOUT,
         )
 
