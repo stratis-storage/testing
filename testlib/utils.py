@@ -18,7 +18,7 @@ Utility functions for blackbox testing.
 import os
 import random
 import string
-from subprocess import PIPE, Popen
+from subprocess import PIPE, Popen, run
 from tempfile import NamedTemporaryFile
 
 # isort: THIRDPARTY
@@ -64,17 +64,19 @@ def process_exists(name):
     return None
 
 
-def exec_command(cmd):
+def exec_command(cmd, *, settle=False):
     """
     Executes the specified infrastructure command.
 
     :param cmd: command to execute
     :type cmd: list of str
+    :param settle: whether to settle before running the command, default False
+    :type settle: bool
     :returns: standard output
     :rtype: str
     :raises RuntimeError: if exit code is non-zero
     """
-    exit_code, stdout_text, stderr_text = exec_test_command(cmd)
+    exit_code, stdout_text, stderr_text = exec_test_command(cmd, settle=settle)
 
     if exit_code != 0:
         raise RuntimeError(
@@ -84,14 +86,19 @@ def exec_command(cmd):
     return stdout_text
 
 
-def exec_test_command(cmd):
+def exec_test_command(cmd, *, settle=False):
     """
     Executes the specified test command
     :param cmd: Command and arguments as list
     :type cmd: list of str
+    :param settle: whether to settle before running the command, default False
+    :type settle: bool
     :returns: (exit code, std out text, std err text)
     :rtype: triple of int * str * str
     """
+    if settle:
+        run(["udevadm", "settle"], check=True)
+
     process = Popen(cmd, stdout=PIPE, stderr=PIPE, close_fds=True, env=os.environ)
     result = process.communicate()
     return (
