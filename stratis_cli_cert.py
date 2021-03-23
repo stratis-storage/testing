@@ -67,7 +67,7 @@ def make_test_pool(pool_disks, key_desc=None):
         args += ["--key-desc", key_desc]
     args += [pool_name] + pool_disks
 
-    (return_code, _, stderr) = exec_test_command(args)
+    (return_code, _, stderr) = exec_test_command(args, settle=True)
 
     _raise_error_exception(return_code, stderr)
     return pool_name
