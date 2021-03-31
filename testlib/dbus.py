@@ -96,13 +96,14 @@ class StratisDbus:
     _BUS = dbus.SystemBus()
     _BUS_NAME = "org.storage.stratis2"
     _TOP_OBJECT = "/org/storage/stratis2"
+    _REVISION = "r4"
 
-    _MNGR_IFACE = "org.storage.stratis2.Manager.r4"
-    _REPORT_IFACE = "org.storage.stratis2.Report.r1"
-    _POOL_IFACE = "org.storage.stratis2.pool.r3"
-    _FS_IFACE = "org.storage.stratis2.filesystem"
-    _BLKDEV_IFACE = "org.storage.stratis2.blockdev.r2"
-    _FETCH_PROPERTIES_IFACE = "org.storage.stratis2.FetchProperties.r4"
+    _MNGR_IFACE = "org.storage.stratis2.Manager.%s" % _REVISION
+    _REPORT_IFACE = "org.storage.stratis2.Report.%s" % _REVISION
+    _POOL_IFACE = "org.storage.stratis2.pool.%s" % _REVISION
+    _FS_IFACE = "org.storage.stratis2.filesystem.%s" % _REVISION
+    _BLKDEV_IFACE = "org.storage.stratis2.blockdev.%s" % _REVISION
+    _FETCH_PROPERTIES_IFACE = "org.storage.stratis2.FetchProperties.%s" % _REVISION
     POOL_IFACE = _POOL_IFACE
     FS_IFACE = _FS_IFACE
 
