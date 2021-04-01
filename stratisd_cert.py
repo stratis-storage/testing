@@ -65,7 +65,8 @@ def make_test_pool(pool_name, pool_disks):
     :return: Object path of the created pool
     """
     (obj_path_exists, (obj_path, _)), return_code, msg = StratisDbus.pool_create(
-        pool_name, pool_disks, None
+        pool_name,
+        pool_disks,
     )
 
     _raise_error_exception(return_code, msg, obj_path_exists)
@@ -181,7 +182,7 @@ class StratisCertify(unittest.TestCase):  # pylint: disable=too-many-public-meth
 
         self.assertEqual(return_code, expected_return_code, msg=msg)
 
-    def _test_permissions(self, dbus_method, args, permissions):
+    def _test_permissions(self, dbus_method, args, permissions, *, kwargs=None):
         """
         Test running dbus_method with and without root permissions.
         :param dbus_method: D-Bus method to be tested
@@ -190,7 +191,11 @@ class StratisCertify(unittest.TestCase):  # pylint: disable=too-many-public-meth
         :type args: list of objects
         :param bool permissions: True if dbus_method needs root permissions to succeed.
                                 False if dbus_method should succeed without root permissions.
+        :param kwargs: the keyword arguments to be passed to the D-Bus method
+        :type kwargs: dict of objects or NoneType
         """
+        kwargs = {} if kwargs is None else kwargs
+
         _permissions_flag = False
 
         euid = os.geteuid()
@@ -204,7 +209,7 @@ class StratisCertify(unittest.TestCase):  # pylint: disable=too-many-public-meth
         StratisDbus.reconnect()
 
         try:
-            dbus_method(*args)
+            dbus_method(*args, **kwargs)
         except dbus.exceptions.DBusException as err:
             if err.get_dbus_name() == "org.freedesktop.DBus.Error.AccessDenied":
                 _permissions_flag = True
@@ -218,7 +223,7 @@ class StratisCertify(unittest.TestCase):  # pylint: disable=too-many-public-meth
         os.seteuid(_ROOT)
         StratisDbus.reconnect()
 
-        dbus_method(*args)
+        dbus_method(*args, **kwargs)
 
         self.assertEqual(_permissions_flag, permissions)
 
@@ -320,7 +325,9 @@ class StratisCertify(unittest.TestCase):  # pylint: disable=too-many-public-meth
 
         self._test_permissions(set_key, [], True)
 
-        self._test_permissions(StratisDbus.unset_key, [key_desc], True)
+        self._test_permissions(
+            StratisDbus.unset_key, [], True, kwargs={"key_desc": key_desc}
+        )
 
     def test_pool_create(self):
         """
@@ -329,7 +336,7 @@ class StratisCertify(unittest.TestCase):  # pylint: disable=too-many-public-meth
         pool_name = p_n()
 
         self._unittest_command(
-            StratisDbus.pool_create(pool_name, StratisCertify.DISKS, None),
+            StratisDbus.pool_create(pool_name, StratisCertify.DISKS),
             dbus.UInt16(0),
         )
 
@@ -339,7 +346,7 @@ class StratisCertify(unittest.TestCase):  # pylint: disable=too-many-public-meth
         """
         pool_name = p_n()
         self._test_permissions(
-            StratisDbus.pool_create, [pool_name, StratisCertify.DISKS, None], True
+            StratisDbus.pool_create, [pool_name, StratisCertify.DISKS], True
         )
 
     def test_pool_create_encrypted(self):
@@ -350,7 +357,9 @@ class StratisCertify(unittest.TestCase):  # pylint: disable=too-many-public-meth
             pool_name = p_n()
 
             self._unittest_command(
-                StratisDbus.pool_create(pool_name, StratisCertify.DISKS, key_desc),
+                StratisDbus.pool_create(
+                    pool_name, StratisCertify.DISKS, key_desc=key_desc
+                ),
                 dbus.UInt16(0),
             )
 
@@ -378,7 +387,9 @@ class StratisCertify(unittest.TestCase):  # pylint: disable=too-many-public-meth
         pool_path = make_test_pool(pool_name, StratisCertify.DISKS[0:1])
 
         self._test_permissions(
-            StratisDbus.pool_init_cache, [pool_path, StratisCertify.DISKS[1:2]], True
+            StratisDbus.pool_init_cache,
+            [pool_path, StratisCertify.DISKS[1:2]],
+            True,
         )
         self._test_permissions(
             StratisDbus.pool_add_cache, [pool_path, StratisCertify.DISKS[2:3]], True
@@ -396,7 +407,7 @@ class StratisCertify(unittest.TestCase):  # pylint: disable=too-many-public-meth
             dbus.UInt16(0),
         )
         self._unittest_command(
-            StratisDbus.pool_create(pool_name, StratisCertify.DISKS[0:1], None),
+            StratisDbus.pool_create(pool_name, StratisCertify.DISKS[0:1]),
             dbus.UInt16(0),
         )
 
@@ -412,7 +423,7 @@ class StratisCertify(unittest.TestCase):  # pylint: disable=too-many-public-meth
             dbus.UInt16(0),
         )
         self._unittest_command(
-            StratisDbus.pool_create(pool_name, StratisCertify.DISKS[0:2], None),
+            StratisDbus.pool_create(pool_name, StratisCertify.DISKS[0:2]),
             dbus.UInt16(1),
         )
 
@@ -456,7 +467,7 @@ class StratisCertify(unittest.TestCase):  # pylint: disable=too-many-public-meth
         make_test_pool(pool_name, StratisCertify.DISKS[0:1])
 
         self._unittest_command(
-            StratisDbus.pool_create(pool_name, StratisCertify.DISKS[0:1], None),
+            StratisDbus.pool_create(pool_name, StratisCertify.DISKS[0:1]),
             dbus.UInt16(0),
         )
 
@@ -468,7 +479,7 @@ class StratisCertify(unittest.TestCase):  # pylint: disable=too-many-public-meth
         make_test_pool(pool_name, StratisCertify.DISKS[0:1])
 
         self._unittest_command(
-            StratisDbus.pool_create(pool_name, StratisCertify.DISKS[1:3], None),
+            StratisDbus.pool_create(pool_name, StratisCertify.DISKS[1:3]),
             dbus.UInt16(1),
         )
 
