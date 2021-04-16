@@ -30,7 +30,12 @@ import dbus
 # isort: LOCAL
 from testlib.dbus import StratisDbus, fs_n, p_n
 from testlib.infra import KernelKey, clean_up
-from testlib.utils import exec_command, process_exists, resolve_symlink
+from testlib.utils import (
+    exec_command,
+    exec_test_command,
+    process_exists,
+    resolve_symlink,
+)
 
 _ROOT = 0
 _NON_ROOT = 1
@@ -771,6 +776,30 @@ class StratisCertify(unittest.TestCase):  # pylint: disable=too-many-public-meth
         Test that getting a valid engine state report succeeds when root permissions are dropped.
         """
         self._test_permissions(StratisDbus.get_engine_state_report, [], False)
+
+    def test_predict_usage(self):
+        """
+        Verify that stratis-predict-usage can be run and returns correctly
+        formatted output.
+        """
+        (return_code, stdout, stderr) = exec_test_command(
+            ["stratis-predict-usage"] + StratisCertify.DISKS
+        )
+        self.assertEqual(return_code, 0)
+        self.assertEqual(stderr, "")
+        json.loads(stdout)
+
+    def test_predict_usage_encrypted(self):
+        """
+        Verify that stratis-predict-usage can be run and returns correctly
+        formatted output with encrypted flag set.
+        """
+        (return_code, stdout, stderr) = exec_test_command(
+            ["stratis-predict-usage", "--encrypted"] + StratisCertify.DISKS
+        )
+        self.assertEqual(return_code, 0)
+        self.assertEqual(stderr, "")
+        json.loads(stdout)
 
 
 def main():
