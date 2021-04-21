@@ -133,32 +133,10 @@ def acquire_filesystem_symlink_targets(  # pylint: disable=bad-continuation
     return fsdevdest, fsdevmapperlinkdest
 
 
-class StratisCertify(unittest.TestCase):  # pylint: disable=too-many-public-methods
+class StratisCertify(unittest.TestCase):
     """
-    Unit tests for Stratis
+    Unit tests for the stratisd package.
     """
-
-    def setUp(self):
-        """
-        Setup for an individual test.
-        * Register a cleanup action, to be run if the test fails.
-        * Ensure that stratisd is running via systemd.
-        * Use the running stratisd instance to destroy any existing
-        Stratis filesystems, pools, etc.
-        * Call "udevadm settle" so udev database can be updated with changes
-        to Stratis devices.
-        :return: None
-        """
-        self.addCleanup(clean_up)
-
-        if process_exists("stratisd") is None:
-            exec_command(["systemctl", "start", "stratisd"])
-            time.sleep(20)
-
-        clean_up()
-
-        time.sleep(1)
-        exec_command(["udevadm", "settle"])
 
     def _inequality_test(self, result, expected_non_result):
         """
@@ -186,6 +164,34 @@ class StratisCertify(unittest.TestCase):  # pylint: disable=too-many-public-meth
             (return_code, msg) = result
 
         self.assertEqual(return_code, expected_return_code, msg=msg)
+
+
+class StratisdCertify(StratisCertify):  # pylint: disable=too-many-public-methods
+    """
+    Tests on stratisd, the principal daemon.
+    """
+
+    def setUp(self):
+        """
+        Setup for an individual test.
+        * Register a cleanup action, to be run if the test fails.
+        * Ensure that stratisd is running via systemd.
+        * Use the running stratisd instance to destroy any existing
+        Stratis filesystems, pools, etc.
+        * Call "udevadm settle" so udev database can be updated with changes
+        to Stratis devices.
+        :return: None
+        """
+        self.addCleanup(clean_up)
+
+        if process_exists("stratisd") is None:
+            exec_command(["systemctl", "start", "stratisd"])
+            time.sleep(20)
+
+        clean_up()
+
+        time.sleep(1)
+        exec_command(["udevadm", "settle"])
 
     def _test_permissions(self, dbus_method, args, permissions, *, kwargs=None):
         """
@@ -776,6 +782,12 @@ class StratisCertify(unittest.TestCase):  # pylint: disable=too-many-public-meth
         Test that getting a valid engine state report succeeds when root permissions are dropped.
         """
         self._test_permissions(StratisDbus.get_engine_state_report, [], False)
+
+
+class PredictUsageCertify(StratisCertify):
+    """
+    Tests that just check the stratis-predict-usage executable
+    """
 
     def test_predict_usage(self):
         """
