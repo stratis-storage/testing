@@ -814,6 +814,21 @@ class PredictUsageCertify(StratisCertify):
         json.loads(stdout)
 
 
+class StratisMinCertify(StratisCertify):
+    """
+    Tests for stratis-min
+    """
+
+    def test_stratis_min_is_installed(self):
+        """
+        Verify that stratis-min can return a version string.
+        """
+        (return_code, stdout, stderr) = exec_test_command(["stratis-min", "--version"])
+        self.assertEqual(return_code, 0)
+        self.assertEqual(stderr, "")
+        self._inequality_test(stdout, "")
+
+
 def main():
     """
     The main method.
