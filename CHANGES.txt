@@ -14,8 +14,17 @@ YAML linter: yamllint (1.26.0)
   https://github.com/stratis-storage/stratis-cli/pull/703
   https://github.com/stratis-storage/stratis-cli/pull/702
 
+- Test stratis-predict-usage:
+  https://github.com/stratis-storage/testing/pull/21
+
+- Add very basic testing for stratis-min executable:
+  https://github.com/stratis-storage/testing/pull/23
+
 - Calulate filesystem devlinks directly, not from stratisd D-Bus property:
   https://github.com/stratis-storage/testing/pull/7
+
+- Adapt tests to r4 Manager interface:
+  https://github.com/stratis-storage/testing/pull/16
 
 - Bump stratisd interface revision numbers:
   https://github.com/stratis-storage/testing/pull/11
@@ -23,7 +32,13 @@ YAML linter: yamllint (1.26.0)
 - Adapt test to accomodate bug fix in dbus crate:
   https://github.com/stratis-storage/testing/pull/9
 
+- Always settle before creating a pool:
+  https://github.com/stratis-storage/testing/pull/17
+
 - Tidies and Maintenance:
+  https://github.com/stratis-storage/testing/pull/22
+  https://github.com/stratis-storage/testing/pull/18
+  https://github.com/stratis-storage/testing/pull/15
   https://github.com/stratis-storage/testing/pull/10
   https://github.com/stratis-storage/testing/pull/8
   https://github.com/stratis-storage/testing/pull/3
