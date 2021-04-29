@@ -1,5 +1,5 @@
-testing 2.4.0 (UNRELEASED)
-==========================
+testing 2.4.0
+=============
 Required stratisd version: 2.4.0
 Required stratis-cli version: 2.4.0
 
@@ -37,6 +37,7 @@ YAML linter: yamllint (1.26.0)
 
 - Tidies and Maintenance:
   https://github.com/stratis-storage/testing/pull/22
+  https://github.com/stratis-storage/testing/pull/20
   https://github.com/stratis-storage/testing/pull/18
   https://github.com/stratis-storage/testing/pull/15
   https://github.com/stratis-storage/testing/pull/10
