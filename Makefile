@@ -17,4 +17,4 @@ fmt-travis:
 
 .PHONY: yamllint
 yamllint:
-	yamllint --strict .github/workflows/main.yml
+	yamllint --strict .github/workflows/*.yml
