@@ -18,8 +18,8 @@ jobs:
         include:
           # PYTHON CHECKS ON NEXT FEDORA PYTHON AND PYTHON TOOLS VERSION
           - dependencies: >
-              dbus-python-devel
               pylint
+              python3-dbus
               python3-psutil
             image: fedora:33
             task: PYTHONPATH=./src make -f Makefile lint
@@ -36,5 +36,7 @@ jobs:
           make
           python-unversioned-command
           ${{ matrix.dependencies }}
+      - name: Display Python version
+        run: python --version
       - name: Run test
         run: ${{ matrix.task }}
