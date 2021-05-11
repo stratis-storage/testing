@@ -23,7 +23,7 @@ jobs:
               dbus-python-devel
               pylint
               python3-psutil
-            image: fedora:28
+            image: fedora:32
             task: PYTHONPATH=./src make -f Makefile lint
           - dependencies: >
               black
@@ -32,7 +32,7 @@ jobs:
             task: make -f Makefile fmt-travis
           # VERIFICATION OF TEST INFRASTRUCTURE
           - dependencies: yamllint
-            image: fedora:28
+            image: fedora:32
             task: make -f Makefile yamllint
     runs-on: ubuntu-18.04
     container: ${{ matrix.image }}
