@@ -18,7 +18,7 @@ jobs:
         include:
           # PYTHON CHECKS ON NEXT FEDORA PYTHON AND PYTHON TOOLS VERSION
           - dependencies: >
-              dbus-python-devel
+              python3-dbus
               pylint
               python3-psutil
             image: fedora:33
