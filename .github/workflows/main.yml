@@ -23,6 +23,7 @@ jobs:
               dbus-python-devel
               pylint
               python3-psutil
+              python3-dbus
             image: fedora:32
             task: PYTHONPATH=./src make -f Makefile lint
           - dependencies: >
