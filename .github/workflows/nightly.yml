@@ -18,7 +18,6 @@ jobs:
         include:
           # PYTHON CHECKS ON NEXT FEDORA PYTHON AND PYTHON TOOLS VERSION
           - dependencies: >
-              dbus-python-devel
               pylint
               python3-dbus
               python3-psutil
