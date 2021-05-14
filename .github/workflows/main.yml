@@ -30,7 +30,7 @@ jobs:
               python3-isort
             image: fedora:32
             task: make -f Makefile fmt-travis
-          # MANDATORY CHECKS USING LOWEST DEVELOPMENT INTERPRETER
+          # MANDATORY CHECKS USING LOWEST SUPPORTED INTERPRETER
           - dependencies: >
               pylint
               python3-dbus
