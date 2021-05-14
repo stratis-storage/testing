@@ -20,7 +20,6 @@ jobs:
         include:
           # MANDATORY CHECKS USING CURRENT DEVELOPMENT INTERPRETER
           - dependencies: >
-              dbus-python-devel
               pylint
               python3-dbus
               python3-psutil
