@@ -23,12 +23,12 @@ jobs:
               pylint
               python3-dbus
               python3-psutil
-            image: fedora:32
+            image: fedora:33
             task: PYTHONPATH=./src make -f Makefile lint
           - dependencies: >
               black
               python3-isort
-            image: fedora:32
+            image: fedora:33
             task: make -f Makefile fmt-travis
           # MANDATORY CHECKS USING LOWEST SUPPORTED INTERPRETER
           - dependencies: >
@@ -39,7 +39,7 @@ jobs:
             task: PYTHONPATH=./src make -f Makefile lint
           # VERIFICATION OF TEST INFRASTRUCTURE
           - dependencies: yamllint
-            image: fedora:32
+            image: fedora:33
             task: make -f Makefile yamllint
     runs-on: ubuntu-18.04
     container: ${{ matrix.image }}
