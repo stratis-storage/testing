@@ -99,7 +99,7 @@ def make_test_filesystem(pool_path, fs_name):
     return array_of_tuples_with_obj_paths_and_names[0][0]
 
 
-def acquire_filesystem_symlink_targets(  # pylint: disable=bad-continuation
+def acquire_filesystem_symlink_targets(
     pool_name, filesystem_name, pool_path, filesystem_path
 ):
     """
