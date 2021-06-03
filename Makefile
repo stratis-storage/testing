@@ -6,12 +6,12 @@ lint:
 
 .PHONY: fmt
 fmt:
-	isort --recursive check.py stratis_cli_cert.py stratisd_cert.py testlib
+	isort --recursive stratis_cli_cert.py stratisd_cert.py testlib
 	black .
 
 .PHONY: fmt-travis
 fmt-travis:
-	isort --recursive --diff --check-only check.py stratis_cli_cert.py stratisd_cert.py testlib
+	isort --recursive --diff --check-only stratis_cli_cert.py stratisd_cert.py testlib
 	black . --check
 
 .PHONY: yamllint
