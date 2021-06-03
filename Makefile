@@ -1,9 +1,8 @@
 .PHONY: lint
 lint:
-	./check.py check.py
-	./check.py stratis_cli_cert.py
-	./check.py stratisd_cert.py
-	./check.py testlib
+	pylint stratis_cli_cert.py
+	pylint stratisd_cert.py
+	pylint testlib
 
 .PHONY: fmt
 fmt:
