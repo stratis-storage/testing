@@ -94,9 +94,9 @@ class StratisDbus:
 
     _OBJECT_MANAGER = "org.freedesktop.DBus.ObjectManager"
     _BUS = dbus.SystemBus()
-    _BUS_NAME = "org.storage.stratis2"
-    _TOP_OBJECT = "/org/storage/stratis2"
-    _REVISION = "r4"
+    _BUS_NAME = "org.storage.stratis3"
+    _TOP_OBJECT = "/org/storage/stratis3"
+    _REVISION = "r0"
 
     _MNGR_IFACE = "org.storage.stratis2.Manager.%s" % _REVISION
     _REPORT_IFACE = "org.storage.stratis2.Report.%s" % _REVISION
