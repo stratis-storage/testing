@@ -98,12 +98,12 @@ class StratisDbus:
     _TOP_OBJECT = "/org/storage/stratis3"
     _REVISION = "r0"
 
-    _MNGR_IFACE = "org.storage.stratis2.Manager.%s" % _REVISION
-    _REPORT_IFACE = "org.storage.stratis2.Report.%s" % _REVISION
-    _POOL_IFACE = "org.storage.stratis2.pool.%s" % _REVISION
-    _FS_IFACE = "org.storage.stratis2.filesystem.%s" % _REVISION
-    _BLKDEV_IFACE = "org.storage.stratis2.blockdev.%s" % _REVISION
-    _FETCH_PROPERTIES_IFACE = "org.storage.stratis2.FetchProperties.%s" % _REVISION
+    _MNGR_IFACE = "%s.Manager.%s" % (_BUS_NAME, _REVISION)
+    _REPORT_IFACE = "%s.Report.%s" % (_BUS_NAME, _REVISION)
+    _POOL_IFACE = "%s.pool.%s" % (_BUS_NAME, _REVISION)
+    _FS_IFACE = "%s.filesystem.%s" % (_BUS_NAME, _REVISION)
+    _BLKDEV_IFACE = "%s.blockdev.%s" % (_BUS_NAME, _REVISION)
+    _FETCH_PROPERTIES_IFACE = "%s.FetchProperties.%s" % (_BUS_NAME, _REVISION)
     POOL_IFACE = _POOL_IFACE
     FS_IFACE = _FS_IFACE
 
