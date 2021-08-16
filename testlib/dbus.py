@@ -398,7 +398,9 @@ class StratisDbus:
             StratisDbus._POOL_IFACE,
         )
 
-        return iface.CreateFilesystems([fs_name], timeout=StratisDbus._TIMEOUT)
+        return iface.CreateFilesystems(
+            [(fs_name, (False, ""))], timeout=StratisDbus._TIMEOUT
+        )
 
     @staticmethod
     def fs_destroy(pool_name, fs_name):
