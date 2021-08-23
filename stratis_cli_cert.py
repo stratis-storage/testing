@@ -526,6 +526,25 @@ class StratisCertify(unittest.TestCase):  # pylint: disable=too-many-public-meth
             True,
         )
 
+    def test_filesystem_create_specified_size_toosmall(self):
+        """
+        Test creating a filesystem with a specified size that is too small.
+        """
+        filesystem_name = fs_n()
+        self.unittest_command(
+            [
+                _STRATIS_CLI,
+                "filesystem",
+                "create",
+                make_test_pool(StratisCertify.DISKS[0:1]),
+                filesystem_name,
+                "--size=4KiB",
+            ],
+            1,
+            False,
+            True,
+        )
+
     def test_filesystem_create_permissions(self):
         """
         Test creating a filesystem fails with dropped permissions.
