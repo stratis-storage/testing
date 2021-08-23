@@ -527,6 +527,34 @@ class StratisdCertify(StratisCertify):  # pylint: disable=too-many-public-method
             StratisDbus.fs_create(pool_path, fs_name), dbus.UInt16(0)
         )
 
+    def test_filesystem_create_specified_size(self):
+        """
+        Test creating a filesystem with a specified size.
+        """
+        pool_name = p_n()
+        pool_path = make_test_pool(pool_name, StratisCertify.DISKS[0:1])
+
+        fs_name = fs_n()
+
+        self._unittest_command(
+            StratisDbus.fs_create(pool_path, fs_name, fs_size="8796093022208"),
+            dbus.UInt16(0),
+        )
+
+    def test_filesystem_create_specified_size_toosmall(self):
+        """
+        Test creating a filesystem with a specified size that is too small.
+        """
+        pool_name = p_n()
+        pool_path = make_test_pool(pool_name, StratisCertify.DISKS[0:1])
+
+        fs_name = fs_n()
+
+        self._unittest_command(
+            StratisDbus.fs_create(pool_path, fs_name, fs_size="4096"),
+            dbus.UInt16(1),
+        )
+
     def test_filesystem_create_permissions(self):
         """
         Test that creating a filesystem fails when root permissions are dropped.
