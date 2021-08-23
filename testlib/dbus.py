@@ -385,11 +385,12 @@ class StratisDbus:
         return iface.SetName(pool_name_rename, timeout=StratisDbus._TIMEOUT)
 
     @staticmethod
-    def fs_create(pool_path, fs_name):
+    def fs_create(pool_path, fs_name, *, fs_size=None):
         """
         Create a filesystem
         :param str pool_path: The object path of the pool in which the filesystem will be created
         :param str fs_name: The name of the filesystem to create
+        :param str fs_size: The size of the filesystem to create
         :return: The return values of the CreateFilesystems call
         :rtype: The D-Bus types (ba(os)), q, and s
         """
@@ -397,6 +398,11 @@ class StratisDbus:
             StratisDbus._BUS.get_object(StratisDbus._BUS_NAME, pool_path),
             StratisDbus._POOL_IFACE,
         )
+
+        if fs_size is not None:
+            return iface.CreateFilesystems(
+                [(fs_name, (True, fs_size))], timeout=StratisDbus._TIMEOUT
+            )
 
         return iface.CreateFilesystems(
             [(fs_name, (False, ""))], timeout=StratisDbus._TIMEOUT
