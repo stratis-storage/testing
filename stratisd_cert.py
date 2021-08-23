@@ -537,7 +537,8 @@ class StratisdCertify(StratisCertify):  # pylint: disable=too-many-public-method
         fs_name = fs_n()
 
         self._unittest_command(
-            StratisDbus.fs_create(pool_path, fs_name, fs_size="8796093022208"), dbus.UInt16(0)
+            StratisDbus.fs_create(pool_path, fs_name, fs_size="8796093022208"),
+            dbus.UInt16(0),
         )
 
     def test_filesystem_create_permissions(self):
