@@ -399,6 +399,11 @@ class StratisDbus:
             StratisDbus._POOL_IFACE,
         )
 
+        if fs_size is not None:
+            return iface.CreateFilesystems(
+                [(fs_name, (True, fs_size))], timeout=StratisDbus._TIMEOUT
+        )
+
         return iface.CreateFilesystems(
             [(fs_name, (False, ""))], timeout=StratisDbus._TIMEOUT
         )
