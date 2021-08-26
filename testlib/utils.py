@@ -99,13 +99,15 @@ def exec_test_command(cmd, *, settle=False):
     if settle:
         run(["udevadm", "settle"], check=True)
 
-    process = Popen(cmd, stdout=PIPE, stderr=PIPE, close_fds=True, env=os.environ)
-    result = process.communicate()
-    return (
-        process.returncode,
-        bytes(result[0]).decode("utf-8"),
-        bytes(result[1]).decode("utf-8"),
-    )
+    with Popen(
+        cmd, stdout=PIPE, stderr=PIPE, close_fds=True, env=os.environ
+    ) as process:
+        result = process.communicate()
+        return (
+            process.returncode,
+            bytes(result[0]).decode("utf-8"),
+            bytes(result[1]).decode("utf-8"),
+        )
 
 
 class RandomKeyTmpFile:
