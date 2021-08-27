@@ -1,16 +1,14 @@
 ---
-name: testing nightly
+name: testing weekly
 
 # yamllint disable-line rule:truthy
 on:
   schedule:
-    - cron: 20 3 * * *
+    - cron: 20 3 * * 3
   # Allows you to run this workflow manually from the Actions tab
   workflow_dispatch:
 
 jobs:
-  # Nightly to show us in advance what will change in Python utilities in
-  # the next version of Fedora
   next-fedora-python-checks:
     continue-on-error: true
     strategy:
@@ -21,13 +19,13 @@ jobs:
               pylint
               python3-dbus
               python3-psutil
-            image: fedora:34
             task: PYTHONPATH=./src make -f Makefile lint
           - dependencies: black python3-isort
-            image: fedora:34
             task: make -f Makefile fmt-travis
+          - dependencies: yamllint
+            task: make -f Makefile yamllint
     runs-on: ubuntu-18.04
-    container: ${{ matrix.image }}
+    container: fedora:34
     steps:
       - uses: actions/checkout@v2
       - name: Install dependencies
@@ -38,5 +36,5 @@ jobs:
           ${{ matrix.dependencies }}
       - name: Display Python version
         run: python --version
-      - name: Run test
+      - name: ${{ matrix.task }} 
         run: ${{ matrix.task }}
