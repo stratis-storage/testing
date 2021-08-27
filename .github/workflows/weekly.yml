@@ -36,5 +36,5 @@ jobs:
           ${{ matrix.dependencies }}
       - name: Display Python version
         run: python --version
-      - name: ${{ matrix.task }} 
+      - name: ${{ matrix.task }}
         run: ${{ matrix.task }}
