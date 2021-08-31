@@ -23,16 +23,16 @@ jobs:
               pylint
               python3-dbus
               python3-psutil
-            image: fedora:33
+            image: fedora:33  # CURRENT DEVELOPMENT ENVIRONMENT
             task: PYTHONPATH=./src make -f Makefile lint
           - dependencies: >
               black
               python3-isort
-            image: fedora:33
+            image: fedora:33  # CURRENT DEVELOPMENT ENVIRONMENT
             task: make -f Makefile fmt-travis
           # VERIFICATION OF TEST INFRASTRUCTURE
           - dependencies: yamllint
-            image: fedora:33
+            image: fedora:33  # CURRENT DEVELOPMENT ENVIRONMENT
             task: make -f Makefile yamllint
     runs-on: ubuntu-18.04
     container: ${{ matrix.image }}
