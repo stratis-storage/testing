@@ -458,6 +458,39 @@ class StratisCertify(unittest.TestCase):  # pylint: disable=too-many-public-meth
             True,
         )
 
+    def test_pool_init_cache_add_data(self):
+        """
+        Test initialzing the cache for a pool, then adding a data device.
+        """
+
+        pool_name = make_test_pool(StratisCertify.DISKS[0:1])
+
+        self.unittest_command(
+            [
+                _STRATIS_CLI,
+                "pool",
+                "init-cache",
+                pool_name,
+                StratisCertify.DISKS[1],
+            ],
+            0,
+            True,
+            True,
+        )
+
+        self.unittest_command(
+            [
+                _STRATIS_CLI,
+                "pool",
+                "add-data",
+                pool_name,
+                StratisCertify.DISKS[2],
+            ],
+            0,
+            True,
+            True,
+        )
+
     def test_pool_destroy(self):
         """
         Test destroying a pool.
