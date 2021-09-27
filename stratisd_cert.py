@@ -422,6 +422,22 @@ class StratisdCertify(StratisCertify):  # pylint: disable=too-many-public-method
             dbus.UInt16(0),
         )
 
+    def test_pool_add_data_after_cache(self):
+        """
+        Test adding a data device after a cache is created.
+        """
+        pool_name = p_n()
+        pool_path = make_test_pool(pool_name, StratisCertify.DISKS[0:1])
+
+        self._unittest_command(
+            StratisDbus.pool_init_cache(pool_path, StratisCertify.DISKS[1:2]),
+            dbus.UInt16(0),
+        )
+        self._unittest_command(
+            StratisDbus.pool_add_data(pool_path, StratisCertify.DISKS[0:1]),
+            dbus.UInt16(0),
+        )
+
     def test_pool_create_with_cache(self):
         """
         Test creating existing pool with device already used by cache fails
