@@ -186,7 +186,7 @@ class StratisDbus:
         )
 
         with open(temp_file.name, "r") as fd_for_dbus:
-            return manager_iface.SetKey(key_desc, fd_for_dbus.fileno(), False)
+            return manager_iface.SetKey(key_desc, fd_for_dbus.fileno())
 
     @staticmethod
     def unset_key(key_desc):
