@@ -607,6 +607,26 @@ class StratisCertify(unittest.TestCase):  # pylint: disable=too-many-public-meth
             True,
         )
 
+    def test_pool_add_data_relative_path(self):
+        """
+        Test adding data to a pool with a relative device path.
+        """
+        pool_name = make_test_pool(StratisCertify.DISKS[0:1])
+        add_device = StratisCertify.DISKS[1]
+        relative_device = (
+            os.path.dirname(add_device)
+            + "/../"
+            + os.path.basename(os.path.dirname(add_device))
+            + "/"
+            + os.path.basename(add_device)
+        )
+        self.unittest_command(
+            [_STRATIS_CLI, "pool", "add-data", pool_name, relative_device],
+            0,
+            True,
+            True,
+        )
+
     def test_pool_add_data_permissions(self):
         """
         Test adding data to a pool fails with dropped permissions.
