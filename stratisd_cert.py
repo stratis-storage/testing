@@ -466,6 +466,27 @@ class StratisdCertify(StratisCertify):  # pylint: disable=too-many-public-method
             dbus.UInt16(0),
         )
 
+    def test_pool_add_data_relative_path(self):
+        """
+        Test adding data to a pool with a relative device path.
+        """
+        pool_name = p_n()
+        pool_path = make_test_pool(pool_name, StratisCertify.DISKS[0:2])
+
+        add_device = StratisCertify.DISKS[2]
+        relative_device = [
+            os.path.dirname(add_device)
+            + "/../"
+            + os.path.basename(os.path.dirname(add_device))
+            + "/"
+            + os.path.basename(add_device)
+        ]
+
+        self._unittest_command(
+            StratisDbus.pool_add_data(pool_path, relative_device),
+            dbus.UInt16(0),
+        )
+
     def test_pool_add_data_permissions(self):
         """
         Test that adding data to a pool fails when root permissions are dropped.
