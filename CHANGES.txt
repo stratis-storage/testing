@@ -1,3 +1,44 @@
+testing 3.0.0 (UNRELEASED)
+==========================
+Required stratisd version: 3.0.0
+Required stratis-cli version: 3.0.0
+
+Recommended release for development: Fedora 34
+
+- Require stratisd and stratis-cli 3.0:
+  https://github.com/stratis-storage/testing/pull/41
+  https://github.com/stratis-storage/testing/pull/40
+
+- Test adding data devices after initializing cache:
+  https://github.com/stratis-storage/testing/pull/53
+
+- Update CreateFilesystem to take additional size argument:
+  https://github.com/stratis-storage/testing/pull/42
+
+- Update SetKey to no longer take interactive parameter:
+  https://github.com/stratis-storage/testing/pull/54
+
+- Add tests for filesystem creation with specified size:
+  https://github.com/stratis-storage/testing/issues/43
+  https://github.com/stratis-storage/testing/pull/47
+  https://github.com/stratis-storage/testing/pull/46
+
+- Tidies and Maintenance:
+  https://github.com/stratis-storage/testing/pull/52
+  https://github.com/stratis-storage/testing/pull/51
+  https://github.com/stratis-storage/testing/pull/50
+  https://github.com/stratis-storage/testing/pull/49
+  https://github.com/stratis-storage/testing/pull/48
+  https://github.com/stratis-storage/testing/pull/38
+  https://github.com/stratis-storage/testing/pull/37
+  https://github.com/stratis-storage/testing/pull/36
+  https://github.com/stratis-storage/testing/pull/34
+  https://github.com/stratis-storage/testing/pull/33
+  https://github.com/stratis-storage/testing/pull/28
+  https://github.com/stratis-storage/testing/pull/27
+  https://github.com/stratis-storage/testing/pull/26
+
+
 testing 2.4.0
 =============
 Required stratisd version: 2.4.0
