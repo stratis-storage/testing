@@ -31,6 +31,7 @@ import dbus
 from testlib.dbus import StratisDbus, fs_n, p_n
 from testlib.infra import KernelKey, clean_up
 from testlib.utils import (
+    create_relative_device_path,
     exec_command,
     exec_test_command,
     process_exists,
@@ -474,14 +475,7 @@ class StratisdCertify(StratisCertify):  # pylint: disable=too-many-public-method
         pool_path = make_test_pool(pool_name, StratisCertify.DISKS[0:2])
 
         add_device = StratisCertify.DISKS[2]
-        relative_device = [
-            os.path.dirname(add_device)
-            + "/../"
-            + os.path.basename(os.path.dirname(add_device))
-            + "/"
-            + os.path.basename(add_device)
-        ]
-
+        relative_device = [create_relative_device_path(add_device)]
         self._unittest_command(
             StratisDbus.pool_add_data(pool_path, relative_device),
             dbus.UInt16(0),
