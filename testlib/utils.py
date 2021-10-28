@@ -51,12 +51,9 @@ def create_relative_device_path(devpath):
     :param devpath: Device path
     :return: String
     """
-    return (
-        os.path.dirname(devpath)
-        + "/../"
-        + os.path.basename(os.path.dirname(devpath))
-        + "/"
-        + os.path.basename(devpath)
+    dirname = os.path.dirname(devpath)
+    return os.path.join(
+        dirname, "/../", os.path.basename(dirname) + "/" + os.path.basename(devpath)
     )
 
 
