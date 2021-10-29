@@ -475,9 +475,10 @@ class StratisdCertify(StratisCertify):  # pylint: disable=too-many-public-method
         pool_path = make_test_pool(pool_name, StratisCertify.DISKS[0:2])
 
         add_device = StratisCertify.DISKS[2]
-        relative_device = [create_relative_device_path(add_device)]
+        relative_device = create_relative_device_path(add_device)
+        relative_device_list = [add_device, relative_device]
         self._unittest_command(
-            StratisDbus.pool_add_data(pool_path, relative_device),
+            StratisDbus.pool_add_data(pool_path, relative_device_list),
             dbus.UInt16(0),
         )
 

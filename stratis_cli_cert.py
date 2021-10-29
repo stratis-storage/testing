@@ -616,7 +616,7 @@ class StratisCertify(unittest.TestCase):  # pylint: disable=too-many-public-meth
         add_device = StratisCertify.DISKS[1]
         relative_device = create_relative_device_path(add_device)
         self.unittest_command(
-            [_STRATIS_CLI, "pool", "add-data", pool_name, relative_device],
+            [_STRATIS_CLI, "pool", "add-data", pool_name, add_device, relative_device],
             0,
             True,
             True,
