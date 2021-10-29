@@ -53,7 +53,7 @@ def create_relative_device_path(devpath):
     """
     dirname = os.path.dirname(devpath)
     return os.path.join(
-        dirname, "../", os.path.basename(dirname), os.path.basename(devpath)
+        dirname, "..", os.path.basename(dirname), os.path.basename(devpath)
     )
 
 
