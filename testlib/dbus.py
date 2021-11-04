@@ -103,7 +103,6 @@ class StratisDbus:
     _POOL_IFACE = "%s.pool.%s" % (_BUS_NAME, _REVISION)
     _FS_IFACE = "%s.filesystem.%s" % (_BUS_NAME, _REVISION)
     _BLKDEV_IFACE = "%s.blockdev.%s" % (_BUS_NAME, _REVISION)
-    _FETCH_PROPERTIES_IFACE = "%s.FetchProperties.%s" % (_BUS_NAME, _REVISION)
     POOL_IFACE = _POOL_IFACE
     FS_IFACE = _FS_IFACE
 
@@ -206,23 +205,14 @@ class StratisDbus:
         Return a list of the key descriptions of all keys with a
         distinguishing Stratis prefix.
 
-        :returns: a list of key descriptions
-        :rtype: list of str
-        :raises RuntimeError: if key descriptions could not be returned
+        :return: The return values of the ListKeys call
+        :rtype: The D-Bus types as, q, and s
         """
-        prop_name = "KeyList"
         iface = dbus.Interface(
             StratisDbus._BUS.get_object(StratisDbus._BUS_NAME, StratisDbus._TOP_OBJECT),
-            StratisDbus._FETCH_PROPERTIES_IFACE,
+            StratisDbus._MNGR_IFACE,
         )
-        result = iface.GetProperties([prop_name], timeout=StratisDbus._TIMEOUT)
-        (success, key_descriptions) = result[prop_name]
-        if not success:
-            raise RuntimeError(
-                "The daemon encountered an error while getting the Stratis key descriptions: %s"
-                % key_descriptions
-            )
-        return key_descriptions
+        return iface.ListKeys(timeout=StratisDbus._TIMEOUT)
 
     @staticmethod
     def pool_create(pool_name, devices, *, key_desc=None, clevis_info=None):
