@@ -21,6 +21,8 @@ from tempfile import NamedTemporaryFile
 from .dbus import StratisDbus
 from .utils import exec_command
 
+_OK = 0
+
 
 def umount_mdv():
     """
@@ -68,7 +70,14 @@ def clean_up():
         check_result(StratisDbus.pool_destroy(name), "failed to destroy pool %s", name)
 
     # Unset all Stratis keys
-    for key in StratisDbus.get_keys():
+    (keys, return_code, message) = StratisDbus.get_keys()
+    if return_code != _OK:
+        raise RuntimeError(
+            "Obtaining the list of keys using stratisd failed with an error: %s"
+            % message
+        )
+
+    for key in keys:
         check_result(StratisDbus.unset_key(key), "failed to unset key %s", key)
 
     # Report an error if any filesystems, pools or keys are found to be
@@ -89,12 +98,19 @@ def clean_up():
     if remnant_pools != []:
         error_strings.append("remnant pools: %s" % ", ".join(remnant_pools))
 
-    remnant_keys = StratisDbus.get_keys()
-    if remnant_keys != []:
-        error_strings.append("remnant keys: %s" % ", ".join(remnant_keys))
+    (remnant_keys, return_code, message) = StratisDbus.get_keys()
+    if return_code != _OK:
+        error_strings.append(
+            "failed to obtain information about Stratis keys: %s" % message
+        )
+    else:
+        if remnant_keys != []:
+            error_strings.append("remnant keys: %s" % ", ".join(remnant_keys))
 
     if error_strings != []:
-        raise RuntimeError("clean_up failed: %s" % "; ".join(error_strings))
+        raise RuntimeError(
+            "clean_up may not have succeeded: %s" % "; ".join(error_strings)
+        )
 
 
 class KernelKey:  # pylint: disable=attribute-defined-outside-init
@@ -103,8 +119,6 @@ class KernelKey:  # pylint: disable=attribute-defined-outside-init
     be available for the lifetime of the test when used with the Python with
     keyword and will be cleaned up at the end of the scope of the with block.
     """
-
-    _OK = 0
 
     def __init__(self, key_data):
         """
@@ -130,7 +144,7 @@ class KernelKey:  # pylint: disable=attribute-defined-outside-init
 
             (_, return_code, message) = StratisDbus.set_key(self._key_desc, temp_file)
 
-        if return_code != KernelKey._OK:
+        if return_code != _OK:
             raise RuntimeError(
                 "Setting the key using stratisd failed with an error: %s" % message
             )
@@ -142,7 +156,7 @@ class KernelKey:  # pylint: disable=attribute-defined-outside-init
         try:
             (_, return_code, message) = StratisDbus.unset_key(self._key_desc)
 
-            if return_code != KernelKey._OK:
+            if return_code != _OK:
                 raise RuntimeError(
                     "Unsetting the key using stratisd failed with an error: %s"
                     % message
