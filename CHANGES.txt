@@ -9,8 +9,16 @@ Recommended release for development: Fedora 34
   https://github.com/stratis-storage/testing/pull/41
   https://github.com/stratis-storage/testing/pull/40
 
+- Test adding a device specified twice by two textually different paths:
+  https://github.com/stratis-storage/testing/issues/57
+  https://github.com/stratis-storage/testing/pull/55
+
 - Test adding data devices after initializing cache:
   https://github.com/stratis-storage/testing/pull/53
+
+- Remove dependency on FetchProperties interface for key listing:
+  https://github.com/stratis-storage/testing/issues/58
+  https://github.com/stratis-storage/testing/pull/59
 
 - Update CreateFilesystem to take additional size argument:
   https://github.com/stratis-storage/testing/pull/42
