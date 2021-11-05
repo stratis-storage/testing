@@ -45,6 +45,18 @@ def resolve_symlink(link):
     return os.path.abspath(os.path.join(os.path.dirname(link), os.readlink(link)))
 
 
+def create_relative_device_path(devpath):
+    """
+    Create a relative device path from an absolute device path
+    :param devpath: Device path
+    :return: String
+    """
+    dirname = os.path.dirname(devpath)
+    return os.path.join(
+        dirname, "..", os.path.basename(dirname), os.path.basename(devpath)
+    )
+
+
 def process_exists(name):
     """
     Look through processes, using their pids, to find one matching 'name'.
