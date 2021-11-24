@@ -260,7 +260,7 @@ class StratisDbus:
             for path, pool_obj in pool_objects.items()
             if pool_obj["Name"] == pool_name
         ]
-        if pool_paths == []:
+        if len(pool_paths) != 1:
             return None
 
         iface = dbus.Interface(
@@ -365,7 +365,7 @@ class StratisDbus:
             for path, pool_obj in pool_objects.items()
             if pool_obj["Name"] == pool_name
         ]
-        if pool_paths == []:
+        if len(pool_paths) != 1:
             return None
 
         iface = dbus.Interface(
@@ -424,31 +424,54 @@ class StratisDbus:
             for path, pool_obj in pool_objects.items()
             if pool_obj["Name"] == pool_name
         ]
-        if pool_paths == []:
+        if len(pool_paths) != 1:
             return None
 
+        pool_path = pool_paths[0]
+
         fs_paths = [
-            path for path, fs_obj in fs_objects.items() if fs_obj["Name"] == fs_name
+            path
+            for path, fs_obj in fs_objects.items()
+            if fs_obj["Name"] == fs_name and fs_obj["Pool"] == pool_path
         ]
-        if fs_paths == []:
+        if len(fs_paths) != 1:
             return None
 
         iface = dbus.Interface(
-            StratisDbus._BUS.get_object(StratisDbus._BUS_NAME, pool_paths[0]),
+            StratisDbus._BUS.get_object(StratisDbus._BUS_NAME, pool_path),
             StratisDbus._POOL_IFACE,
         )
         return iface.DestroyFilesystems(fs_paths, timeout=StratisDbus._TIMEOUT)
 
     @staticmethod
-    def fs_rename(fs_name, fs_name_rename):
+    def fs_rename(pool_name, fs_name, fs_name_rename):
         """
         Rename a filesystem
+        :param str pool_name: The name of the filesystem's pool
         :param str fs_name: The name of the filesystem to be renamed
         :param str fs_name_rename: The new name that the snapshot will have
         :return: The return values of the SetName call, or None
         :rtype: The D-Bus types (bs), q, and s, or None
         """
         objects = StratisDbus.get_managed_objects().items()
+
+        pool_objects = {
+            path: obj_data[StratisDbus._POOL_IFACE]
+            for path, obj_data in objects
+            if StratisDbus._POOL_IFACE in obj_data
+            and obj_data[StratisDbus._POOL_IFACE]["Name"].startswith(_TEST_PREF)
+        }
+
+        pool_paths = [
+            path
+            for path, pool_obj in pool_objects.items()
+            if pool_obj["Name"] == pool_name
+        ]
+
+        if len(pool_paths) != 1:
+            return None
+
+        pool_path = pool_paths[0]
 
         fs_objects = {
             path: obj_data[StratisDbus._FS_IFACE]
@@ -458,13 +481,18 @@ class StratisDbus:
         }
 
         fs_paths = [
-            path for path, fs_obj in fs_objects.items() if fs_obj["Name"] == fs_name
+            path
+            for path, fs_obj in fs_objects.items()
+            if fs_obj["Name"] == fs_name and fs_obj["Pool"] == pool_path
         ]
-        if fs_paths == []:
+
+        if len(fs_paths) != 1:
             return None
 
+        fs_path = fs_paths[0]
+
         iface = dbus.Interface(
-            StratisDbus._BUS.get_object(StratisDbus._BUS_NAME, fs_paths[0]),
+            StratisDbus._BUS.get_object(StratisDbus._BUS_NAME, fs_path),
             StratisDbus._FS_IFACE,
         )
         return iface.SetName(fs_name_rename, timeout=StratisDbus._TIMEOUT)

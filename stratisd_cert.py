@@ -626,7 +626,7 @@ class StratisdCertify(StratisCertify):  # pylint: disable=too-many-public-method
         fs_name_rename = fs_n()
 
         self._unittest_command(
-            StratisDbus.fs_rename(fs_name, fs_name_rename), dbus.UInt16(0)
+            StratisDbus.fs_rename(pool_name, fs_name, fs_name_rename), dbus.UInt16(0)
         )
         # Settle after rename, to allow udev to recognize the fs rename
         exec_command(["udevadm", "settle"])
@@ -672,7 +672,7 @@ class StratisdCertify(StratisCertify):  # pylint: disable=too-many-public-method
         fs_name_rename = fs_n()
 
         self._unittest_command(
-            StratisDbus.fs_rename(fs_name, fs_name_rename), dbus.UInt16(0)
+            StratisDbus.fs_rename(pool_name, fs_name, fs_name_rename), dbus.UInt16(0)
         )
         # Settle after rename, to allow udev to recognize the filesystem rename
         exec_command(["udevadm", "settle"])
@@ -703,7 +703,7 @@ class StratisdCertify(StratisCertify):  # pylint: disable=too-many-public-method
         fs_name_rename = fs_n()
 
         self._unittest_command(
-            StratisDbus.fs_rename(fs_name, fs_name_rename), dbus.UInt16(0)
+            StratisDbus.fs_rename(pool_name, fs_name, fs_name_rename), dbus.UInt16(0)
         )
 
     def test_filesystem_rename_permissions(self):
@@ -718,7 +718,9 @@ class StratisdCertify(StratisCertify):  # pylint: disable=too-many-public-method
 
         fs_name_rename = fs_n()
 
-        self._test_permissions(StratisDbus.fs_rename, [fs_name, fs_name_rename], True)
+        self._test_permissions(
+            StratisDbus.fs_rename, [pool_name, fs_name, fs_name_rename], True
+        )
 
     def test_filesystem_rename_same_name(self):
         """
@@ -730,7 +732,9 @@ class StratisdCertify(StratisCertify):  # pylint: disable=too-many-public-method
         fs_name = fs_n()
         make_test_filesystem(pool_path, fs_name)
 
-        self._unittest_command(StratisDbus.fs_rename(fs_name, fs_name), dbus.UInt16(0))
+        self._unittest_command(
+            StratisDbus.fs_rename(pool_name, fs_name, fs_name), dbus.UInt16(0)
+        )
 
     def test_filesystem_snapshot(self):
         """
