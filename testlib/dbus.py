@@ -260,7 +260,7 @@ class StratisDbus:
             for path, pool_obj in pool_objects.items()
             if pool_obj["Name"] == pool_name
         ]
-        if pool_paths == []:
+        if len(pool_paths) != 1:
             return None
 
         iface = dbus.Interface(
@@ -365,7 +365,7 @@ class StratisDbus:
             for path, pool_obj in pool_objects.items()
             if pool_obj["Name"] == pool_name
         ]
-        if pool_paths == []:
+        if len(pool_paths) != 1:
             return None
 
         iface = dbus.Interface(
