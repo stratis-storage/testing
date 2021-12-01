@@ -1,5 +1,5 @@
-testing 3.0.0 (UNRELEASED)
-==========================
+testing 3.0.0
+=============
 Required stratisd version: 3.0.0
 Required stratis-cli version: 3.0.0
 
@@ -30,6 +30,10 @@ Recommended release for development: Fedora 34
   https://github.com/stratis-storage/testing/issues/43
   https://github.com/stratis-storage/testing/pull/47
   https://github.com/stratis-storage/testing/pull/46
+
+- Fix some object path searches in StratisDbus methods:
+  https://github.com/stratis-storage/testing/issues/4
+  https://github.com/stratis-storage/testing/pull/63
 
 - Tidies and Maintenance:
   https://github.com/stratis-storage/testing/pull/52
