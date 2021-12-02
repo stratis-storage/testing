@@ -847,6 +847,20 @@ class StratisdCertify(StratisCertify):  # pylint: disable=too-many-public-method
         """
         self._test_permissions(StratisDbus.get_engine_state_report, [], False)
 
+    def test_get_keys(self):
+        """
+        Test getting the Stratis keys in the kernel keyring.
+        """
+
+        (_, return_code, _) = StratisDbus.get_keys()
+        self.assertEqual(return_code, dbus.UInt16(0))
+
+    def test_get_keys_permissions(self):
+        """
+        Test that ListKeys method can be invoked when permissions are dropped.
+        """
+        self._test_permissions(StratisDbus.get_keys, [], False)
+
 
 class PredictUsageCertify(StratisCertify):
     """
