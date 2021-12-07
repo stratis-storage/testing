@@ -76,6 +76,23 @@ def process_exists(name):
     return None
 
 
+def terminate_traces(name):
+    """
+    Terminate trace processes with the given filename.  This is
+    intended for Python scripts whose name will be in the cmdline, but
+    not in the process name.
+    :param name: name of script to clean up
+    :type name: str
+    return: None
+    """
+    for proc in psutil.process_iter(["cmdline"]):
+        try:
+            if any(name == param for param in proc.info["cmdline"]):
+                proc.terminate()
+        except psutil.NoSuchProcess:
+            pass
+
+
 def exec_command(cmd, *, settle=False):
     """
     Executes the specified infrastructure command.
