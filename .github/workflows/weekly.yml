@@ -18,6 +18,8 @@ jobs:
           - dependencies: >
               pylint
               python3-dbus
+              python3-dbus-python-client-gen
+              python3-gobject
               python3-psutil
             task: PYTHONPATH=./src make -f Makefile lint
           - dependencies: black python3-isort
