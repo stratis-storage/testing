@@ -27,7 +27,7 @@ import xml.etree.ElementTree as ET
 # isort: THIRDPARTY
 import dbus
 import dbus.mainloop.glib
-from git.repository import GLib
+from gi.repository import GLib
 
 # isort: FIRSTPARTY
 from dbus_python_client_gen import make_class
