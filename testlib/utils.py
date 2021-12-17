@@ -90,14 +90,11 @@ def terminate_traces(name):
         try:
             for param in proc.info["cmdline"]:
                 if name in param:
-                    # print("Found an instance of %s" % name)
-                    # print("%s: %s" % (proc.pid, proc.info["cmdline"]))
                     procs.append(proc)
         except psutil.NoSuchProcess:
             pass
 
     if len(procs) > 0:
-        print("procs: %s" % procs)
         for termproc in procs:
             termproc.terminate()
 
