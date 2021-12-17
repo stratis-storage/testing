@@ -19,7 +19,7 @@ import base64
 from tempfile import NamedTemporaryFile
 
 from .dbus import StratisDbus
-from .utils import exec_command
+from .utils import exec_command, terminate_traces
 
 _OK = 0
 
@@ -106,6 +106,8 @@ def clean_up():
     else:
         if remnant_keys != []:
             error_strings.append("remnant keys: %s" % ", ".join(remnant_keys))
+
+    terminate_traces("monitor_dbus_signals.py")
 
     if error_strings != []:
         raise RuntimeError(

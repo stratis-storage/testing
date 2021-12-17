@@ -19,7 +19,10 @@ Tests of stratisd that are optional.
 import argparse
 import json
 import os
+import psutil
+import signal
 import sys
+import subprocess
 import time
 import unittest
 from tempfile import NamedTemporaryFile
@@ -36,6 +39,7 @@ from testlib.utils import (
     exec_test_command,
     process_exists,
     resolve_symlink,
+    terminate_traces,
 )
 
 _ROOT = 0
@@ -193,6 +197,15 @@ class StratisdCertify(StratisCertify):  # pylint: disable=too-many-public-method
 
         time.sleep(1)
         exec_command(["udevadm", "settle"])
+
+        trace = subprocess.Popen(
+            [
+                "./scripts/monitor_dbus_signals.py",
+                "org.storage.stratis3",
+                "/org/storage/stratis3",
+            ],
+            shell=False,
+)
 
     def _test_permissions(self, dbus_method, args, permissions, *, kwargs=None):
         """
