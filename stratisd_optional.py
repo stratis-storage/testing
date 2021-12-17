@@ -205,7 +205,7 @@ class StratisdCertify(StratisCertify):  # pylint: disable=too-many-public-method
                 "/org/storage/stratis3",
             ],
             shell=False,
-)
+        )
 
     def _test_permissions(self, dbus_method, args, permissions, *, kwargs=None):
         """
