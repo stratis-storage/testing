@@ -107,7 +107,7 @@ def clean_up():
         if remnant_keys != []:
             error_strings.append("remnant keys: %s" % ", ".join(remnant_keys))
 
-    terminate_traces("monitor_dbus_signals.py")
+    terminate_traces("./scripts/monitor_dbus_signals.py")
 
     if error_strings != []:
         raise RuntimeError(
