@@ -242,14 +242,14 @@ def _check():
     diffs = []
     for object_path, new_data in mos.items():
         if object_path not in _MO:
-            diffs.extend(AddedObjectPath(object_path, new_data))
+            diffs.append(AddedObjectPath(object_path, new_data))
             continue
 
         old_data = _MO[object_path]
 
         for ifn, new_props in new_data.items():
             if ifn not in old_data:
-                diffs.extend(AddedInterface(object_path, ifn, new_props))
+                diffs.append(AddedInterface(object_path, ifn, new_props))
                 continue
 
             old_props = old_data[ifn]
@@ -258,7 +258,7 @@ def _check():
             del old_data[ifn]
 
         for ifn, old_props in old_data.items():
-            diffs.extend(RemovedInterface(object_path, ifn, old_props))
+            diffs.append(RemovedInterface(object_path, ifn, old_props))
 
         del _MO[object_path]
 
