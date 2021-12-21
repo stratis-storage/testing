@@ -198,7 +198,7 @@ class StratisdCertify(StratisCertify):  # pylint: disable=too-many-public-method
         time.sleep(1)
         exec_command(["udevadm", "settle"])
 
-        trace = subprocess.Popen(
+        self.trace = subprocess.Popen(
             [
                 MONITOR_DBUS_SIGNALS,
                 "org.storage.stratis3",
@@ -206,6 +206,16 @@ class StratisdCertify(StratisCertify):  # pylint: disable=too-many-public-method
             ],
             shell=False,
         )
+
+    def tearDown(self):
+        """
+        Tear down an individual test.  For now, this only stops the
+        D-Bus trace.
+        :return: None
+        """
+        self.trace.send_signal(signal.SIGINT)
+        self.trace.wait(timeout=1)
+        print("D-Bus trace return code: %s" % self.trace.returncode)
 
     def _test_permissions(self, dbus_method, args, permissions, *, kwargs=None):
         """
