@@ -23,6 +23,8 @@ from .utils import exec_command, terminate_traces
 
 _OK = 0
 
+MONITOR_DBUS_SIGNALS = "./scripts/monitor_dbus_signals.py"
+
 
 def umount_mdv():
     """
@@ -107,7 +109,7 @@ def clean_up():
         if remnant_keys != []:
             error_strings.append("remnant keys: %s" % ", ".join(remnant_keys))
 
-    terminate_traces("./scripts/monitor_dbus_signals.py")
+    terminate_traces(MONITOR_DBUS_SIGNALS)
 
     if error_strings != []:
         raise RuntimeError(

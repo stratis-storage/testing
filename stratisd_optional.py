@@ -32,7 +32,7 @@ import dbus
 
 # isort: LOCAL
 from testlib.dbus import StratisDbus, fs_n, p_n
-from testlib.infra import KernelKey, clean_up
+from testlib.infra import KernelKey, clean_up, MONITOR_DBUS_SIGNALS
 from testlib.utils import (
     create_relative_device_path,
     exec_command,
@@ -200,7 +200,7 @@ class StratisdCertify(StratisCertify):  # pylint: disable=too-many-public-method
 
         trace = subprocess.Popen(
             [
-                "./scripts/monitor_dbus_signals.py",
+                MONITOR_DBUS_SIGNALS,
                 "org.storage.stratis3",
                 "/org/storage/stratis3",
             ],
