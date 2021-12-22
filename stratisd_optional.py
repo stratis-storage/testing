@@ -218,7 +218,7 @@ class StratisdCertify(StratisCertify):  # pylint: disable=too-many-public-method
         self.trace.send_signal(signal.SIGINT)
         (stdoutdata, stderrdata) = self.trace.communicate()
         self.trace.wait(timeout=1)
-        msg = stderrdata
+        msg = stderrdata.decode("utf-8")
         self.assertEqual(self.trace.returncode, 0, msg)
 
     def _test_permissions(self, dbus_method, args, permissions, *, kwargs=None):
