@@ -1,3 +1,21 @@
+testing 3.0.1
+=============
+Required stratisd version: 3.0.1
+Required stratis-cli version: 3.0.0
+
+Recommended release for development: Fedora 34
+
+- Add test to verify Stratis keys can be listed without root permissions:
+  https://github.com/stratis-storage/testing/pull/65
+
+- Initial setup for testing via monitoring the D-Bus:
+  https://github.com/stratis-storage/testing/pull/71
+  https://github.com/stratis-storage/testing/pull/69
+
+- Increase version to 3.0.1:
+  https://github.com/stratis-storage/testing/pull/72
+
+
 testing 3.0.0
 =============
 Required stratisd version: 3.0.0
