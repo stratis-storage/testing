@@ -204,6 +204,8 @@ class StratisdCertify(StratisCertify):  # pylint: disable=too-many-public-method
                 "org.storage.stratis3",
                 "/org/storage/stratis3",
             ],
+            stdout=subprocess.PIPE,
+            stderr=subprocess.PIPE,
             shell=False,
         )
 
@@ -214,8 +216,10 @@ class StratisdCertify(StratisCertify):  # pylint: disable=too-many-public-method
         :return: None
         """
         self.trace.send_signal(signal.SIGINT)
+        (stdoutdata, stderrdata) = self.trace.communicate()
         self.trace.wait(timeout=1)
-        self.assertEqual(self.trace.returncode, 0, msg=self.trace.stderr)
+        msg = (stderrdata)
+        self.assertEqual(self.trace.returncode, 0, msg)
 
     def _test_permissions(self, dbus_method, args, permissions, *, kwargs=None):
         """
