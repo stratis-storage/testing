@@ -330,6 +330,25 @@ class StratisCertify(unittest.TestCase):  # pylint: disable=too-many-public-meth
             True,
         )
 
+    def test_pool_create_invalid_redundancy(self):
+        """
+        Test that creating a pool with an invalid redundancy value fails.
+        """
+        pool_name = p_n()
+        self.unittest_command(
+            [
+                _STRATIS_CLI,
+                "pool",
+                "create",
+                pool_name,
+                StratisCertify.DISKS[0],
+                "--redundancy=20000",
+            ],
+            2,
+            False,
+            True,
+        )
+
     def test_pool_create_permissions(self):
         """
         Test creating a pool fails with dropped permissions.
