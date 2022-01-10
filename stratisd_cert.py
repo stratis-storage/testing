@@ -166,6 +166,12 @@ class StratisCertify(unittest.TestCase):
 
         self.assertEqual(return_code, expected_return_code, msg=msg)
 
+        self.assertEqual(
+            type(return_code),
+            type(expected_return_code),
+            "return code has unexpected D-Bus signature",
+        )
+
 
 class StratisdCertify(StratisCertify):  # pylint: disable=too-many-public-methods
     """
