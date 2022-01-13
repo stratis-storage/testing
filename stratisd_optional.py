@@ -198,17 +198,17 @@ class StratisdCertify(StratisCertify):  # pylint: disable=too-many-public-method
         time.sleep(1)
         exec_command(["udevadm", "settle"])
 
-        self.trace = subprocess.Popen(
-            [
-                MONITOR_DBUS_SIGNALS,
-                "--monitor-dbus",
-                "org.storage.stratis3",
-                "/org/storage/stratis3",
-            ],
-            stdout=subprocess.PIPE,
-            stderr=subprocess.PIPE,
-            shell=False,
-        )
+        if StratisCertify.monitor_dbus is True:
+            self.trace = subprocess.Popen(
+                [
+                    MONITOR_DBUS_SIGNALS,
+                    "org.storage.stratis3",
+                    "/org/storage/stratis3",
+                ],
+                stdout=subprocess.PIPE,
+                stderr=subprocess.PIPE,
+                shell=False,
+            )
 
     def tearDown(self):
         """
@@ -216,11 +216,14 @@ class StratisdCertify(StratisCertify):  # pylint: disable=too-many-public-method
         D-Bus trace.
         :return: None
         """
-        self.trace.send_signal(signal.SIGINT)
-        (stdoutdata, stderrdata) = self.trace.communicate()
-        self.trace.wait(timeout=1)
-        msg = stderrdata.decode("utf-8")
-        self.assertEqual(self.trace.returncode, 0, msg)
+        try:
+            self.trace.send_signal(signal.SIGINT)
+            (stdoutdata, stderrdata) = self.trace.communicate()
+            self.trace.wait(timeout=1)
+            msg = stderrdata.decode("utf-8")
+            self.assertEqual(self.trace.returncode, 0, msg)
+        except AttributeError:
+            pass
 
     def _test_permissions(self, dbus_method, args, permissions, *, kwargs=None):
         """
@@ -423,8 +426,12 @@ def main():
         default=[],
         help="disks to use, a minimum of 3 in order to run every test",
     )
+    argument_parser.add_argument(
+        "--monitor-dbus", help="Monitor D-Bus", action="store_true"
+    )
     parsed_args, unittest_args = argument_parser.parse_known_args()
     StratisCertify.DISKS = parsed_args.DISKS
+    StratisCertify.monitor_dbus = parsed_args.monitor_dbus
     print("Using block device(s) for tests: %s" % StratisCertify.DISKS)
     unittest.main(argv=sys.argv[:1] + unittest_args)
 
