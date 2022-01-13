@@ -19,6 +19,8 @@ Tests of stratisd.
 import argparse
 import json
 import os
+import signal
+import subprocess
 import sys
 import time
 import unittest
@@ -29,7 +31,7 @@ import dbus
 
 # isort: LOCAL
 from testlib.dbus import StratisDbus, fs_n, p_n
-from testlib.infra import KernelKey, clean_up
+from testlib.infra import MONITOR_DBUS_SIGNALS, KernelKey, clean_up
 from testlib.utils import (
     create_relative_device_path,
     exec_command,
@@ -199,6 +201,34 @@ class StratisdCertify(StratisCertify):  # pylint: disable=too-many-public-method
 
         time.sleep(1)
         exec_command(["udevadm", "settle"])
+
+        # pylint: disable=consider-using-with
+        if StratisCertify.monitor_dbus is True:
+            self.trace = subprocess.Popen(
+                [
+                    MONITOR_DBUS_SIGNALS,
+                    "org.storage.stratis3",
+                    "/org/storage/stratis3",
+                ],
+                stdout=subprocess.PIPE,
+                stderr=subprocess.PIPE,
+                shell=False,
+            )
+
+    def tearDown(self):
+        """
+        Tear down an individual test.  For now, this only stops the
+        D-Bus trace.
+        :return: None
+        """
+        try:
+            self.trace.send_signal(signal.SIGINT)
+            (_, stderrdata) = self.trace.communicate()
+            self.trace.wait(timeout=1)
+            msg = stderrdata.decode("utf-8")
+            self.assertEqual(self.trace.returncode, 0, msg)
+        except AttributeError:
+            pass
 
     def _test_permissions(self, dbus_method, args, permissions, *, kwargs=None):
         """
@@ -939,8 +969,12 @@ def main():
         default=[],
         help="disks to use, a minimum of 3 in order to run every test",
     )
+    argument_parser.add_argument(
+        "--monitor-dbus", help="Monitor D-Bus", action="store_true"
+    )
     parsed_args, unittest_args = argument_parser.parse_known_args()
     StratisCertify.DISKS = parsed_args.DISKS
+    StratisCertify.monitor_dbus = parsed_args.monitor_dbus
     print("Using block device(s) for tests: %s" % StratisCertify.DISKS)
     unittest.main(argv=sys.argv[:1] + unittest_args)
 
