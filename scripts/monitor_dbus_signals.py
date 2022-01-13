@@ -411,6 +411,7 @@ def _gen_parser():
     parser.add_argument(
         "manager", help="Object that implements the ObjectManager interface"
     )
+    parser.add_argument("--monitor-dbus", help="Monitor D-Bus", action="store_true")
 
     return parser
 
@@ -424,17 +425,21 @@ def main():
 
     args = parser.parse_args()
 
-    try:
-        _monitor(args.service, args.manager)
-    except KeyboardInterrupt:
-        result = _check()
-        if result == []:
-            sys.exit(0)
+    if args.monitor_dbus is True:
+        try:
+            _monitor(args.service, args.manager)
+        except KeyboardInterrupt:
+            result = _check()
+            if result == []:
+                sys.exit(0)
 
-        print(os.linesep.join(repr(diff) for diff in result), file=sys.stderr)
-        sys.exit(1)
+            print(os.linesep.join(repr(diff) for diff in result), file=sys.stderr)
+            sys.exit(1)
 
-    assert False, "unreachable"
+        assert False, "unreachable"
+
+    else:
+        parser.print_help(sys.stderr)
 
 
 if __name__ == "__main__":

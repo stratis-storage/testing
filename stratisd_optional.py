@@ -201,6 +201,7 @@ class StratisdCertify(StratisCertify):  # pylint: disable=too-many-public-method
         self.trace = subprocess.Popen(
             [
                 MONITOR_DBUS_SIGNALS,
+                "--monitor-dbus",
                 "org.storage.stratis3",
                 "/org/storage/stratis3",
             ],
