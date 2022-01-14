@@ -24,17 +24,7 @@ _TOP_OBJECT = None
 _OBJECT_MANAGER = None
 
 
-class Invalidated:  # pylint: disable=too-few-public-methods
-    """
-    Used to record in the updated GetManagedObjects value that a value has
-    been invalidates.
-    """
-
-    def __repr__(self):
-        return "Invalidated()"
-
-
-INVALIDATED = Invalidated()
+INVALIDATED = None
 
 try:
 
@@ -49,6 +39,17 @@ try:
 
     # isort: FIRSTPARTY
     from dbus_python_client_gen import make_class
+
+    class Invalidated:  # pylint: disable=too-few-public-methods
+        """
+        Used to record in the updated GetManagedObjects value that a value has
+        been invalidates.
+        """
+
+        def __repr__(self):
+            return "Invalidated()"
+
+    INVALIDATED = Invalidated()
 
     # a minimal chunk of introspection data, enough for the methods needed.
     _SPECS = {
