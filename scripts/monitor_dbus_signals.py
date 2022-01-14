@@ -59,6 +59,9 @@ class Invalidated:  # pylint: disable=too-few-public-methods
     been invalidates.
     """
 
+    def __repr__(self):
+        return "Invalidated()"
+
 
 INVALIDATED = Invalidated()
 
