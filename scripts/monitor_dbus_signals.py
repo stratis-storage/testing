@@ -151,10 +151,7 @@ def _check_props(object_path, ifn, old_props, new_props):
 
         old_value = old_props[key]
 
-        if old_value is INVALIDATED:
-            continue
-
-        if new_value != old_value:
+        if (not old_value is INVALIDATED) and new_value != old_value:
             diffs.append(DifferentProperty(object_path, ifn, key, old_value, new_value))
 
         del old_props[key]
