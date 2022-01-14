@@ -18,424 +18,407 @@ Monitor D-Bus properties and signals and verify that the signals are correct
 with respect to their properties.
 """
 
-# isort: STDLIB
-import argparse
-import os
-import sys
-import xml.etree.ElementTree as ET
+try:
 
-# isort: THIRDPARTY
-import dbus
-import dbus.mainloop.glib
-from gi.repository import GLib
+    # isort: STDLIB
+    import argparse
+    import os
+    import sys
+    import xml.etree.ElementTree as ET
 
-# isort: FIRSTPARTY
-from dbus_python_client_gen import make_class
+    # isort: THIRDPARTY
+    import dbus
+    import dbus.mainloop.glib
+    from gi.repository import GLib
 
-# a minimal chunk of introspection data, enough for the methods needed.
-_SPECS = {
-    "org.freedesktop.DBus.ObjectManager": """
-<interface name="org.freedesktop.DBus.ObjectManager">
-    <method name="GetManagedObjects" />
-  </interface>
-"""
-}
+    # isort: FIRSTPARTY
+    from dbus_python_client_gen import make_class
 
-_TIMEOUT = 120000
-
-_OBJECT_MANAGER_IFACE = "org.freedesktop.DBus.ObjectManager"
-
-_OBJECT_MANAGER = make_class(
-    "ObjectManager", ET.fromstring(_SPECS[_OBJECT_MANAGER_IFACE]), _TIMEOUT
-)
-
-_MO = None
-_TOP_OBJECT = None
-
-
-class Invalidated:  # pylint: disable=too-few-public-methods
+    # a minimal chunk of introspection data, enough for the methods needed.
+    _SPECS = {
+        "org.freedesktop.DBus.ObjectManager": """
+    <interface name="org.freedesktop.DBus.ObjectManager">
+        <method name="GetManagedObjects" />
+      </interface>
     """
-    Used to record in the updated GetManagedObjects value that a value has
-    been invalidates.
-    """
+    }
 
-    def __repr__(self):
-        return "Invalidated()"
+    _TIMEOUT = 120000
 
+    _OBJECT_MANAGER_IFACE = "org.freedesktop.DBus.ObjectManager"
 
-INVALIDATED = Invalidated()
+    _OBJECT_MANAGER = make_class(
+        "ObjectManager", ET.fromstring(_SPECS[_OBJECT_MANAGER_IFACE]), _TIMEOUT
+    )
 
+    _MO = None
+    _TOP_OBJECT = None
 
-class Diff:  # pylint: disable=too-few-public-methods
-    """
-    Diff between two different managed object results.
-    """
+    class Invalidated:  # pylint: disable=too-few-public-methods
+        """
+        Used to record in the updated GetManagedObjects value that a value has
+        been invalidates.
+        """
 
+        def __repr__(self):
+            return "Invalidated()"
 
-class AddedProperty(Diff):  # pylint: disable=too-few-public-methods
-    """
-    Property appears in new result but not in recorded result.
-    """
+    INVALIDATED = Invalidated()
 
-    def __init__(self, object_path, interface_name, key, new_value):
-        self.object_path = object_path
-        self.interface_name = interface_name
-        self.key = key
-        self.new_value = new_value
+    class Diff:  # pylint: disable=too-few-public-methods
+        """
+        Diff between two different managed object results.
+        """
 
-    def __repr__(self):
-        return (
-            f"AddedProperty({self.object_path!r}, {self.interface_name!r}, "
-            f"{self.key!r}, {self.new_value!r})"
-        )
+    class AddedProperty(Diff):  # pylint: disable=too-few-public-methods
+        """
+        Property appears in new result but not in recorded result.
+        """
 
+        def __init__(self, object_path, interface_name, key, new_value):
+            self.object_path = object_path
+            self.interface_name = interface_name
+            self.key = key
+            self.new_value = new_value
 
-class RemovedProperty(Diff):  # pylint: disable=too-few-public-methods
-    """
-    Property appears in recorded result but not in new result.
-    """
+        def __repr__(self):
+            return (
+                f"AddedProperty({self.object_path!r}, {self.interface_name!r}, "
+                f"{self.key!r}, {self.new_value!r})"
+            )
 
-    def __init__(self, object_path, interface_name, key, old_value):
-        self.object_path = object_path
-        self.interface_name = interface_name
-        self.key = key
-        self.old_value = old_value
+    class RemovedProperty(Diff):  # pylint: disable=too-few-public-methods
+        """
+        Property appears in recorded result but not in new result.
+        """
 
-    def __repr__(self):
-        return (
-            f"RemovedProperty({self.object_path!r}, {self.interface_name!r}, "
-            f"{self.key!r}, {self.old_value!r})"
-        )
+        def __init__(self, object_path, interface_name, key, old_value):
+            self.object_path = object_path
+            self.interface_name = interface_name
+            self.key = key
+            self.old_value = old_value
 
+        def __repr__(self):
+            return (
+                f"RemovedProperty({self.object_path!r}, {self.interface_name!r}, "
+                f"{self.key!r}, {self.old_value!r})"
+            )
 
-class DifferentProperty(Diff):  # pylint: disable=too-few-public-methods
-    """
-    Difference between two properties.
-    """
+    class DifferentProperty(Diff):  # pylint: disable=too-few-public-methods
+        """
+        Difference between two properties.
+        """
 
-    def __init__(
-        self, object_path, interface_name, key, old_value, new_value
-    ):  # pylint: disable=too-many-arguments
-        self.object_path = object_path
-        self.interface_name = interface_name
-        self.key = key
-        self.old_value = old_value
-        self.new_value = new_value
+        def __init__(
+            self, object_path, interface_name, key, old_value, new_value
+        ):  # pylint: disable=too-many-arguments
+            self.object_path = object_path
+            self.interface_name = interface_name
+            self.key = key
+            self.old_value = old_value
+            self.new_value = new_value
 
-    def __repr__(self):
-        return (
-            f"DifferentProperty({self.object_path!r}, {self.interface_name!r}, "
-            f"{self.key!r}, {self.old_value!r}, {self.new_value!r})"
-        )
+        def __repr__(self):
+            return (
+                f"DifferentProperty({self.object_path!r}, {self.interface_name!r}, "
+                f"{self.key!r}, {self.old_value!r}, {self.new_value!r})"
+            )
 
+    def _check_props(object_path, ifn, old_props, new_props):
+        """
+        Find differences between two sets of properties.
 
-def _check_props(object_path, ifn, old_props, new_props):
-    """
-    Find differences between two sets of properties.
+        :param str object_path: D-Bus object path
+        :param str ifn: a single interface name
+        :param dict old_props: map of keys to stored property values
+        :param dict new_props: map of keys to current property values
 
-    :param str object_path: D-Bus object path
-    :param str ifn: a single interface name
-    :param dict old_props: map of keys to stored property values
-    :param dict new_props: map of keys to current property values
+        :rtype list:
+        :returns: a list of records of properties changed
+        """
 
-    :rtype list:
-    :returns: a list of records of properties changed
-    """
+        diffs = []
 
-    diffs = []
-
-    for key, new_value in new_props.items():
-        if key not in old_props:
-            diffs.append(AddedProperty(object_path, ifn, key, new_value))
-            continue
-
-        old_value = old_props[key]
-
-        if (not old_value is INVALIDATED) and new_value != old_value:
-            diffs.append(DifferentProperty(object_path, ifn, key, old_value, new_value))
-
-        del old_props[key]
-
-    for key, old_value in old_props.items():
-        diffs.append(RemovedProperty(object_path, ifn, key, old_value))
-
-    return diffs
-
-
-class AddedInterface(Diff):  # pylint: disable=too-few-public-methods
-    """
-    Interface appears in new result but not in recorded result.
-    """
-
-    def __init__(self, object_path, interface_name, new_value):
-        self.object_path = object_path
-        self.interface_name = interface_name
-        self.new_value = new_value
-
-    def __repr__(self):
-        return (
-            f"AddedInterface({self.object_path!r}, {self.interface_name!r}, "
-            f"{self.new_value!r})"
-        )
-
-
-class RemovedInterface(Diff):  # pylint: disable=too-few-public-methods
-    """
-    Interface appears in recorded result but not in new result.
-    """
-
-    def __init__(self, object_path, interface_name, old_value):
-        self.object_path = object_path
-        self.interface_name = interface_name
-        self.old_value = old_value
-
-    def __repr__(self):
-        return (
-            f"RemovedInterface({self.object_path!r}, {self.interface_name!r}, "
-            f"{self.old_value!r})"
-        )
-
-
-class AddedObjectPath(Diff):  # pylint: disable=too-few-public-methods
-    """
-    Object path appears in new result but not in recorded result.
-    """
-
-    def __init__(self, object_path, new_value):
-        self.object_path = object_path
-        self.new_value = new_value
-
-    def __repr__(self):
-        return f"AddedObjectPath({self.object_path!r}, {self.new_value!r})"
-
-
-class RemovedObjectPath(Diff):  # pylint: disable=too-few-public-methods
-    """
-    Object path appears in recorded result but not in new result.
-    """
-
-    def __init__(self, object_path, old_value):
-        self.object_path = object_path
-        self.old_value = old_value
-
-    def __repr__(self):
-        return f"RemovedObjectPath({self.object_path!r}, {self.old_value!r})"
-
-
-def _check():
-    """
-    Check whether the current managed objects value matches the updated one.
-    Returns a list of differences discovered. If the list is empty, then
-    no differences were discovered.
-
-    :rtype list:
-    :returns a list of discrepancies discovered
-    """
-    # pylint: disable=global-statement
-    global _MO
-
-    if _MO is None:
-        return []
-
-    mos = _OBJECT_MANAGER.Methods.GetManagedObjects(_TOP_OBJECT, {})
-
-    diffs = []
-    for object_path, new_data in mos.items():
-        if object_path not in _MO:
-            diffs.append(AddedObjectPath(object_path, new_data))
-            continue
-
-        old_data = _MO[object_path]
-
-        for ifn, new_props in new_data.items():
-            if ifn not in old_data:
-                diffs.append(AddedInterface(object_path, ifn, new_props))
+        for key, new_value in new_props.items():
+            if key not in old_props:
+                diffs.append(AddedProperty(object_path, ifn, key, new_value))
                 continue
 
-            old_props = old_data[ifn]
-            prop_diffs = _check_props(object_path, ifn, old_props, new_props)
-            diffs.extend(prop_diffs)
-            del old_data[ifn]
+            old_value = old_props[key]
 
-        for ifn, old_props in old_data.items():
-            diffs.append(RemovedInterface(object_path, ifn, old_props))
+            if (not old_value is INVALIDATED) and new_value != old_value:
+                diffs.append(
+                    DifferentProperty(object_path, ifn, key, old_value, new_value)
+                )
 
-        del _MO[object_path]
+            del old_props[key]
 
-    if _MO != dict():
-        for object_path, old_data in _MO.items():
-            diffs.append(RemovedObjectPath(object_path, old_data))
+        for key, old_value in old_props.items():
+            diffs.append(RemovedProperty(object_path, ifn, key, old_value))
 
-    _MO = mos
+        return diffs
 
-    return diffs
-
-
-def _interfaces_added(object_path, interfaces_added):
-    """
-    Update the record with the interfaces added.
-
-    :param str object_path: D-Bus object path
-    :param dict interfaces_added: map of interfaces to D-Bus properties
-    """
-    # pylint: disable=global-statement
-    global _MO, _TOP_OBJECT
-
-    if _MO is None:
-        _MO = _OBJECT_MANAGER.Methods.GetManagedObjects(_TOP_OBJECT, {})
-    else:
-        if object_path in _MO.keys():
-            for interface, props in interfaces_added.items():
-                _MO[object_path][interface] = props
-        else:
-            _MO[object_path] = interfaces_added
-
-
-def _interfaces_removed(object_path, interfaces):
-    """
-    Updates current ManagedObjects result on interfaces removed signal
-    received.
-
-    :param str object_path: D-Bus object path
-    :param list interfaces: list of interfaces removed
-    """
-    # pylint: disable=global-statement
-    global _MO, _TOP_OBJECT
-
-    if _MO is None:
-        _MO = _OBJECT_MANAGER.Methods.GetManagedObjects(_TOP_OBJECT, {})
-    else:
-        if object_path in _MO.keys():
-            for interface in interfaces:
-                del _MO[object_path][interface]
-
-            # The InterfacesRemoved signal is sent when an object is removed
-            # as well as when a single interface is removed. Assume that when
-            # all the interfaces are gone, this means that the object itself
-            # has been removed.
-            if _MO[object_path] == dict():
-                del _MO[object_path]
-
-
-def _properties_changed_gen(object_path_prefix):
-    """
-    Generate a function to be called when properties are changed.
-
-    :param str object_path_prefix: prefix to identify interesting objects
-    """
-
-    def _properties_changed(*props_changed, object_path=None):
+    class AddedInterface(Diff):  # pylint: disable=too-few-public-methods
         """
-        Properties changed handler.
+        Interface appears in new result but not in recorded result.
+        """
 
-        :param tuple props_changed: D-Bus properties changed record
+        def __init__(self, object_path, interface_name, new_value):
+            self.object_path = object_path
+            self.interface_name = interface_name
+            self.new_value = new_value
 
-        NOTE: On https://dbus.freedesktop.org/doc/dbus-specification.html,
-        PropertiesChanged is defined as a three tuple. For some reason in
-        the dbus-ptyhon implementation it is passed either as three separate
-        arguments or as a tuple. For this reason it is necessary to use a
-        * argument, rather than the expected arguments.
+        def __repr__(self):
+            return (
+                f"AddedInterface({self.object_path!r}, {self.interface_name!r}, "
+                f"{self.new_value!r})"
+            )
+
+    class RemovedInterface(Diff):  # pylint: disable=too-few-public-methods
+        """
+        Interface appears in recorded result but not in new result.
+        """
+
+        def __init__(self, object_path, interface_name, old_value):
+            self.object_path = object_path
+            self.interface_name = interface_name
+            self.old_value = old_value
+
+        def __repr__(self):
+            return (
+                f"RemovedInterface({self.object_path!r}, {self.interface_name!r}, "
+                f"{self.old_value!r})"
+            )
+
+    class AddedObjectPath(Diff):  # pylint: disable=too-few-public-methods
+        """
+        Object path appears in new result but not in recorded result.
+        """
+
+        def __init__(self, object_path, new_value):
+            self.object_path = object_path
+            self.new_value = new_value
+
+        def __repr__(self):
+            return f"AddedObjectPath({self.object_path!r}, {self.new_value!r})"
+
+    class RemovedObjectPath(Diff):  # pylint: disable=too-few-public-methods
+        """
+        Object path appears in recorded result but not in new result.
+        """
+
+        def __init__(self, object_path, old_value):
+            self.object_path = object_path
+            self.old_value = old_value
+
+        def __repr__(self):
+            return f"RemovedObjectPath({self.object_path!r}, {self.old_value!r})"
+
+    def _check():
+        """
+        Check whether the current managed objects value matches the updated one.
+        Returns a list of differences discovered. If the list is empty, then
+        no differences were discovered.
+
+        :rtype list:
+        :returns a list of discrepancies discovered
+        """
+        # pylint: disable=global-statement
+        global _MO
+
+        if _MO is None:
+            return []
+
+        mos = _OBJECT_MANAGER.Methods.GetManagedObjects(_TOP_OBJECT, {})
+
+        diffs = []
+        for object_path, new_data in mos.items():
+            if object_path not in _MO:
+                diffs.append(AddedObjectPath(object_path, new_data))
+                continue
+
+            old_data = _MO[object_path]
+
+            for ifn, new_props in new_data.items():
+                if ifn not in old_data:
+                    diffs.append(AddedInterface(object_path, ifn, new_props))
+                    continue
+
+                old_props = old_data[ifn]
+                prop_diffs = _check_props(object_path, ifn, old_props, new_props)
+                diffs.extend(prop_diffs)
+                del old_data[ifn]
+
+            for ifn, old_props in old_data.items():
+                diffs.append(RemovedInterface(object_path, ifn, old_props))
+
+            del _MO[object_path]
+
+        if _MO != dict():
+            for object_path, old_data in _MO.items():
+                diffs.append(RemovedObjectPath(object_path, old_data))
+
+        _MO = mos
+
+        return diffs
+
+    def _interfaces_added(object_path, interfaces_added):
+        """
+        Update the record with the interfaces added.
+
+        :param str object_path: D-Bus object path
+        :param dict interfaces_added: map of interfaces to D-Bus properties
         """
         # pylint: disable=global-statement
         global _MO, _TOP_OBJECT
 
-        if not object_path.startswith(object_path_prefix):
-            return
+        if _MO is None:
+            _MO = _OBJECT_MANAGER.Methods.GetManagedObjects(_TOP_OBJECT, {})
+        else:
+            if object_path in _MO.keys():
+                for interface, props in interfaces_added.items():
+                    _MO[object_path][interface] = props
+            else:
+                _MO[object_path] = interfaces_added
 
-        interface_name = props_changed[0]
-        properties_changed = props_changed[1]
-        properties_invalidated = props_changed[2]
+    def _interfaces_removed(object_path, interfaces):
+        """
+        Updates current ManagedObjects result on interfaces removed signal
+        received.
+
+        :param str object_path: D-Bus object path
+        :param list interfaces: list of interfaces removed
+        """
+        # pylint: disable=global-statement
+        global _MO, _TOP_OBJECT
 
         if _MO is None:
             _MO = _OBJECT_MANAGER.Methods.GetManagedObjects(_TOP_OBJECT, {})
         else:
-            assert object_path in _MO.keys()
-            data = _MO[object_path]
-            for prop, value in properties_changed.items():
-                data[interface_name][prop] = value
-            for prop in properties_invalidated:
-                data[interface_name][prop] = INVALIDATED
+            if object_path in _MO.keys():
+                for interface in interfaces:
+                    del _MO[object_path][interface]
 
-    return _properties_changed
+                # The InterfacesRemoved signal is sent when an object is removed
+                # as well as when a single interface is removed. Assume that when
+                # all the interfaces are gone, this means that the object itself
+                # has been removed.
+                if _MO[object_path] == dict():
+                    del _MO[object_path]
 
+    def _properties_changed_gen(object_path_prefix):
+        """
+        Generate a function to be called when properties are changed.
 
-def _monitor(service, manager):
-    """
-    Monitor the signals and properties of the manager object.
+        :param str object_path_prefix: prefix to identify interesting objects
+        """
 
-    :param str service: the service to monitor
-    :param str manager: object path that of the ObjectManager implementor
-    """
+        def _properties_changed(*props_changed, object_path=None):
+            """
+            Properties changed handler.
 
-    # pylint: disable=global-statement
-    global _TOP_OBJECT
+            :param tuple props_changed: D-Bus properties changed record
 
-    dbus.mainloop.glib.DBusGMainLoop(set_as_default=True)
-    bus = dbus.SystemBus()
-    _TOP_OBJECT = bus.get_object(service, manager)
+            NOTE: On https://dbus.freedesktop.org/doc/dbus-specification.html,
+            PropertiesChanged is defined as a three tuple. For some reason in
+            the dbus-ptyhon implementation it is passed either as three separate
+            arguments or as a tuple. For this reason it is necessary to use a
+            * argument, rather than the expected arguments.
+            """
+            # pylint: disable=global-statement
+            global _MO, _TOP_OBJECT
 
-    _TOP_OBJECT.connect_to_signal(
-        dbus_interface=_OBJECT_MANAGER_IFACE,
-        signal_name="InterfacesAdded",
-        handler_function=_interfaces_added,
-    )
+            if not object_path.startswith(object_path_prefix):
+                return
 
-    _TOP_OBJECT.connect_to_signal(
-        dbus_interface=_OBJECT_MANAGER_IFACE,
-        signal_name="InterfacesRemoved",
-        handler_function=_interfaces_removed,
-    )
+            interface_name = props_changed[0]
+            properties_changed = props_changed[1]
+            properties_invalidated = props_changed[2]
 
-    bus.add_signal_receiver(
-        _properties_changed_gen(manager),
-        signal_name="PropertiesChanged",
-        path_keyword="object_path",
-    )
+            if _MO is None:
+                _MO = _OBJECT_MANAGER.Methods.GetManagedObjects(_TOP_OBJECT, {})
+            else:
+                assert object_path in _MO.keys()
+                data = _MO[object_path]
+                for prop, value in properties_changed.items():
+                    data[interface_name][prop] = value
+                for prop in properties_invalidated:
+                    data[interface_name][prop] = INVALIDATED
 
-    loop = GLib.MainLoop()
-    loop.run()
+        return _properties_changed
 
+    def _monitor(service, manager):
+        """
+        Monitor the signals and properties of the manager object.
 
-def _gen_parser():
-    """
-    Generate the parser.
-    """
-    parser = argparse.ArgumentParser(
-        description=(
-            "Monitor D-Bus signals and check for consistency with "
-            "reported D-Bus properties."
+        :param str service: the service to monitor
+        :param str manager: object path that of the ObjectManager implementor
+        """
+
+        # pylint: disable=global-statement
+        global _TOP_OBJECT
+
+        dbus.mainloop.glib.DBusGMainLoop(set_as_default=True)
+        bus = dbus.SystemBus()
+        _TOP_OBJECT = bus.get_object(service, manager)
+
+        _TOP_OBJECT.connect_to_signal(
+            dbus_interface=_OBJECT_MANAGER_IFACE,
+            signal_name="InterfacesAdded",
+            handler_function=_interfaces_added,
         )
-    )
 
-    parser.add_argument("service", help="The D-Bus service to monitor")
-    parser.add_argument(
-        "manager", help="Object that implements the ObjectManager interface"
-    )
+        _TOP_OBJECT.connect_to_signal(
+            dbus_interface=_OBJECT_MANAGER_IFACE,
+            signal_name="InterfacesRemoved",
+            handler_function=_interfaces_removed,
+        )
 
-    return parser
+        bus.add_signal_receiver(
+            _properties_changed_gen(manager),
+            signal_name="PropertiesChanged",
+            path_keyword="object_path",
+        )
 
+        loop = GLib.MainLoop()
+        loop.run()
 
-def main():
-    """
-    The main method.
-    """
+    def _gen_parser():
+        """
+        Generate the parser.
+        """
+        parser = argparse.ArgumentParser(
+            description=(
+                "Monitor D-Bus signals and check for consistency with "
+                "reported D-Bus properties."
+            )
+        )
 
-    parser = _gen_parser()
+        parser.add_argument("service", help="The D-Bus service to monitor")
+        parser.add_argument(
+            "manager", help="Object that implements the ObjectManager interface"
+        )
 
-    args = parser.parse_args()
+        return parser
 
-    try:
+    def main():
+        """
+        The main method.
+        """
+
+        parser = _gen_parser()
+
+        args = parser.parse_args()
+
         _monitor(args.service, args.manager)
-    except KeyboardInterrupt:
-        result = _check()
-        if result == []:
-            sys.exit(0)
 
-        print(os.linesep.join(repr(diff) for diff in result), file=sys.stderr)
-        sys.exit(1)
+    if __name__ == "__main__":
+        main()
 
-    assert False, "unreachable"
+except KeyboardInterrupt:
+    result = _check()
+    if result == []:
+        sys.exit(0)
 
-
-if __name__ == "__main__":
-    main()
+    print(os.linesep.join(repr(diff) for diff in result), file=sys.stderr)
+    sys.exit(1)
