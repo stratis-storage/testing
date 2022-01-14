@@ -18,41 +18,54 @@ Monitor D-Bus properties and signals and verify that the signals are correct
 with respect to their properties.
 """
 
-# isort: STDLIB
-import xml.etree.ElementTree as ET
-
-# isort: FIRSTPARTY
-from dbus_python_client_gen import make_class
-
 _MO = None
 _TOP_OBJECT = None
 
-# a minimal chunk of introspection data, enough for the methods needed.
-_SPECS = {
-    "org.freedesktop.DBus.ObjectManager": """
-<interface name="org.freedesktop.DBus.ObjectManager">
-    <method name="GetManagedObjects" />
-  </interface>
-"""
-}
+_OBJECT_MANAGER = None
 
-_TIMEOUT = 120000
 
-_OBJECT_MANAGER_IFACE = "org.freedesktop.DBus.ObjectManager"
+class Invalidated:  # pylint: disable=too-few-public-methods
+    """
+    Used to record in the updated GetManagedObjects value that a value has
+    been invalidates.
+    """
 
-_OBJECT_MANAGER = make_class(
-    "ObjectManager", ET.fromstring(_SPECS[_OBJECT_MANAGER_IFACE]), _TIMEOUT
-)
+    def __repr__(self):
+        return "Invalidated()"
+
+
+INVALIDATED = Invalidated()
 
 try:
 
     # isort: STDLIB
     import argparse
+    import xml.etree.ElementTree as ET
 
     # isort: THIRDPARTY
     import dbus
     import dbus.mainloop.glib
     from gi.repository import GLib
+
+    # isort: FIRSTPARTY
+    from dbus_python_client_gen import make_class
+
+    # a minimal chunk of introspection data, enough for the methods needed.
+    _SPECS = {
+        "org.freedesktop.DBus.ObjectManager": """
+            <interface name="org.freedesktop.DBus.ObjectManager">
+                <method name="GetManagedObjects" />
+            </interface>
+        """
+    }
+
+    _TIMEOUT = 120000
+
+    _OBJECT_MANAGER_IFACE = "org.freedesktop.DBus.ObjectManager"
+
+    _OBJECT_MANAGER = make_class(
+        "ObjectManager", ET.fromstring(_SPECS[_OBJECT_MANAGER_IFACE]), _TIMEOUT
+    )
 
     def _interfaces_added(object_path, interfaces_added):
         """
@@ -212,17 +225,6 @@ except KeyboardInterrupt:
     # isort: STDLIB
     import os
     import sys
-
-    class Invalidated:  # pylint: disable=too-few-public-methods
-        """
-        Used to record in the updated GetManagedObjects value that a value has
-        been invalidates.
-        """
-
-        def __repr__(self):
-            return "Invalidated()"
-
-    INVALIDATED = Invalidated()
 
     class Diff:  # pylint: disable=too-few-public-methods
         """
@@ -386,6 +388,9 @@ except KeyboardInterrupt:
         global _MO
 
         if _MO is None:
+            return []
+
+        if _OBJECT_MANAGER is None:
             return []
 
         mos = _OBJECT_MANAGER.Methods.GetManagedObjects(_TOP_OBJECT, {})
