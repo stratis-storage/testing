@@ -221,14 +221,14 @@ class StratisdCertify(StratisCertify):  # pylint: disable=too-many-public-method
         D-Bus trace.
         :return: None
         """
-        try:
+        trace = getattr(self, "trace", None)
+        if trace is not None:
+            time.sleep(1)
             self.trace.send_signal(signal.SIGINT)
             (_, stderrdata) = self.trace.communicate()
             self.trace.wait(timeout=1)
             msg = stderrdata.decode("utf-8")
             self.assertEqual(self.trace.returncode, 0, msg)
-        except AttributeError:
-            pass
 
     def _test_permissions(self, dbus_method, args, permissions, *, kwargs=None):
         """
