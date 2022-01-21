@@ -202,8 +202,8 @@ class StratisdCertify(StratisCertify):  # pylint: disable=too-many-public-method
         time.sleep(1)
         exec_command(["udevadm", "settle"])
 
-        # pylint: disable=consider-using-with
         if StratisCertify.monitor_dbus is True:
+            # pylint: disable=consider-using-with
             self.trace = subprocess.Popen(
                 [
                     MONITOR_DBUS_SIGNALS,
