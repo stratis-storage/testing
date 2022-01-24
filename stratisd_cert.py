@@ -226,7 +226,6 @@ class StratisdCertify(StratisCertify):  # pylint: disable=too-many-public-method
             time.sleep(1)
             self.trace.send_signal(signal.SIGINT)
             (_, stderrdata) = self.trace.communicate()
-            self.trace.wait(timeout=1)
             msg = stderrdata.decode("utf-8")
             self.assertEqual(self.trace.returncode, 0, msg)
 
