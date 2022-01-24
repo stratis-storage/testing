@@ -89,13 +89,10 @@ def terminate_traces(name):
     for proc in psutil.process_iter(["cmdline"]):
         try:
             if any(name == param for param in proc.info["cmdline"]):
-                procs.append(proc)
+                for termproc in procs:
+                    termproc.terminate()
         except psutil.NoSuchProcess:
             pass
-
-    if len(procs) > 0:
-        for termproc in procs:
-            termproc.terminate()
 
 
 def exec_command(cmd, *, settle=False):
