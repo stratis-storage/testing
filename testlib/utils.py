@@ -85,12 +85,10 @@ def terminate_traces(name):
     :type name: str
     return: None
     """
-    procs = []
     for proc in psutil.process_iter(["cmdline"]):
         try:
             if any(name == param for param in proc.info["cmdline"]):
-                for termproc in procs:
-                    termproc.terminate()
+                proc.terminate()
         except psutil.NoSuchProcess:
             pass
 
