@@ -14,6 +14,7 @@
 """
 Tests of stratisd.
 """
+# pylint: disable=too-many-lines
 
 # isort: STDLIB
 import argparse
@@ -204,16 +205,19 @@ class StratisdCertify(StratisCertify):  # pylint: disable=too-many-public-method
 
         if StratisCertify.monitor_dbus is True:
             # pylint: disable=consider-using-with
-            self.trace = subprocess.Popen(
-                [
-                    MONITOR_DBUS_SIGNALS,
-                    "org.storage.stratis3",
-                    "/org/storage/stratis3",
-                ],
-                stdout=subprocess.PIPE,
-                stderr=subprocess.PIPE,
-                shell=False,
-            )
+            try:
+                self.trace = subprocess.Popen(
+                    [
+                        MONITOR_DBUS_SIGNALS,
+                        "org.storage.stratis3",
+                        "/org/storage/stratis3",
+                    ],
+                    stdout=subprocess.PIPE,
+                    stderr=subprocess.PIPE,
+                    shell=False,
+                )
+            except FileNotFoundError as err:
+                raise RuntimeError("monitor_dbus_signals script not found.") from err
 
     def tearDown(self):
         """
