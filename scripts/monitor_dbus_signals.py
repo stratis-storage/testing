@@ -35,6 +35,8 @@ try:
 
     # isort: STDLIB
     import argparse
+    import os
+    import sys
     import xml.etree.ElementTree as ET
 
     # isort: THIRDPARTY
@@ -115,6 +117,16 @@ try:
         # pylint: disable=global-statement
         global _MO
 
+        print(
+            "Interfaces added:",
+            object_path,
+            os.linesep,
+            interfaces_added,
+            os.linesep,
+            file=sys.stderr,
+            flush=True,
+        )
+
         if _MO is None:
             _MO = _MAKE_MO()
         else:
@@ -134,6 +146,16 @@ try:
         """
         # pylint: disable=global-statement
         global _MO
+
+        print(
+            "Interfaces removed:",
+            object_path,
+            os.linesep,
+            interfaces,
+            os.linesep,
+            file=sys.stderr,
+            flush=True,
+        )
 
         if _MO is None:
             _MO = _MAKE_MO()
@@ -170,6 +192,19 @@ try:
         interface_name = props_changed[0]
         properties_changed = props_changed[1]
         properties_invalidated = props_changed[2]
+
+        print(
+            "Properties changed:",
+            object_path,
+            interface_name,
+            os.linesep,
+            properties_invalidated,
+            os.linesep,
+            properties_changed,
+            os.linesep,
+            file=sys.stderr,
+            flush=True,
+        )
 
         if _MO is None:
             _MO = _MAKE_MO()
@@ -267,10 +302,6 @@ try:
         main()
 
 except KeyboardInterrupt:
-
-    # isort: STDLIB
-    import os
-    import sys
 
     class Diff:  # pylint: disable=too-few-public-methods
         """
@@ -474,5 +505,5 @@ except KeyboardInterrupt:
     if result == []:
         sys.exit(0)
 
-    print(os.linesep.join(repr(diff) for diff in result), file=sys.stderr)
+    print(os.linesep.join(repr(diff) for diff in result))
     sys.exit(1)
