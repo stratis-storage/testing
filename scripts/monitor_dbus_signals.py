@@ -76,7 +76,7 @@ try:
         :param dict interfaces_added: map of interfaces to D-Bus properties
         """
         # pylint: disable=global-statement
-        global _MO, _TOP_OBJECT
+        global _MO
 
         if _MO is None:
             _MO = _OBJECT_MANAGER.Methods.GetManagedObjects(_TOP_OBJECT, {})
@@ -96,7 +96,7 @@ try:
         :param list interfaces: list of interfaces removed
         """
         # pylint: disable=global-statement
-        global _MO, _TOP_OBJECT
+        global _MO
 
         if _MO is None:
             _MO = _OBJECT_MANAGER.Methods.GetManagedObjects(_TOP_OBJECT, {})
@@ -132,7 +132,7 @@ try:
             * argument, rather than the expected arguments.
             """
             # pylint: disable=global-statement
-            global _MO, _TOP_OBJECT
+            global _MO
 
             if not object_path.startswith(object_path_prefix):
                 return
@@ -385,9 +385,6 @@ except KeyboardInterrupt:
         :rtype list:
         :returns a list of discrepancies discovered
         """
-        # pylint: disable=global-statement
-        global _MO
-
         if _MO is None:
             return []
 
@@ -398,11 +395,11 @@ except KeyboardInterrupt:
 
         diffs = []
         for object_path, new_data in mos.items():
-            if object_path not in _MO:
+            if object_path not in _MO:  # pylint: disable=unsupported-membership-test
                 diffs.append(AddedObjectPath(object_path, new_data))
                 continue
 
-            old_data = _MO[object_path]
+            old_data = _MO[object_path]  # pylint: disable=unsubscriptable-object
 
             for ifn, new_props in new_data.items():
                 if ifn not in old_data:
@@ -417,13 +414,11 @@ except KeyboardInterrupt:
             for ifn, old_props in old_data.items():
                 diffs.append(RemovedInterface(object_path, ifn, old_props))
 
-            del _MO[object_path]
+            del _MO[object_path]  # pylint: disable=unsupported-delete-operation
 
         if _MO != dict():
             for object_path, old_data in _MO.items():
                 diffs.append(RemovedObjectPath(object_path, old_data))
-
-        _MO = mos
 
         return diffs
 
