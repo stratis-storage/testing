@@ -144,7 +144,6 @@ try:
             if _MO is None:
                 _MO = _OBJECT_MANAGER.Methods.GetManagedObjects(_TOP_OBJECT, {})
             else:
-                assert object_path in _MO.keys()
                 data = _MO[object_path]
                 for prop, value in properties_changed.items():
                     data[interface_name][prop] = value
