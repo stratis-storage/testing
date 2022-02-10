@@ -211,6 +211,16 @@ try:
             "manager", help="Object that implements the ObjectManager interface"
         )
 
+        parser.add_argument(
+            "--top-interface",
+            action="extend",
+            dest="top_interface",
+            nargs="*",
+            type=str,
+            default=[],
+            help="interface belonging to the top object",
+        )
+
         return parser
 
     def main():
