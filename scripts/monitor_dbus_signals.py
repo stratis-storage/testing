@@ -155,7 +155,7 @@ try:
                 for prop in properties_invalidated:
                     data[interface_name][prop] = INVALIDATED
 
-        print("Properties changed.")
+            print("Properties changed.")
 
         return _properties_changed
 
