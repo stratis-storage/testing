@@ -127,7 +127,7 @@ try:
 
             NOTE: On https://dbus.freedesktop.org/doc/dbus-specification.html,
             PropertiesChanged is defined as a three tuple. For some reason in
-            the dbus-ptyhon implementation it is passed either as three separate
+            the dbus-python implementation it is passed either as three separate
             arguments or as a tuple. For this reason it is necessary to use a
             * argument, rather than the expected arguments.
             """
