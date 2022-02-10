@@ -23,6 +23,7 @@ _TOP_OBJECT = None
 _TOP_OBJECT_PATH = None
 
 _OBJECT_MANAGER = None
+_PROPERTIES = None
 
 
 INVALIDATED = None
@@ -58,15 +59,28 @@ try:
             <interface name="org.freedesktop.DBus.ObjectManager">
                 <method name="GetManagedObjects" />
             </interface>
-        """
+        """,
+        "org.freedesktop.DBus.Properties": """
+            <interface name="org.freedesktop.DBus.Properties">
+                <method name="GetAll">
+                    <arg name="interface_name" type="s" direction="in"/>
+                    <arg name="props" type="a{sv}" direction="out"/>
+                </method>
+            </interface>
+        """,
     }
 
     _TIMEOUT = 120000
 
     _OBJECT_MANAGER_IFACE = "org.freedesktop.DBus.ObjectManager"
+    _PROPERTIES_IFACE = "org.freedesktop.DBus.Properties"
 
     _OBJECT_MANAGER = make_class(
         "ObjectManager", ET.fromstring(_SPECS[_OBJECT_MANAGER_IFACE]), _TIMEOUT
+    )
+
+    _PROPERTIES = make_class(
+        "Properties", ET.fromstring(_SPECS[_PROPERTIES_IFACE]), _TIMEOUT
     )
 
     def _interfaces_added(object_path, interfaces_added):
@@ -381,6 +395,9 @@ except KeyboardInterrupt:
             return []
 
         if _OBJECT_MANAGER is None:
+            return []
+
+        if _PROPERTIES is None:
             return []
 
         mos = _OBJECT_MANAGER.Methods.GetManagedObjects(_TOP_OBJECT, {})
