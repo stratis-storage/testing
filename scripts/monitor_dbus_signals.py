@@ -35,6 +35,7 @@ try:
 
     # isort: STDLIB
     import argparse
+    import sys
     import xml.etree.ElementTree as ET
 
     # isort: THIRDPARTY
@@ -124,7 +125,7 @@ try:
             else:
                 _MO[object_path] = interfaces_added
 
-        print("Interfaces added:", object_path, "\n", interfaces_added, "\n")
+        print("Interfaces added:", object_path, "\n", interfaces_added, "\n", file=sys.stderr)
 
     def _interfaces_removed(object_path, interfaces):
         """
@@ -151,7 +152,7 @@ try:
                 if _MO[object_path] == dict():
                     del _MO[object_path]
 
-        print("Interfaces removed:", object_path, "\n", interfaces, "\n")
+        print("Interfaces removed:", object_path, "\n", interfaces, "\n", file=sys.stderr)
 
     def _properties_changed(*props_changed, object_path=None):
         """
@@ -197,6 +198,7 @@ try:
             "\n",
             properties_changed,
             "\n",
+            file=sys.stderr,
         )
 
     def _monitor(service, manager, manager_interfaces):
@@ -285,7 +287,6 @@ except KeyboardInterrupt:
 
     # isort: STDLIB
     import os
-    import sys
 
     class Diff:  # pylint: disable=too-few-public-methods
         """
@@ -489,5 +490,5 @@ except KeyboardInterrupt:
     if result == []:
         sys.exit(0)
 
-    print(os.linesep.join(repr(diff) for diff in result), file=sys.stderr)
+    print(os.linesep.join(repr(diff) for diff in result))
     sys.exit(1)
