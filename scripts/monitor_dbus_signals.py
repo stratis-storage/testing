@@ -125,7 +125,14 @@ try:
             else:
                 _MO[object_path] = interfaces_added
 
-        print("Interfaces added:", object_path, "\n", interfaces_added, "\n", file=sys.stderr)
+        print(
+            "Interfaces added:",
+            object_path,
+            "\n",
+            interfaces_added,
+            "\n",
+            file=sys.stderr,
+        )
 
     def _interfaces_removed(object_path, interfaces):
         """
@@ -152,7 +159,9 @@ try:
                 if _MO[object_path] == dict():
                     del _MO[object_path]
 
-        print("Interfaces removed:", object_path, "\n", interfaces, "\n", file=sys.stderr)
+        print(
+            "Interfaces removed:", object_path, "\n", interfaces, "\n", file=sys.stderr
+        )
 
     def _properties_changed(*props_changed, object_path=None):
         """
