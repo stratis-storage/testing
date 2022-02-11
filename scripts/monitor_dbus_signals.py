@@ -20,6 +20,7 @@ with respect to their properties.
 
 _MO = None
 _TOP_OBJECT = None
+_TOP_OBJECT_PATH = None
 
 _OBJECT_MANAGER = None
 
@@ -112,45 +113,36 @@ try:
                 if _MO[object_path] == dict():
                     del _MO[object_path]
 
-    def _properties_changed_gen(object_path_prefix):
+    def _properties_changed(*props_changed, object_path=None):
         """
-        Generate a function to be called when properties are changed.
+        Properties changed handler.
 
-        :param str object_path_prefix: prefix to identify interesting objects
+        :param tuple props_changed: D-Bus properties changed record
+
+        NOTE: On https://dbus.freedesktop.org/doc/dbus-specification.html,
+        PropertiesChanged is defined as a three tuple. For some reason in
+        the dbus-python implementation it is passed either as three separate
+        arguments or as a tuple. For this reason it is necessary to use a
+        * argument, rather than the expected arguments.
         """
+        # pylint: disable=global-statement
+        global _MO
 
-        def _properties_changed(*props_changed, object_path=None):
-            """
-            Properties changed handler.
+        if not object_path.startswith(_TOP_OBJECT_PATH):
+            return
 
-            :param tuple props_changed: D-Bus properties changed record
+        interface_name = props_changed[0]
+        properties_changed = props_changed[1]
+        properties_invalidated = props_changed[2]
 
-            NOTE: On https://dbus.freedesktop.org/doc/dbus-specification.html,
-            PropertiesChanged is defined as a three tuple. For some reason in
-            the dbus-python implementation it is passed either as three separate
-            arguments or as a tuple. For this reason it is necessary to use a
-            * argument, rather than the expected arguments.
-            """
-            # pylint: disable=global-statement
-            global _MO
-
-            if not object_path.startswith(object_path_prefix):
-                return
-
-            interface_name = props_changed[0]
-            properties_changed = props_changed[1]
-            properties_invalidated = props_changed[2]
-
-            if _MO is None:
-                _MO = _OBJECT_MANAGER.Methods.GetManagedObjects(_TOP_OBJECT, {})
-            else:
-                data = _MO[object_path]
-                for prop, value in properties_changed.items():
-                    data[interface_name][prop] = value
-                for prop in properties_invalidated:
-                    data[interface_name][prop] = INVALIDATED
-
-        return _properties_changed
+        if _MO is None:
+            _MO = _OBJECT_MANAGER.Methods.GetManagedObjects(_TOP_OBJECT, {})
+        else:
+            data = _MO[object_path]
+            for prop, value in properties_changed.items():
+                data[interface_name][prop] = value
+            for prop in properties_invalidated:
+                data[interface_name][prop] = INVALIDATED
 
     def _monitor(service, manager):
         """
@@ -161,11 +153,12 @@ try:
         """
 
         # pylint: disable=global-statement
-        global _TOP_OBJECT
+        global _TOP_OBJECT, _TOP_OBJECT_PATH
 
         dbus.mainloop.glib.DBusGMainLoop(set_as_default=True)
         bus = dbus.SystemBus()
-        _TOP_OBJECT = bus.get_object(service, manager)
+        _TOP_OBJECT_PATH = manager
+        _TOP_OBJECT = bus.get_object(service, _TOP_OBJECT_PATH)
 
         _TOP_OBJECT.connect_to_signal(
             dbus_interface=_OBJECT_MANAGER_IFACE,
@@ -180,7 +173,7 @@ try:
         )
 
         bus.add_signal_receiver(
-            _properties_changed_gen(manager),
+            _properties_changed,
             signal_name="PropertiesChanged",
             path_keyword="object_path",
         )
