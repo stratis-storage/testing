@@ -21,12 +21,15 @@ with respect to their properties.
 _MO = None
 _TOP_OBJECT = None
 _TOP_OBJECT_PATH = None
+_TOP_OBJECT_INTERFACES = None
 
 _OBJECT_MANAGER = None
 _PROPERTIES = None
 
 
 INVALIDATED = None
+
+_MAKE_MO = None
 
 try:
 
@@ -83,6 +86,25 @@ try:
         "Properties", ET.fromstring(_SPECS[_PROPERTIES_IFACE]), _TIMEOUT
     )
 
+    def _make_mo():
+        """
+        Returns the result of calling ObjectManager.GetManagedObjects +
+        the result of calling Properties.GetAll on the top object for
+        selected interfaces.
+        """
+        mos = _OBJECT_MANAGER.Methods.GetManagedObjects(_TOP_OBJECT, {})
+        mos[_TOP_OBJECT_PATH] = dict()
+
+        for interface in _TOP_OBJECT_INTERFACES:
+            props = _PROPERTIES.Methods.GetAll(
+                _TOP_OBJECT, {"interface_name": interface}
+            )
+            mos[_TOP_OBJECT_PATH][interface] = props
+
+        return mos
+
+    _MAKE_MO = _make_mo
+
     def _interfaces_added(object_path, interfaces_added):
         """
         Update the record with the interfaces added.
@@ -94,7 +116,7 @@ try:
         global _MO
 
         if _MO is None:
-            _MO = _OBJECT_MANAGER.Methods.GetManagedObjects(_TOP_OBJECT, {})
+            _MO = _MAKE_MO()
         else:
             if object_path in _MO.keys():
                 for interface, props in interfaces_added.items():
@@ -114,7 +136,7 @@ try:
         global _MO
 
         if _MO is None:
-            _MO = _OBJECT_MANAGER.Methods.GetManagedObjects(_TOP_OBJECT, {})
+            _MO = _MAKE_MO()
         else:
             if object_path in _MO.keys():
                 for interface in interfaces:
@@ -150,28 +172,35 @@ try:
         properties_invalidated = props_changed[2]
 
         if _MO is None:
-            _MO = _OBJECT_MANAGER.Methods.GetManagedObjects(_TOP_OBJECT, {})
+            _MO = _MAKE_MO()
         else:
             data = _MO[object_path]
+
+            if interface_name not in data:
+                data[interface_name] = dict()
+
             for prop, value in properties_changed.items():
                 data[interface_name][prop] = value
             for prop in properties_invalidated:
                 data[interface_name][prop] = INVALIDATED
 
-    def _monitor(service, manager):
+    def _monitor(service, manager, manager_interfaces):
         """
         Monitor the signals and properties of the manager object.
 
         :param str service: the service to monitor
         :param str manager: object path that of the ObjectManager implementor
+        :param manager_interfaces: list of manager interfaces
+        :type manager_interfaces: list of str
         """
 
         # pylint: disable=global-statement
-        global _TOP_OBJECT, _TOP_OBJECT_PATH
+        global _TOP_OBJECT, _TOP_OBJECT_PATH, _TOP_OBJECT_INTERFACES
 
         dbus.mainloop.glib.DBusGMainLoop(set_as_default=True)
         bus = dbus.SystemBus()
         _TOP_OBJECT_PATH = manager
+        _TOP_OBJECT_INTERFACES = manager_interfaces
         _TOP_OBJECT = bus.get_object(service, _TOP_OBJECT_PATH)
 
         _TOP_OBJECT.connect_to_signal(
@@ -232,7 +261,7 @@ try:
 
         args = parser.parse_args()
 
-        _monitor(args.service, args.manager)
+        _monitor(args.service, args.manager, args.top_interface)
 
     if __name__ == "__main__":
         main()
@@ -410,7 +439,7 @@ except KeyboardInterrupt:
         if _PROPERTIES is None:
             return []
 
-        mos = _OBJECT_MANAGER.Methods.GetManagedObjects(_TOP_OBJECT, {})
+        mos = _MAKE_MO()  # pylint: disable=not-callable
 
         diffs = []
         for object_path, new_data in mos.items():
