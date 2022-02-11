@@ -20,11 +20,16 @@ with respect to their properties.
 
 _MO = None
 _TOP_OBJECT = None
+_TOP_OBJECT_PATH = None
+_TOP_OBJECT_INTERFACES = None
 
 _OBJECT_MANAGER = None
+_PROPERTIES = None
 
 
 INVALIDATED = None
+
+_MAKE_MO = None
 
 try:
 
@@ -57,16 +62,48 @@ try:
             <interface name="org.freedesktop.DBus.ObjectManager">
                 <method name="GetManagedObjects" />
             </interface>
-        """
+        """,
+        "org.freedesktop.DBus.Properties": """
+            <interface name="org.freedesktop.DBus.Properties">
+                <method name="GetAll">
+                    <arg name="interface_name" type="s" direction="in"/>
+                    <arg name="props" type="a{sv}" direction="out"/>
+                </method>
+            </interface>
+        """,
     }
 
     _TIMEOUT = 120000
 
     _OBJECT_MANAGER_IFACE = "org.freedesktop.DBus.ObjectManager"
+    _PROPERTIES_IFACE = "org.freedesktop.DBus.Properties"
 
     _OBJECT_MANAGER = make_class(
         "ObjectManager", ET.fromstring(_SPECS[_OBJECT_MANAGER_IFACE]), _TIMEOUT
     )
+
+    _PROPERTIES = make_class(
+        "Properties", ET.fromstring(_SPECS[_PROPERTIES_IFACE]), _TIMEOUT
+    )
+
+    def _make_mo():
+        """
+        Returns the result of calling ObjectManager.GetManagedObjects +
+        the result of calling Properties.GetAll on the top object for
+        selected interfaces.
+        """
+        mos = _OBJECT_MANAGER.Methods.GetManagedObjects(_TOP_OBJECT, {})
+        mos[_TOP_OBJECT_PATH] = dict()
+
+        for interface in _TOP_OBJECT_INTERFACES:
+            props = _PROPERTIES.Methods.GetAll(
+                _TOP_OBJECT, {"interface_name": interface}
+            )
+            mos[_TOP_OBJECT_PATH][interface] = props
+
+        return mos
+
+    _MAKE_MO = _make_mo
 
     def _interfaces_added(object_path, interfaces_added):
         """
@@ -76,10 +113,10 @@ try:
         :param dict interfaces_added: map of interfaces to D-Bus properties
         """
         # pylint: disable=global-statement
-        global _MO, _TOP_OBJECT
+        global _MO
 
         if _MO is None:
-            _MO = _OBJECT_MANAGER.Methods.GetManagedObjects(_TOP_OBJECT, {})
+            _MO = _MAKE_MO()
         else:
             if object_path in _MO.keys():
                 for interface, props in interfaces_added.items():
@@ -96,10 +133,10 @@ try:
         :param list interfaces: list of interfaces removed
         """
         # pylint: disable=global-statement
-        global _MO, _TOP_OBJECT
+        global _MO
 
         if _MO is None:
-            _MO = _OBJECT_MANAGER.Methods.GetManagedObjects(_TOP_OBJECT, {})
+            _MO = _MAKE_MO()
         else:
             if object_path in _MO.keys():
                 for interface in interfaces:
@@ -112,61 +149,59 @@ try:
                 if _MO[object_path] == dict():
                     del _MO[object_path]
 
-    def _properties_changed_gen(object_path_prefix):
+    def _properties_changed(*props_changed, object_path=None):
         """
-        Generate a function to be called when properties are changed.
+        Properties changed handler.
 
-        :param str object_path_prefix: prefix to identify interesting objects
+        :param tuple props_changed: D-Bus properties changed record
+
+        NOTE: On https://dbus.freedesktop.org/doc/dbus-specification.html,
+        PropertiesChanged is defined as a three tuple. For some reason in
+        the dbus-python implementation it is passed either as three separate
+        arguments or as a tuple. For this reason it is necessary to use a
+        * argument, rather than the expected arguments.
         """
+        # pylint: disable=global-statement
+        global _MO
 
-        def _properties_changed(*props_changed, object_path=None):
-            """
-            Properties changed handler.
+        if not object_path.startswith(_TOP_OBJECT_PATH):
+            return
 
-            :param tuple props_changed: D-Bus properties changed record
+        interface_name = props_changed[0]
+        properties_changed = props_changed[1]
+        properties_invalidated = props_changed[2]
 
-            NOTE: On https://dbus.freedesktop.org/doc/dbus-specification.html,
-            PropertiesChanged is defined as a three tuple. For some reason in
-            the dbus-python implementation it is passed either as three separate
-            arguments or as a tuple. For this reason it is necessary to use a
-            * argument, rather than the expected arguments.
-            """
-            # pylint: disable=global-statement
-            global _MO, _TOP_OBJECT
+        if _MO is None:
+            _MO = _MAKE_MO()
+        else:
+            data = _MO[object_path]
 
-            if not object_path.startswith(object_path_prefix):
-                return
+            if interface_name not in data:
+                data[interface_name] = dict()
 
-            interface_name = props_changed[0]
-            properties_changed = props_changed[1]
-            properties_invalidated = props_changed[2]
+            for prop, value in properties_changed.items():
+                data[interface_name][prop] = value
+            for prop in properties_invalidated:
+                data[interface_name][prop] = INVALIDATED
 
-            if _MO is None:
-                _MO = _OBJECT_MANAGER.Methods.GetManagedObjects(_TOP_OBJECT, {})
-            else:
-                assert object_path in _MO.keys()
-                data = _MO[object_path]
-                for prop, value in properties_changed.items():
-                    data[interface_name][prop] = value
-                for prop in properties_invalidated:
-                    data[interface_name][prop] = INVALIDATED
-
-        return _properties_changed
-
-    def _monitor(service, manager):
+    def _monitor(service, manager, manager_interfaces):
         """
         Monitor the signals and properties of the manager object.
 
         :param str service: the service to monitor
         :param str manager: object path that of the ObjectManager implementor
+        :param manager_interfaces: list of manager interfaces
+        :type manager_interfaces: list of str
         """
 
         # pylint: disable=global-statement
-        global _TOP_OBJECT
+        global _TOP_OBJECT, _TOP_OBJECT_PATH, _TOP_OBJECT_INTERFACES
 
         dbus.mainloop.glib.DBusGMainLoop(set_as_default=True)
         bus = dbus.SystemBus()
-        _TOP_OBJECT = bus.get_object(service, manager)
+        _TOP_OBJECT_PATH = manager
+        _TOP_OBJECT_INTERFACES = manager_interfaces
+        _TOP_OBJECT = bus.get_object(service, _TOP_OBJECT_PATH)
 
         _TOP_OBJECT.connect_to_signal(
             dbus_interface=_OBJECT_MANAGER_IFACE,
@@ -181,7 +216,7 @@ try:
         )
 
         bus.add_signal_receiver(
-            _properties_changed_gen(manager),
+            _properties_changed,
             signal_name="PropertiesChanged",
             path_keyword="object_path",
         )
@@ -205,6 +240,16 @@ try:
             "manager", help="Object that implements the ObjectManager interface"
         )
 
+        parser.add_argument(
+            "--top-interface",
+            action="extend",
+            dest="top_interface",
+            nargs="*",
+            type=str,
+            default=[],
+            help="interface belonging to the top object",
+        )
+
         return parser
 
     def main():
@@ -216,7 +261,7 @@ try:
 
         args = parser.parse_args()
 
-        _monitor(args.service, args.manager)
+        _monitor(args.service, args.manager, args.top_interface)
 
     if __name__ == "__main__":
         main()
@@ -385,24 +430,24 @@ except KeyboardInterrupt:
         :rtype list:
         :returns a list of discrepancies discovered
         """
-        # pylint: disable=global-statement
-        global _MO
-
         if _MO is None:
             return []
 
         if _OBJECT_MANAGER is None:
             return []
 
-        mos = _OBJECT_MANAGER.Methods.GetManagedObjects(_TOP_OBJECT, {})
+        if _PROPERTIES is None:
+            return []
+
+        mos = _MAKE_MO()  # pylint: disable=not-callable
 
         diffs = []
         for object_path, new_data in mos.items():
-            if object_path not in _MO:
+            if object_path not in _MO:  # pylint: disable=unsupported-membership-test
                 diffs.append(AddedObjectPath(object_path, new_data))
                 continue
 
-            old_data = _MO[object_path]
+            old_data = _MO[object_path]  # pylint: disable=unsubscriptable-object
 
             for ifn, new_props in new_data.items():
                 if ifn not in old_data:
@@ -417,13 +462,11 @@ except KeyboardInterrupt:
             for ifn, old_props in old_data.items():
                 diffs.append(RemovedInterface(object_path, ifn, old_props))
 
-            del _MO[object_path]
+            del _MO[object_path]  # pylint: disable=unsupported-delete-operation
 
         if _MO != dict():
             for object_path, old_data in _MO.items():
                 diffs.append(RemovedObjectPath(object_path, old_data))
-
-        _MO = mos
 
         return diffs
 

@@ -105,6 +105,7 @@ class StratisDbus:
     _BLKDEV_IFACE = "%s.blockdev.%s" % (_BUS_NAME, _REVISION)
     POOL_IFACE = _POOL_IFACE
     FS_IFACE = _FS_IFACE
+    MNGR_IFACE = _MNGR_IFACE
 
     _DBUS_TIMEOUT_SECONDS = 120
     _TIMEOUT = _get_timeout(
