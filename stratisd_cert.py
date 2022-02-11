@@ -211,6 +211,7 @@ class StratisdCertify(StratisCertify):  # pylint: disable=too-many-public-method
                         MONITOR_DBUS_SIGNALS,
                         "org.storage.stratis3",
                         "/org/storage/stratis3",
+                        "--top-interface=%s" % StratisDbus.MNGR_IFACE,
                     ],
                     stdout=subprocess.PIPE,
                     stderr=subprocess.PIPE,
