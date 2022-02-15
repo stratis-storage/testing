@@ -114,8 +114,7 @@ try:
         :param str object_path: D-Bus object path
         :param dict interfaces_added: map of interfaces to D-Bus properties
         """
-        # pylint: disable=global-statement
-        global _MO
+        global _MO  # pylint: disable=global-statement
 
         print(
             "Interfaces added:",
@@ -144,8 +143,7 @@ try:
         :param str object_path: D-Bus object path
         :param list interfaces: list of interfaces removed
         """
-        # pylint: disable=global-statement
-        global _MO
+        global _MO  # pylint: disable=global-statement
 
         print(
             "Interfaces removed:",
@@ -183,8 +181,7 @@ try:
         arguments or as a tuple. For this reason it is necessary to use a
         * argument, rather than the expected arguments.
         """
-        # pylint: disable=global-statement
-        global _MO
+        global _MO  # pylint: disable=global-statement
 
         if not object_path.startswith(_TOP_OBJECT_PATH):
             return
@@ -229,8 +226,7 @@ try:
         :type manager_interfaces: list of str
         """
 
-        # pylint: disable=global-statement
-        global _TOP_OBJECT, _TOP_OBJECT_PATH, _TOP_OBJECT_INTERFACES
+        global _TOP_OBJECT, _TOP_OBJECT_PATH, _TOP_OBJECT_INTERFACES  # pylint: disable=global-statement
 
         dbus.mainloop.glib.DBusGMainLoop(set_as_default=True)
         bus = dbus.SystemBus()
