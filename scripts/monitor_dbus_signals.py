@@ -124,6 +124,7 @@ try:
             interfaces_added,
             os.linesep,
             file=sys.stderr,
+            flush=True
         )
 
         if _MO is None:
@@ -153,6 +154,7 @@ try:
             interfaces,
             os.linesep,
             file=sys.stderr,
+            flush=True
         )
 
         if _MO is None:
@@ -201,6 +203,7 @@ try:
             properties_changed,
             os.linesep,
             file=sys.stderr,
+            flush=True
         )
 
         if _MO is None:
