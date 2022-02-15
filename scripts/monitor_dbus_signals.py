@@ -35,6 +35,7 @@ try:
 
     # isort: STDLIB
     import argparse
+    import os
     import sys
     import xml.etree.ElementTree as ET
 
@@ -128,9 +129,9 @@ try:
         print(
             "Interfaces added:",
             object_path,
-            "\n",
+            os.linesep,
             interfaces_added,
-            "\n",
+            os.linesep,
             file=sys.stderr,
         )
 
@@ -160,7 +161,12 @@ try:
                     del _MO[object_path]
 
         print(
-            "Interfaces removed:", object_path, "\n", interfaces, "\n", file=sys.stderr
+            "Interfaces removed:",
+            object_path,
+            os.linesep,
+            interfaces,
+            os.linesep,
+            file=sys.stderr,
         )
 
     def _properties_changed(*props_changed, object_path=None):
@@ -202,11 +208,11 @@ try:
             "Properties changed:",
             object_path,
             interface_name,
-            "\n",
+            os.linesep,
             properties_invalidated,
-            "\n",
+            os.linesep,
             properties_changed,
-            "\n",
+            os.linesep,
             file=sys.stderr,
         )
 
@@ -293,9 +299,6 @@ try:
         main()
 
 except KeyboardInterrupt:
-
-    # isort: STDLIB
-    import os
 
     class Diff:  # pylint: disable=too-few-public-methods
         """
