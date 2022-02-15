@@ -230,8 +230,8 @@ class StratisdCertify(StratisCertify):  # pylint: disable=too-many-public-method
         if trace is not None:
             time.sleep(1)
             self.trace.send_signal(signal.SIGINT)
-            (_, stderrdata) = self.trace.communicate()
-            msg = stderrdata.decode("utf-8")
+            (stdoutdata, _) = self.trace.communicate()
+            msg = stdoutdata.decode("utf-8")
             self.assertEqual(self.trace.returncode, 0, msg)
 
     def _test_permissions(self, dbus_method, args, permissions, *, kwargs=None):
