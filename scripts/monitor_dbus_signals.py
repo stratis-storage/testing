@@ -117,15 +117,6 @@ try:
         # pylint: disable=global-statement
         global _MO
 
-        if _MO is None:
-            _MO = _MAKE_MO()
-        else:
-            if object_path in _MO.keys():
-                for interface, props in interfaces_added.items():
-                    _MO[object_path][interface] = props
-            else:
-                _MO[object_path] = interfaces_added
-
         print(
             "Interfaces added:",
             object_path,
@@ -134,6 +125,15 @@ try:
             os.linesep,
             file=sys.stderr,
         )
+
+        if _MO is None:
+            _MO = _MAKE_MO()
+        else:
+            if object_path in _MO.keys():
+                for interface, props in interfaces_added.items():
+                    _MO[object_path][interface] = props
+            else:
+                _MO[object_path] = interfaces_added
 
     def _interfaces_removed(object_path, interfaces):
         """
@@ -145,6 +145,15 @@ try:
         """
         # pylint: disable=global-statement
         global _MO
+
+        print(
+            "Interfaces removed:",
+            object_path,
+            os.linesep,
+            interfaces,
+            os.linesep,
+            file=sys.stderr,
+        )
 
         if _MO is None:
             _MO = _MAKE_MO()
@@ -159,15 +168,6 @@ try:
                 # has been removed.
                 if _MO[object_path] == dict():
                     del _MO[object_path]
-
-        print(
-            "Interfaces removed:",
-            object_path,
-            os.linesep,
-            interfaces,
-            os.linesep,
-            file=sys.stderr,
-        )
 
     def _properties_changed(*props_changed, object_path=None):
         """
