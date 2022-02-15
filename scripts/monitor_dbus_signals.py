@@ -191,6 +191,18 @@ try:
         properties_changed = props_changed[1]
         properties_invalidated = props_changed[2]
 
+        print(
+            "Properties changed:",
+            object_path,
+            interface_name,
+            os.linesep,
+            properties_invalidated,
+            os.linesep,
+            properties_changed,
+            os.linesep,
+            file=sys.stderr,
+        )
+
         if _MO is None:
             _MO = _MAKE_MO()
         else:
@@ -203,18 +215,6 @@ try:
                 data[interface_name][prop] = value
             for prop in properties_invalidated:
                 data[interface_name][prop] = INVALIDATED
-
-        print(
-            "Properties changed:",
-            object_path,
-            interface_name,
-            os.linesep,
-            properties_invalidated,
-            os.linesep,
-            properties_changed,
-            os.linesep,
-            file=sys.stderr,
-        )
 
     def _monitor(service, manager, manager_interfaces):
         """
