@@ -204,15 +204,20 @@ class StratisdCertify(StratisCertify):  # pylint: disable=too-many-public-method
         exec_command(["udevadm", "settle"])
 
         if StratisCertify.monitor_dbus is True:
+            command = [
+                MONITOR_DBUS_SIGNALS,
+                StratisDbus.BUS_NAME,
+                StratisDbus.TOP_OBJECT,
+                "--top-interface=%s" % StratisDbus.MNGR_IFACE,
+            ]
+            command.extend(
+                "--top-interface=%s" % intf
+                for intf in StratisDbus.legacy_manager_interfaces()
+            )
             # pylint: disable=consider-using-with
             try:
                 self.trace = subprocess.Popen(
-                    [
-                        MONITOR_DBUS_SIGNALS,
-                        "org.storage.stratis3",
-                        "/org/storage/stratis3",
-                        "--top-interface=%s" % StratisDbus.MNGR_IFACE,
-                    ],
+                    command,
                     stdout=subprocess.PIPE,
                     stderr=subprocess.PIPE,
                     shell=False,
