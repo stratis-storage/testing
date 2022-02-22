@@ -31,6 +31,8 @@ INVALIDATED = None
 
 _MAKE_MO = None
 
+_CALLBACK_ERRORS = []
+
 try:
 
     # isort: STDLIB
@@ -118,24 +120,27 @@ try:
         """
         global _MO  # pylint: disable=global-statement
 
-        print(
-            "Interfaces added:",
-            object_path,
-            os.linesep,
-            interfaces_added,
-            os.linesep,
-            file=sys.stderr,
-            flush=True,
-        )
+        try:
+            print(
+                "Interfaces added:",
+                object_path,
+                os.linesep,
+                interfaces_added,
+                os.linesep,
+                file=sys.stderr,
+                flush=True,
+            )
 
-        if _MO is None:
-            _MO = _MAKE_MO()
-        else:
-            if object_path in _MO.keys():
-                for interface, props in interfaces_added.items():
-                    _MO[object_path][interface] = props
+            if _MO is None:
+                _MO = _MAKE_MO()
             else:
-                _MO[object_path] = interfaces_added
+                if object_path in _MO.keys():
+                    for interface, props in interfaces_added.items():
+                        _MO[object_path][interface] = props
+                else:
+                    _MO[object_path] = interfaces_added
+        except Exception as exc:  # pylint: disable=broad-except
+            _CALLBACK_ERRORS.append(exc)
 
     def _interfaces_removed(object_path, interfaces):
         """
@@ -147,29 +152,32 @@ try:
         """
         global _MO  # pylint: disable=global-statement
 
-        print(
-            "Interfaces removed:",
-            object_path,
-            os.linesep,
-            interfaces,
-            os.linesep,
-            file=sys.stderr,
-            flush=True,
-        )
+        try:
+            print(
+                "Interfaces removed:",
+                object_path,
+                os.linesep,
+                interfaces,
+                os.linesep,
+                file=sys.stderr,
+                flush=True,
+            )
 
-        if _MO is None:
-            _MO = _MAKE_MO()
-        else:
-            if object_path in _MO.keys():
-                for interface in interfaces:
-                    del _MO[object_path][interface]
+            if _MO is None:
+                _MO = _MAKE_MO()
+            else:
+                if object_path in _MO.keys():
+                    for interface in interfaces:
+                        del _MO[object_path][interface]
 
-                # The InterfacesRemoved signal is sent when an object is removed
-                # as well as when a single interface is removed. Assume that when
-                # all the interfaces are gone, this means that the object itself
-                # has been removed.
-                if _MO[object_path] == dict():
-                    del _MO[object_path]
+                    # The InterfacesRemoved signal is sent when an object is
+                    # removed as well as when a single interface is removed.
+                    # Assume that when all the interfaces are gone, this means
+                    # that the object itself has been removed.
+                    if _MO[object_path] == dict():
+                        del _MO[object_path]
+        except Exception as exc:  # pylint: disable=broad-except
+            _CALLBACK_ERRORS.append(exc)
 
     def _properties_changed(*props_changed, object_path=None):
         """
@@ -185,38 +193,41 @@ try:
         """
         global _MO  # pylint: disable=global-statement
 
-        if not object_path.startswith(_TOP_OBJECT_PATH):
-            return
+        try:
+            if not object_path.startswith(_TOP_OBJECT_PATH):
+                return
 
-        interface_name = props_changed[0]
-        properties_changed = props_changed[1]
-        properties_invalidated = props_changed[2]
+            interface_name = props_changed[0]
+            properties_changed = props_changed[1]
+            properties_invalidated = props_changed[2]
 
-        print(
-            "Properties changed:",
-            object_path,
-            interface_name,
-            os.linesep,
-            properties_invalidated,
-            os.linesep,
-            properties_changed,
-            os.linesep,
-            file=sys.stderr,
-            flush=True,
-        )
+            print(
+                "Properties changed:",
+                object_path,
+                interface_name,
+                os.linesep,
+                properties_invalidated,
+                os.linesep,
+                properties_changed,
+                os.linesep,
+                file=sys.stderr,
+                flush=True,
+            )
 
-        if _MO is None:
-            _MO = _MAKE_MO()
-        else:
-            data = _MO[object_path]
+            if _MO is None:
+                _MO = _MAKE_MO()
+            else:
+                data = _MO[object_path]
 
-            if interface_name not in data:
-                data[interface_name] = dict()
+                if interface_name not in data:
+                    data[interface_name] = dict()
 
-            for prop, value in properties_changed.items():
-                data[interface_name][prop] = value
-            for prop in properties_invalidated:
-                data[interface_name][prop] = INVALIDATED
+                for prop, value in properties_changed.items():
+                    data[interface_name][prop] = value
+                for prop in properties_invalidated:
+                    data[interface_name][prop] = INVALIDATED
+        except Exception as exc:  # pylint: disable=broad-except
+            _CALLBACK_ERRORS.append(exc)
 
     def _monitor(service, manager, manager_interfaces):
         """
@@ -459,13 +470,16 @@ except KeyboardInterrupt:
         :rtype list:
         :returns a list of discrepancies discovered
         """
-        if _MO is None:
-            return []
-
         if _OBJECT_MANAGER is None:
             return []
 
         if _PROPERTIES is None:
+            return []
+
+        if _CALLBACK_ERRORS != []:
+            return _CALLBACK_ERRORS
+
+        if _MO is None:
             return []
 
         mos = _MAKE_MO()  # pylint: disable=not-callable
