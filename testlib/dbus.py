@@ -96,7 +96,10 @@ class StratisDbus:
     _BUS = dbus.SystemBus()
     _BUS_NAME = "org.storage.stratis3"
     _TOP_OBJECT = "/org/storage/stratis3"
-    _REVISION = "r0"
+    REVISION_NUMBER = 1
+    _REVISION = "r%s" % REVISION_NUMBER
+    BUS_NAME = _BUS_NAME
+    TOP_OBJECT = _TOP_OBJECT
 
     _MNGR_IFACE = "%s.Manager.%s" % (_BUS_NAME, _REVISION)
     _REPORT_IFACE = "%s.Report.%s" % (_BUS_NAME, _REVISION)
@@ -111,6 +114,19 @@ class StratisDbus:
     _TIMEOUT = _get_timeout(
         os.environ.get("STRATIS_DBUS_TIMEOUT", _DBUS_TIMEOUT_SECONDS * 1000)
     )
+
+    @staticmethod
+    def legacy_manager_interfaces():
+        """
+        Return a list of legacy manager interfaces, i.e., all Manager
+        interfaces that precede the current, newest one.
+        :rtype: list of str
+        """
+        interface_prefix = "%s.Manager" % StratisDbus.BUS_NAME
+        return [
+            "%s.r%s" % (interface_prefix, rn)
+            for rn in range(StratisDbus.REVISION_NUMBER)
+        ]
 
     @staticmethod
     def get_managed_objects():
