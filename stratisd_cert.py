@@ -941,36 +941,6 @@ class StratisdCertify(StratisCertify):  # pylint: disable=too-many-public-method
         self._test_permissions(StratisDbus.get_keys, [], False)
 
 
-class PredictUsageCertify(StratisCertify):
-    """
-    Tests that just check the stratis-predict-usage executable
-    """
-
-    def test_predict_usage(self):
-        """
-        Verify that stratis-predict-usage can be run and returns correctly
-        formatted output.
-        """
-        (return_code, stdout, stderr) = exec_test_command(
-            ["stratis-predict-usage"] + StratisCertify.DISKS
-        )
-        self.assertEqual(return_code, 0)
-        self.assertEqual(stderr, "")
-        json.loads(stdout)
-
-    def test_predict_usage_encrypted(self):
-        """
-        Verify that stratis-predict-usage can be run and returns correctly
-        formatted output with encrypted flag set.
-        """
-        (return_code, stdout, stderr) = exec_test_command(
-            ["stratis-predict-usage", "--encrypted"] + StratisCertify.DISKS
-        )
-        self.assertEqual(return_code, 0)
-        self.assertEqual(stderr, "")
-        json.loads(stdout)
-
-
 class StratisMinCertify(StratisCertify):
     """
     Tests for stratis-min
