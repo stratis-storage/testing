@@ -652,6 +652,15 @@ class StratisCertify(unittest.TestCase):  # pylint: disable=too-many-public-meth
             True,
         )
 
+    def test_pool_set_fs_limit_too_low(self):
+        """
+        Test setting the pool filesystem limit too low fails.
+        """
+        pool_name = make_test_pool(StratisCertify.DISKS[0:1])
+        self.unittest_command(
+            [_STRATIS_CLI, "pool", "set-fs-limit", pool_name, "0"], 1, False, True
+        )
+
     def test_filesystem_list_not_empty(self):
         """
         Test listing an existent filesystem.

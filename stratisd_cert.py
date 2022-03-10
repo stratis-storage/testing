@@ -175,6 +175,21 @@ class StratisCertify(unittest.TestCase):
             "return code has unexpected D-Bus signature",
         )
 
+    def _unittest_set_param(
+        self, pool_path, param_iface, dbus_param, dbus_value, expected_result
+    ):  # pylint: disable=too-many-arguments
+        """
+        :param pool_path: path to the pool
+        :param param_iface: D-Bus interface to use for parameter
+        :param dbus_param: D-Bus parameter to be set
+        :param dbus_value: Desired value for the D-Bus parameter
+        :param: expected_result: If this test should pass
+        """
+        self.assertEqual(
+            StratisDbus.pool_set_param(pool_path, param_iface, dbus_param, dbus_value),
+            expected_result,
+        )
+
 
 class StratisdCertify(StratisCertify):  # pylint: disable=too-many-public-methods
     """
@@ -624,6 +639,17 @@ class StratisdCertify(StratisCertify):  # pylint: disable=too-many-public-method
         make_test_pool(pool_name, StratisCertify.DISKS[0:1])
 
         self._test_permissions(StratisDbus.pool_destroy, [pool_name], True)
+
+    def test_pool_set_fs_limit_too_low(self):
+        """
+        Test setting the pool filesystem limit too low fails.
+        """
+        pool_name = p_n()
+        pool_path = make_test_pool(pool_name, StratisCertify.DISKS[0:1])
+
+        self._unittest_set_param(
+            pool_path, StratisDbus.POOL_IFACE, "FsLimit", dbus.UInt64(0), False
+        )
 
     def test_filesystem_create(self):
         """
