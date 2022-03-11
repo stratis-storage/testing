@@ -625,6 +625,17 @@ class StratisdCertify(StratisCertify):  # pylint: disable=too-many-public-method
 
         self._test_permissions(StratisDbus.pool_destroy, [pool_name], True)
 
+    def test_pool_set_fs_limit_too_low(self):
+        """
+        Test setting the pool filesystem limit too low fails.
+        """
+        pool_name = p_n()
+        pool_path = make_test_pool(pool_name, StratisCertify.DISKS[0:1])
+
+        self._unittest_command(
+            StratisDbus.pool_set_fs_limit(pool_path, dbus.UInt64(0)), dbus.UInt16(1)
+        )
+
     def test_filesystem_create(self):
         """
         Test creating a filesystem.
