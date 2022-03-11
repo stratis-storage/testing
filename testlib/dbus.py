@@ -399,7 +399,7 @@ class StratisDbus:
     def pool_set_fs_limit(pool_path, fs_limit):
         """
         Set filesystem limit on a pool.
-        :param str pool_path: The object path of the pool to which the filesystem limit will be changed
+        :param str pool_path: The object path of the pool to have its filesystem limit changed
         :param str fs_limit: The filesystem limit
         """
         iface = dbus.Interface(
