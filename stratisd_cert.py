@@ -183,7 +183,9 @@ class StratisCertify(unittest.TestCase):
         :param: expected_result: If this test should pass
         """
         self.assertEqual(
-            StratisDbus.pool_set_param(pool_path, dbus_param, dbus_value),
+            StratisDbus.pool_set_param(
+                pool_path, StratisDbus.POOL_IFACE, dbus_param, dbus_value
+            ),
             expected_result,
         )
 
