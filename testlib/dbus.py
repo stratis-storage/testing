@@ -412,6 +412,31 @@ class StratisDbus:
         )
 
     @staticmethod
+    def pool_set_param(pool_path, dbus_param, dbus_value):
+        """
+        Set D-Bus parameter on a pool
+        :param str pool_path: The object path of the pool
+        :param str dbus_param: The parameter to be set
+        :param str dbus_value: The value
+        """
+        iface = dbus.Interface(
+            StratisDbus._BUS.get_object(StratisDbus._BUS_NAME, pool_path),
+            dbus.PROPERTIES_IFACE,
+        )
+
+        try:
+            iface.Set(
+                StratisDbus._POOL_IFACE,
+                dbus_param,
+                dbus_value,
+                timeout=StratisDbus._TIMEOUT,
+            )
+        except dbus.exceptions.DBusException:
+            return False
+
+        return True
+
+    @staticmethod
     def fs_create(pool_path, fs_name, *, fs_size=None):
         """
         Create a filesystem
