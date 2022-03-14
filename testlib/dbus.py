@@ -396,22 +396,6 @@ class StratisDbus:
         return iface.SetName(pool_name_rename, timeout=StratisDbus._TIMEOUT)
 
     @staticmethod
-    def pool_set_fs_limit(pool_path, fs_limit):
-        """
-        Set filesystem limit on a pool.
-        :param str pool_path: The object path of the pool to have its filesystem limit changed
-        :param str fs_limit: The filesystem limit
-        """
-        iface = dbus.Interface(
-            StratisDbus._BUS.get_object(StratisDbus._BUS_NAME, pool_path),
-            dbus.PROPERTIES_IFACE,
-        )
-
-        return iface.Set(
-            StratisDbus._POOL_IFACE, "FsLimit", fs_limit, timeout=StratisDbus._TIMEOUT
-        )
-
-    @staticmethod
     def pool_set_param(pool_path, dbus_param, dbus_value):
         """
         Set D-Bus parameter on a pool
