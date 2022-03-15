@@ -175,10 +175,9 @@ class StratisCertify(unittest.TestCase):
             "return code has unexpected D-Bus signature",
         )
 
-    # pylint: disable=too-many-arguments
     def _unittest_set_param(
         self, pool_path, param_iface, dbus_param, dbus_value, expected_result
-    ):
+    ):  # pylint: disable=too-many-arguments
         """
         :param pool_path: path to the pool
         :param param_iface: D-Bus interface to use for parameter
