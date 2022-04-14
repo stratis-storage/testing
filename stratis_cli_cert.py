@@ -591,7 +591,7 @@ class StratisCertify(unittest.TestCase):  # pylint: disable=too-many-public-meth
                 "create",
                 make_test_pool(StratisCertify.DISKS[0:1]),
                 filesystem_name,
-                "--size=4KiB",
+                "--size=524284KiB",
             ],
             1,
             False,
