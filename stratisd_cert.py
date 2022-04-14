@@ -688,20 +688,6 @@ class StratisdCertify(StratisCertify):  # pylint: disable=too-many-public-method
         fs_name = fs_n()
 
         self._unittest_command(
-            StratisDbus.fs_create(pool_path, fs_name, fs_size="4096"),
-            dbus.UInt16(1),
-        )
-
-    def test_filesystem_create_specified_size_toosmall_realistic(self):
-        """
-        Test creating a filesystem with a size that is real, but still too small.
-        """
-        pool_name = p_n()
-        pool_path = make_test_pool(pool_name, StratisCertify.DISKS[0:1])
-
-        fs_name = fs_n()
-
-        self._unittest_command(
             StratisDbus.fs_create(pool_path, fs_name, fs_size="536866816"),
             dbus.UInt16(1),
         )
