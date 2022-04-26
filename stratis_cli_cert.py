@@ -184,18 +184,6 @@ class StratisCertify(unittest.TestCase):  # pylint: disable=too-many-public-meth
         """
         self._test_permissions([_STRATIS_CLI, "daemon", "version"], False, False)
 
-    def test_stratisd_redundancy(self):
-        """
-        Test listing the redundancy levels that the Stratis service supports.
-        """
-        self.unittest_command([_STRATIS_CLI, "daemon", "redundancy"], 0, True, False)
-
-    def test_stratisd_redundancy_permissions(self):
-        """
-        Test listing the redundancy levels succeeds with dropped permissions.
-        """
-        self._test_permissions([_STRATIS_CLI, "daemon", "redundancy"], False, False)
-
     def test_errored_pool_report(self):
         """
         Test getting errored_pool_report.
@@ -327,25 +315,6 @@ class StratisCertify(unittest.TestCase):  # pylint: disable=too-many-public-meth
             [_STRATIS_CLI, "pool", "create", pool_name, StratisCertify.DISKS[0]],
             0,
             True,
-            True,
-        )
-
-    def test_pool_create_invalid_redundancy(self):
-        """
-        Test that creating a pool with an invalid redundancy value fails.
-        """
-        pool_name = p_n()
-        self.unittest_command(
-            [
-                _STRATIS_CLI,
-                "pool",
-                "create",
-                pool_name,
-                StratisCertify.DISKS[0],
-                "--redundancy=20000",
-            ],
-            2,
-            False,
             True,
         )
 
