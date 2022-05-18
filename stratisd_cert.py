@@ -967,6 +967,39 @@ class StratisdCertify(StratisCertify):  # pylint: disable=too-many-public-method
         self._test_permissions(StratisDbus.get_keys, [], False)
 
 
+class PredictusageCertify(StratisCertify):
+    """
+    Tests that check that the stratis-predict-usage executable is installed,
+    responding to expected commands, and has well formatted output.
+    """
+
+    def test_predict_pool_usage(self):
+        """
+        Test pool subcommand.
+        """
+
+        (return_code, stdout, stderr) = exec_test_command(
+            ["stratis-predict-usage", "pool", "--device-size=1099511627776"]
+        )
+
+        self.assertEqual(return_code, 0)
+        self.assertEqual(stderr, "")
+        json.loads(stdout)
+
+    def test_predict_filesystem_usage(self):
+        """
+        Test filesystem subcommand.
+        """
+
+        (return_code, stdout, stderr) = exec_test_command(
+            ["stratis-predict-usage", "filesystem", "--filesystem-size=1099511627776"]
+        )
+
+        self.assertEqual(return_code, 0)
+        self.assertEqual(stderr, "")
+        json.loads(stdout)
+
+
 class StratisMinCertify(StratisCertify):
     """
     Tests for stratis-min
