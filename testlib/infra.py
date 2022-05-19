@@ -31,7 +31,7 @@ def umount_mdv():
     Locate and umount any stratis mdv mounts
     :return: None
     """
-    with open("/proc/self/mounts", "r") as mounts:
+    with open("/proc/self/mounts", "r", encoding="utf-8") as mounts:
         for line in mounts.readlines():
             if "/stratis/.mdv-" in line:
                 mountpoint = line.split()[1]
