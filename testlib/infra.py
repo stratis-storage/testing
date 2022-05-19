@@ -57,7 +57,7 @@ def clean_up():
         (_, code, msg) = result
         if code == 0:
             return
-        error_strings.append("%s: %s" % ((format_str % format_str_args), msg))
+        error_strings.append(f"{format_str % format_str_args}: {msg}")
 
     # Remove FS
     for name, pool_name in StratisDbus.fs_list().items():
@@ -75,8 +75,7 @@ def clean_up():
     (keys, return_code, message) = StratisDbus.get_keys()
     if return_code != _OK:
         raise RuntimeError(
-            "Obtaining the list of keys using stratisd failed with an error: %s"
-            % message
+            "Obtaining the list of keys using stratisd failed with an error: {message}"
         )
 
     for key in keys:
@@ -87,33 +86,28 @@ def clean_up():
     remnant_filesystems = StratisDbus.fs_list()
     if remnant_filesystems != {}:
         error_strings.append(
-            "remnant filesystems: %s"
-            % ", ".join(
-                map(
-                    lambda x: "%s in pool %s" % (x[0], x[1]),
-                    remnant_filesystems.items(),
-                )
-            )
+            f"remnant filesystems: "
+            f'{", ".join(map(lambda x: f"{x[0]} in pool {x[1]}", remnant_filesystems.items(),))}'
         )
 
     remnant_pools = StratisDbus.pool_list()
     if remnant_pools != []:
-        error_strings.append("remnant pools: %s" % ", ".join(remnant_pools))
+        error_strings.append(f'remnant pools: {", ".join(remnant_pools)}')
 
     (remnant_keys, return_code, message) = StratisDbus.get_keys()
     if return_code != _OK:
         error_strings.append(
-            "failed to obtain information about Stratis keys: %s" % message
+            f"failed to obtain information about Stratis keys: {message}"
         )
     else:
         if remnant_keys != []:
-            error_strings.append("remnant keys: %s" % ", ".join(remnant_keys))
+            error_strings.append(f'remnant keys: {", ".join(remnant_keys)}')
 
     terminate_traces(MONITOR_DBUS_SIGNALS)
 
     if error_strings != []:
         raise RuntimeError(
-            "clean_up may not have succeeded: %s" % "; ".join(error_strings)
+            f'clean_up may not have succeeded: {"; ".join(error_strings)}'
         )
 
 
@@ -150,7 +144,7 @@ class KernelKey:  # pylint: disable=attribute-defined-outside-init
 
         if return_code != _OK:
             raise RuntimeError(
-                "Setting the key using stratisd failed with an error: %s" % message
+                f"Setting the key using stratisd failed with an error: {message}"
             )
 
         return self._key_desc
@@ -162,8 +156,7 @@ class KernelKey:  # pylint: disable=attribute-defined-outside-init
 
             if return_code != _OK:
                 raise RuntimeError(
-                    "Unsetting the key using stratisd failed with an error: %s"
-                    % message
+                    f"Unsetting the key using stratisd failed with an error: {message}"
                 )
         except Exception as rexc:
             if exception_value is None:

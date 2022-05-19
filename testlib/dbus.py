@@ -80,8 +80,8 @@ def _get_timeout(value):
     # Ensure the integer is not too large
     if timeout_int > maximum_dbus_timeout_ms:
         raise RuntimeError(
-            "The timeout value provided exceeds the largest acceptable value, %s."
-            % maximum_dbus_timeout_ms
+            f"The timeout value provided exceeds the largest acceptable value, "
+            f"{maximum_dbus_timeout_ms}."
         )
 
     # Convert from milliseconds to seconds
@@ -97,15 +97,15 @@ class StratisDbus:
     _BUS_NAME = "org.storage.stratis3"
     _TOP_OBJECT = "/org/storage/stratis3"
     REVISION_NUMBER = 1
-    _REVISION = "r%s" % REVISION_NUMBER
+    _REVISION = f"r{REVISION_NUMBER}"
     BUS_NAME = _BUS_NAME
     TOP_OBJECT = _TOP_OBJECT
 
-    _MNGR_IFACE = "%s.Manager.%s" % (_BUS_NAME, _REVISION)
-    _REPORT_IFACE = "%s.Report.%s" % (_BUS_NAME, _REVISION)
-    _POOL_IFACE = "%s.pool.%s" % (_BUS_NAME, _REVISION)
-    _FS_IFACE = "%s.filesystem.%s" % (_BUS_NAME, _REVISION)
-    _BLKDEV_IFACE = "%s.blockdev.%s" % (_BUS_NAME, _REVISION)
+    _MNGR_IFACE = f"{_BUS_NAME}.Manager.{_REVISION}"
+    _REPORT_IFACE = f"{_BUS_NAME}.Report.{_REVISION}"
+    _POOL_IFACE = f"{_BUS_NAME}.pool.{_REVISION}"
+    _FS_IFACE = f"{_BUS_NAME}.filesystem.{_REVISION}"
+    _BLKDEV_IFACE = f"{_BUS_NAME}.blockdev.{_REVISION}"
     POOL_IFACE = _POOL_IFACE
     FS_IFACE = _FS_IFACE
     MNGR_IFACE = _MNGR_IFACE
@@ -122,10 +122,9 @@ class StratisDbus:
         interfaces that precede the current, newest one.
         :rtype: list of str
         """
-        interface_prefix = "%s.Manager" % StratisDbus.BUS_NAME
+        interface_prefix = f"{StratisDbus.BUS_NAME}.Manager"
         return [
-            "%s.r%s" % (interface_prefix, rn)
-            for rn in range(StratisDbus.REVISION_NUMBER)
+            f"{interface_prefix}.r{rn}" for rn in range(StratisDbus.REVISION_NUMBER)
         ]
 
     @staticmethod
