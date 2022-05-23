@@ -31,9 +31,7 @@ def random_string(length=4):
     :param length: Length of random string
     :return: String
     """
-    return "{0}".format(
-        "".join(random.choice(string.ascii_uppercase) for _ in range(length))
-    )
+    return "".join(random.choice(string.ascii_uppercase) for _ in range(length))
 
 
 def resolve_symlink(link):
