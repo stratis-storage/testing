@@ -47,8 +47,7 @@ def _raise_error_exception(return_code, msg):
     """
     if return_code != 0:
         raise RuntimeError(
-            "Expected return code of 0; actual return code: %s, error_msg: %s"
-            % (return_code, msg)
+            f"Expected return code of 0; actual return code: {return_code}, error_msg: {msg}"
         )
 
 
@@ -159,7 +158,7 @@ class StratisCertify(unittest.TestCase):  # pylint: disable=too-many-public-meth
         self.assertEqual(
             exit_code,
             exp_exit_code,
-            msg=os.linesep.join(["", "stdout: %s" % stdout, "stderr: %s" % stderr]),
+            msg=os.linesep.join(["", f"stdout: {stdout}", f"stderr: {stderr}"]),
         )
 
         if exp_stderr_is_empty:
@@ -801,7 +800,7 @@ def main():
     )
     parsed_args, unittest_args = argument_parser.parse_known_args()
     StratisCertify.DISKS = parsed_args.DISKS
-    print("Using block device(s) for tests: %s" % StratisCertify.DISKS)
+    print(f"Using block device(s) for tests: {StratisCertify.DISKS}")
     unittest.main(argv=sys.argv[:1] + unittest_args)
 
 

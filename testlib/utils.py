@@ -31,9 +31,7 @@ def random_string(length=4):
     :param length: Length of random string
     :return: String
     """
-    return "{0}".format(
-        "".join(random.choice(string.ascii_uppercase) for _ in range(length))
-    )
+    return "".join(random.choice(string.ascii_uppercase) for _ in range(length))
 
 
 def resolve_symlink(link):
@@ -109,8 +107,8 @@ def exec_command(cmd, *, settle=False):
 
     if exit_code != 0:
         raise RuntimeError(
-            "exec_command: non-zero exit code: %d\nSTDOUT=%s\nSTDERR=%s"
-            % (exit_code, stdout_text, stderr_text)
+            f"exec_command: non-zero exit code: "
+            f"{exit_code}\nSTDOUT={stdout_text}\nSTDERR={stderr_text}"
         )
     return stdout_text
 

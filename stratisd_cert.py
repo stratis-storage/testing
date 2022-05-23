@@ -56,8 +56,7 @@ def _raise_error_exception(return_code, msg, return_value_exists):
     """
     if return_code != 0:
         raise RuntimeError(
-            "Expected return code of 0; actual return code: %s, error_msg: %s"
-            % (return_code, msg)
+            f"Expected return code of 0; actual return code: {return_code}, error_msg: {msg}"
         )
 
     if not return_value_exists:
@@ -223,10 +222,10 @@ class StratisdCertify(StratisCertify):  # pylint: disable=too-many-public-method
                 MONITOR_DBUS_SIGNALS,
                 StratisDbus.BUS_NAME,
                 StratisDbus.TOP_OBJECT,
-                "--top-interface=%s" % StratisDbus.MNGR_IFACE,
+                f"--top-interface={StratisDbus.MNGR_IFACE}",
             ]
             command.extend(
-                "--top-interface=%s" % intf
+                f"--top-interface={intf}"
                 for intf in StratisDbus.legacy_manager_interfaces()
             )
             # pylint: disable=consider-using-with
@@ -277,8 +276,7 @@ class StratisdCertify(StratisCertify):  # pylint: disable=too-many-public-method
         euid = os.geteuid()
         if euid != _ROOT:
             raise RuntimeError(
-                "This process should be running as root, but the current euid is %d."
-                % euid
+                f"This process should be running as root, but the current euid is {euid}."
             )
 
         os.seteuid(_NON_ROOT)
@@ -1033,7 +1031,7 @@ def main():
     parsed_args, unittest_args = argument_parser.parse_known_args()
     StratisCertify.DISKS = parsed_args.DISKS
     StratisCertify.monitor_dbus = parsed_args.monitor_dbus
-    print("Using block device(s) for tests: %s" % StratisCertify.DISKS)
+    print(f"Using block device(s) for tests: {StratisCertify.DISKS}")
     unittest.main(argv=sys.argv[:1] + unittest_args)
 
 
