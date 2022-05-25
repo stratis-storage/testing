@@ -648,6 +648,15 @@ class StratisCertify(unittest.TestCase):  # pylint: disable=too-many-public-meth
             [_STRATIS_CLI, "pool", "set-fs-limit", pool_name, "0"], 1, False, True
         )
 
+    def test_pool_disable_overprovisioning(self):
+        """
+        Test disabling overprovisioning after the pool is created.
+        """
+        pool_name = make_test_pool(StratisCertify.DISKS[0:1])
+        self.unittest_command(
+            [_STRATIS_CLI, "pool", "overprovision", pool_name, "no"], 0, True, True
+        )
+
     def test_filesystem_list_not_empty(self):
         """
         Test listing an existent filesystem.
