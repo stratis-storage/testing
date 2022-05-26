@@ -1,3 +1,43 @@
+testing 3.1.0
+=============
+Required stratisd version: 3.1.0
+Required stratis-cli version: 3.1.0
+
+Recommended release for development: Fedora 35
+
+- Modify PredictUsageCertify test class:
+  https://github.com/stratis-storage/testing/pull/112
+  https://github.com/stratis-storage/testing/pull/101
+
+- Modify tests for creating a too small filesystem to a larger size:
+  https://github.com/stratis-storage/testing/issues/107
+  https://github.com/stratis-storage/testing/pull/109
+
+- Add some tests related to overprovisioning:
+  https://github.com/stratis-storage/testing/pull/115
+
+- Add a test to verify error when FsLimit property is set low:
+  https://github.com/stratis-storage/testing/issues/102
+  https://github.com/stratis-storage/testing/pull/105
+
+- Remove tests that use --redundancy option:
+  https://github.com/stratis-storage/testing/issues/110
+
+- Improve testing to monitor the D-Bus during individual tests:
+  https://github.com/stratis-storage/testing/pull/100
+  https://github.com/stratis-storage/testing/pull/99
+  https://github.com/stratis-storage/testing/pull/98
+  https://github.com/stratis-storage/testing/pull/97
+  https://github.com/stratis-storage/testing/pull/96
+  https://github.com/stratis-storage/testing/pull/95
+  https://github.com/stratis-storage/testing/pull/92
+
+- Tidies and Maintenance:
+  https://github.com/stratis-storage/testing/pull/113
+  https://github.com/stratis-storage/testing/pull/111
+  https://github.com/stratis-storage/testing/pull/91
+
+
 testing 3.0.3
 =============
 Required stratisd version: 3.0.1
