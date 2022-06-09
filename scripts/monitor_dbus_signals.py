@@ -99,7 +99,7 @@ try:
         selected interfaces.
         """
         mos = _OBJECT_MANAGER.Methods.GetManagedObjects(_TOP_OBJECT, {})
-        mos[_TOP_OBJECT_PATH] = dict()
+        mos[_TOP_OBJECT_PATH] = {}
 
         for interface in _TOP_OBJECT_INTERFACES:
             props = _PROPERTIES.Methods.GetAll(
@@ -174,7 +174,7 @@ try:
                     # removed as well as when a single interface is removed.
                     # Assume that when all the interfaces are gone, this means
                     # that the object itself has been removed.
-                    if _MO[object_path] == dict():
+                    if _MO[object_path] == {}:
                         del _MO[object_path]
         except Exception as exc:  # pylint: disable=broad-except
             _CALLBACK_ERRORS.append(exc)
@@ -220,7 +220,7 @@ try:
                 data = _MO[object_path]
 
                 if interface_name not in data:
-                    data[interface_name] = dict()
+                    data[interface_name] = {}
 
                 for prop, value in properties_changed.items():
                     data[interface_name][prop] = value
@@ -476,7 +476,8 @@ except KeyboardInterrupt:
         if _PROPERTIES is None:
             return []
 
-        if _CALLBACK_ERRORS != []:
+        assert isinstance(_CALLBACK_ERRORS, list)
+        if _CALLBACK_ERRORS:
             return _CALLBACK_ERRORS
 
         if _MO is None:
@@ -507,14 +508,17 @@ except KeyboardInterrupt:
 
             del _MO[object_path]  # pylint: disable=unsupported-delete-operation
 
-        if _MO != dict():
+        assert isinstance(_MO, dict)
+        if _MO:
             for object_path, old_data in _MO.items():
                 diffs.append(RemovedObjectPath(object_path, old_data))
 
         return diffs
 
     result = _check()
-    if result == []:
+
+    assert isinstance(result, list)
+    if not result:
         sys.exit(0)
 
     print(os.linesep.join(repr(diff) for diff in result))

@@ -105,7 +105,8 @@ def clean_up():
 
     terminate_traces(MONITOR_DBUS_SIGNALS)
 
-    if error_strings != []:
+    assert isinstance(error_strings, list)
+    if error_strings:
         raise RuntimeError(
             f'clean_up may not have succeeded: {"; ".join(error_strings)}'
         )
