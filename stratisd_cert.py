@@ -189,6 +189,50 @@ class StratisCertify(unittest.TestCase):
             expected_result,
         )
 
+    def _test_permissions(self, dbus_method, args, permissions, *, kwargs=None):
+        """
+        Test running dbus_method with and without root permissions.
+        :param dbus_method: D-Bus method to be tested
+        :type dbus_method: StratisDbus method
+        :param args: the arguments to be passed to the D-Bus method
+        :type args: list of objects
+        :param bool permissions: True if dbus_method needs root permissions to succeed.
+                                False if dbus_method should succeed without root permissions.
+        :param kwargs: the keyword arguments to be passed to the D-Bus method
+        :type kwargs: dict of objects or NoneType
+        """
+        kwargs = {} if kwargs is None else kwargs
+
+        _permissions_flag = False
+
+        euid = os.geteuid()
+        if euid != _ROOT:
+            raise RuntimeError(
+                f"This process should be running as root, but the current euid is {euid}."
+            )
+
+        os.seteuid(_NON_ROOT)
+        StratisDbus.reconnect()
+
+        try:
+            dbus_method(*args, **kwargs)
+        except dbus.exceptions.DBusException as err:
+            if err.get_dbus_name() == "org.freedesktop.DBus.Error.AccessDenied":
+                _permissions_flag = True
+            else:
+                os.seteuid(_ROOT)
+                raise err
+        except Exception as err:
+            os.seteuid(_ROOT)
+            raise err
+
+        os.seteuid(_ROOT)
+        StratisDbus.reconnect()
+
+        dbus_method(*args, **kwargs)
+
+        self.assertEqual(_permissions_flag, permissions)
+
 
 class StratisdCertify(StratisCertify):  # pylint: disable=too-many-public-methods
     """
@@ -256,50 +300,6 @@ class StratisdCertify(StratisCertify):  # pylint: disable=too-many-public-method
                 0,
                 "Error from monitor_dbus_signals: " + os.linesep + os.linesep + msg,
             )
-
-    def _test_permissions(self, dbus_method, args, permissions, *, kwargs=None):
-        """
-        Test running dbus_method with and without root permissions.
-        :param dbus_method: D-Bus method to be tested
-        :type dbus_method: StratisDbus method
-        :param args: the arguments to be passed to the D-Bus method
-        :type args: list of objects
-        :param bool permissions: True if dbus_method needs root permissions to succeed.
-                                False if dbus_method should succeed without root permissions.
-        :param kwargs: the keyword arguments to be passed to the D-Bus method
-        :type kwargs: dict of objects or NoneType
-        """
-        kwargs = {} if kwargs is None else kwargs
-
-        _permissions_flag = False
-
-        euid = os.geteuid()
-        if euid != _ROOT:
-            raise RuntimeError(
-                f"This process should be running as root, but the current euid is {euid}."
-            )
-
-        os.seteuid(_NON_ROOT)
-        StratisDbus.reconnect()
-
-        try:
-            dbus_method(*args, **kwargs)
-        except dbus.exceptions.DBusException as err:
-            if err.get_dbus_name() == "org.freedesktop.DBus.Error.AccessDenied":
-                _permissions_flag = True
-            else:
-                os.seteuid(_ROOT)
-                raise err
-        except Exception as err:
-            os.seteuid(_ROOT)
-            raise err
-
-        os.seteuid(_ROOT)
-        StratisDbus.reconnect()
-
-        dbus_method(*args, **kwargs)
-
-        self.assertEqual(_permissions_flag, permissions)
 
     def test_get_managed_objects(self):
         """
