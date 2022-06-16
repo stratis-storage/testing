@@ -1,3 +1,23 @@
+testing 3.1.1
+=============
+Required stratisd version: 3.1.0
+Required stratis-cli version: 3.1.0
+
+Recommended release for development: Fedora 36
+
+- Dynamically select individual test cases based on number of devices:
+  https://github.com/stratis-storage/testing/issues/122
+  https://github.com/stratis-storage/testing/pull/124
+  https://github.com/stratis-storage/testing/pull/123
+  https://github.com/stratis-storage/testing/pull/121
+
+
+- Tidies and Maintenance:
+  https://github.com/stratis-storage/testing/pull/120
+  https://github.com/stratis-storage/testing/pull/119
+  https://github.com/stratis-storage/testing/pull/118
+
+
 testing 3.1.0
 =============
 Required stratisd version: 3.1.0
