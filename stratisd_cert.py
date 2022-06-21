@@ -985,7 +985,7 @@ class StratisdCertify(StratisCertify):  # pylint: disable=too-many-public-method
         """
         Test getting a valid and invalid report.
         """
-        (result, return_code, _) = StratisDbus.get_report("errored_pool_report")
+        (result, return_code, _) = StratisDbus.get_report("stopped_pools")
         self._inequality_test(result, dbus.String(""))
         self.assertEqual(return_code, dbus.UInt16(0))
         # Test that we have received valid JSON.
