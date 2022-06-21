@@ -488,6 +488,22 @@ class StratisdCertify(StratisCertify):  # pylint: disable=too-many-public-method
                 dbus.UInt16(0),
             )
 
+    @_skip(1)
+    def test_pool_create_no_overprovisioning(self):
+        """
+        Test creating a pool with no overprovisioning
+        """
+        pool_name = p_n()
+        pool_path = make_test_pool(pool_name, StratisCertify.DISKS[0:1])
+
+        self._unittest_set_param(
+            pool_path,
+            StratisDbus.POOL_IFACE,
+            "Overprovisioning",
+            dbus.Boolean(False),
+            True,
+        )
+
     @_skip(3)
     def test_pool_add_cache(self):
         """
