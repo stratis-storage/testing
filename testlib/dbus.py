@@ -401,23 +401,20 @@ class StratisDbus:
         :param str pool_path: The object path of the pool
         :param str dbus_param: The parameter to be set
         :param str dbus_value: The value
+        :return: None
+        :raises dbus.exceptions.DBusException:
         """
         iface = dbus.Interface(
             StratisDbus._BUS.get_object(StratisDbus._BUS_NAME, pool_path),
             dbus.PROPERTIES_IFACE,
         )
 
-        try:
-            iface.Set(
-                param_iface,
-                dbus_param,
-                dbus_value,
-                timeout=StratisDbus._TIMEOUT,
-            )
-        except dbus.exceptions.DBusException:
-            return False
-
-        return True
+        return iface.Set(
+            param_iface,
+            dbus_param,
+            dbus_value,
+            timeout=StratisDbus._TIMEOUT,
+        )
 
     @staticmethod
     def fs_create(pool_path, fs_name, *, fs_size=None):
