@@ -276,19 +276,21 @@ class StratisdCertify(StratisCertify):  # pylint: disable=too-many-public-method
             )
 
     def _unittest_set_param(
-        self, pool_path, param_iface, dbus_param, dbus_value, expected_result
+        self, pool_path, param_iface, dbus_param, dbus_value
     ):  # pylint: disable=too-many-arguments
         """
         :param pool_path: path to the pool
         :param param_iface: D-Bus interface to use for parameter
         :param dbus_param: D-Bus parameter to be set
         :param dbus_value: Desired value for the D-Bus parameter
-        :param: expected_result: If this test should pass
         """
-        self.assertEqual(
-            StratisDbus.pool_set_param(pool_path, param_iface, dbus_param, dbus_value),
-            expected_result,
-        )
+        try:
+            StratisDbus.pool_set_param(pool_path, param_iface, dbus_param, dbus_value)
+
+        except dbus.exceptions.DBusException as err:
+            raise RuntimeError(
+                f"Setting property failed: {dbus.exceptions.DBusException}"
+            ) from err
 
     def _test_permissions(self, dbus_method, args, permissions, *, kwargs=None):
         """
@@ -501,7 +503,6 @@ class StratisdCertify(StratisCertify):  # pylint: disable=too-many-public-method
             StratisDbus.POOL_IFACE,
             "Overprovisioning",
             dbus.Boolean(False),
-            True,
         )
 
     @_skip(3)
@@ -714,7 +715,7 @@ class StratisdCertify(StratisCertify):  # pylint: disable=too-many-public-method
         pool_path = make_test_pool(pool_name, StratisCertify.DISKS[0:1])
 
         self._unittest_set_param(
-            pool_path, StratisDbus.POOL_IFACE, "FsLimit", dbus.UInt64(0), False
+            pool_path, StratisDbus.POOL_IFACE, "FsLimit", dbus.UInt64(0)
         )
 
     @_skip(1)

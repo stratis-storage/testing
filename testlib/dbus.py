@@ -407,17 +407,12 @@ class StratisDbus:
             dbus.PROPERTIES_IFACE,
         )
 
-        try:
-            iface.Set(
-                param_iface,
-                dbus_param,
-                dbus_value,
-                timeout=StratisDbus._TIMEOUT,
-            )
-        except dbus.exceptions.DBusException:
-            return False
-
-        return True
+        return iface.Set(
+            param_iface,
+            dbus_param,
+            dbus_value,
+            timeout=StratisDbus._TIMEOUT,
+        )
 
     @staticmethod
     def fs_create(pool_path, fs_name, *, fs_size=None):
