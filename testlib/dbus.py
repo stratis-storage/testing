@@ -401,6 +401,8 @@ class StratisDbus:
         :param str pool_path: The object path of the pool
         :param str dbus_param: The parameter to be set
         :param str dbus_value: The value
+        :return: None
+        :raises dbus.exceptions.DBusException:
         """
         iface = dbus.Interface(
             StratisDbus._BUS.get_object(StratisDbus._BUS_NAME, pool_path),
