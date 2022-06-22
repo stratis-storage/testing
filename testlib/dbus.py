@@ -395,7 +395,7 @@ class StratisDbus:
         return iface.SetName(pool_name_rename, timeout=StratisDbus._TIMEOUT)
 
     @staticmethod
-    def pool_set_param(pool_path, param_iface, dbus_param, dbus_value):
+    def pool_set_property(pool_path, param_iface, dbus_param, dbus_value):
         """
         Set D-Bus parameter on a pool
         :param str pool_path: The object path of the pool

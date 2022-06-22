@@ -275,7 +275,7 @@ class StratisdCertify(StratisCertify):  # pylint: disable=too-many-public-method
                 "Error from monitor_dbus_signals: " + os.linesep + os.linesep + msg,
             )
 
-    def _unittest_set_param(
+    def _unittest_set_property(
         self, pool_path, param_iface, dbus_param, dbus_value, exception_name
     ):  # pylint: disable=too-many-arguments
         """
@@ -287,7 +287,9 @@ class StratisdCertify(StratisCertify):  # pylint: disable=too-many-public-method
         :type exception_name: NoneType or str
         """
         try:
-            StratisDbus.pool_set_param(pool_path, param_iface, dbus_param, dbus_value)
+            StratisDbus.pool_set_property(
+                pool_path, param_iface, dbus_param, dbus_value
+            )
 
         except dbus.exceptions.DBusException as err:
             self.assertEqual(err.get_dbus_name(), exception_name)
@@ -501,7 +503,7 @@ class StratisdCertify(StratisCertify):  # pylint: disable=too-many-public-method
         pool_name = p_n()
         pool_path = make_test_pool(pool_name, StratisCertify.DISKS[0:1])
 
-        self._unittest_set_param(
+        self._unittest_set_property(
             pool_path,
             StratisDbus.POOL_IFACE,
             "Overprovisioning",
@@ -718,7 +720,7 @@ class StratisdCertify(StratisCertify):  # pylint: disable=too-many-public-method
         pool_name = p_n()
         pool_path = make_test_pool(pool_name, StratisCertify.DISKS[0:1])
 
-        self._unittest_set_param(
+        self._unittest_set_property(
             pool_path,
             StratisDbus.POOL_IFACE,
             "FsLimit",
