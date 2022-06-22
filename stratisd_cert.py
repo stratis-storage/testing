@@ -287,7 +287,9 @@ class StratisdCertify(StratisCertify):  # pylint: disable=too-many-public-method
         :type exception_name: NoneType or str
         """
         try:
-            StratisDbus.pool_set_property(pool_path, param_iface, dbus_param, dbus_value)
+            StratisDbus.pool_set_property(
+                pool_path, param_iface, dbus_param, dbus_value
+            )
 
         except dbus.exceptions.DBusException as err:
             self.assertEqual(err.get_dbus_name(), exception_name)
