@@ -341,17 +341,6 @@ class StratisdCertify(StratisCertify):  # pylint: disable=too-many-public-method
 
         self.assertEqual(_permissions_flag, permissions)
 
-    def test_access_stratisd_man_page(self):
-        """
-        Test accessing the stratisd manual page file.
-        """
-        (return_code, stdout, stderr) = exec_test_command(
-            ["man", "--where", "stratisd"]
-        )
-        self.assertEqual(return_code, 0)
-        self.assertEqual(stderr, "")
-        self._inequality_test(stdout, "")
-
     def test_get_managed_objects(self):
         """
         Test that GetManagedObjects returns a dict w/out failure.
@@ -1069,6 +1058,23 @@ class StratisdCertify(StratisCertify):  # pylint: disable=too-many-public-method
         Test that ListKeys method can be invoked when permissions are dropped.
         """
         self._test_permissions(StratisDbus.get_keys, [], False)
+
+
+class StratisdManPageCertify(StratisCertify):
+    """
+    Tests that check that documentation is properly installed.
+    """
+
+    def test_access_stratisd_man_page(self):
+        """
+        Test accessing the stratisd manual page file.
+        """
+        (return_code, stdout, stderr) = exec_test_command(
+            ["man", "--where", "stratisd"]
+        )
+        self.assertEqual(return_code, 0)
+        self.assertEqual(stderr, "")
+        self._inequality_test(stdout, "")
 
 
 class PredictusageCertify(StratisCertify):
