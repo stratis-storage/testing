@@ -204,6 +204,12 @@ class StratisCertify(unittest.TestCase):  # pylint: disable=too-many-public-meth
         else:
             self.assertNotEqual(stdout, "")
 
+    def test_access_stratis_man_page(self):
+        """
+        Test accessing the stratis-cli manual page file.
+        """
+        self.unittest_command(["man", "--where", "stratis"], 0, True, False)
+
     def test_stratisd_version(self):
         """
         Test getting the daemon version.
