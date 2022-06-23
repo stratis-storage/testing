@@ -157,6 +157,18 @@ class StratisCertify(unittest.TestCase):
             self.assertNotEqual(stdout, "")
 
 
+class StratisCliManPageCertify(StratisCertify):
+    """
+    Tests that check that documentation is properly installed.
+    """
+
+    def test_access_stratis_man_page(self):
+        """
+        Test accessing the stratis-cli manual page file.
+        """
+        self._unittest_command(["man", "--where", "stratis"], 0, True, False)
+
+
 class StratisCliCertify(StratisCertify):  # pylint: disable=too-many-public-methods
     """
     Unit tests for the stratis-cli package.
@@ -209,12 +221,6 @@ class StratisCliCertify(StratisCertify):  # pylint: disable=too-many-public-meth
 
         if permissions:
             self._unittest_command(command_line, 0, True, exp_stdout_empty)
-
-    def test_access_stratis_man_page(self):
-        """
-        Test accessing the stratis-cli manual page file.
-        """
-        self._unittest_command(["man", "--where", "stratis"], 0, True, False)
 
     def test_stratisd_version(self):
         """
