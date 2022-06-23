@@ -121,9 +121,45 @@ def make_test_filesystem(pool_name):
     return filesystem_name
 
 
-class StratisCliCertify(unittest.TestCase):  # pylint: disable=too-many-public-methods
+class StratisCertify(unittest.TestCase):
     """
-    Unit tests for Stratis
+    Unit test base class.
+    """
+
+    def unittest_command(
+        self, args, exp_exit_code, exp_stderr_is_empty, exp_stdout_is_empty
+    ):
+        """
+        Execute a test command and make assertions about the exit code, stderr, and stdout
+        :param list args: The arguments needed to execute the Stratis command being tested
+        :type args: List of str
+        :param exp_exit_code: The expected exit code, 0, 1, or 2
+        :param bool exp_stderr_is_empty: True if stderr is expected to be empty, otherwise False
+        :param bool exp_stdout_is_empty: True if stdout is expected to be empty, otherwise False
+        :return: None
+        """
+        exit_code, stdout, stderr = exec_test_command(args)
+
+        self.assertEqual(
+            exit_code,
+            exp_exit_code,
+            msg=os.linesep.join(["", f"stdout: {stdout}", f"stderr: {stderr}"]),
+        )
+
+        if exp_stderr_is_empty:
+            self.assertEqual(stderr, "")
+        else:
+            self.assertNotEqual(stderr, "")
+
+        if exp_stdout_is_empty:
+            self.assertEqual(stdout, "")
+        else:
+            self.assertNotEqual(stdout, "")
+
+
+class StratisCliCertify(StratisCertify):  # pylint: disable=too-many-public-methods
+    """
+    Unit tests for the stratis-cli package.
     """
 
     def setUp(self):
@@ -173,36 +209,6 @@ class StratisCliCertify(unittest.TestCase):  # pylint: disable=too-many-public-m
 
         if permissions:
             self.unittest_command(command_line, 0, True, exp_stdout_empty)
-
-    def unittest_command(
-        self, args, exp_exit_code, exp_stderr_is_empty, exp_stdout_is_empty
-    ):
-        """
-        Execute a test command and make assertions about the exit code, stderr, and stdout
-        :param list args: The arguments needed to execute the Stratis command being tested
-        :type args: List of str
-        :param exp_exit_code: The expected exit code, 0, 1, or 2
-        :param bool exp_stderr_is_empty: True if stderr is expected to be empty, otherwise False
-        :param bool exp_stdout_is_empty: True if stdout is expected to be empty, otherwise False
-        :return: None
-        """
-        exit_code, stdout, stderr = exec_test_command(args)
-
-        self.assertEqual(
-            exit_code,
-            exp_exit_code,
-            msg=os.linesep.join(["", f"stdout: {stdout}", f"stderr: {stderr}"]),
-        )
-
-        if exp_stderr_is_empty:
-            self.assertEqual(stderr, "")
-        else:
-            self.assertNotEqual(stderr, "")
-
-        if exp_stdout_is_empty:
-            self.assertEqual(stdout, "")
-        else:
-            self.assertNotEqual(stdout, "")
 
     def test_access_stratis_man_page(self):
         """
