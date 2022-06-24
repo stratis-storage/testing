@@ -1060,6 +1060,23 @@ class StratisdCertify(StratisCertify):  # pylint: disable=too-many-public-method
         self._test_permissions(StratisDbus.get_keys, [], False)
 
 
+class StratisdManPageCertify(StratisCertify):
+    """
+    Tests that check that documentation is properly installed.
+    """
+
+    def test_access_stratisd_man_page(self):
+        """
+        Test accessing the stratisd manual page file.
+        """
+        (return_code, stdout, stderr) = exec_test_command(
+            ["man", "--where", "stratisd"]
+        )
+        self.assertEqual(return_code, 0)
+        self.assertEqual(stderr, "")
+        self._inequality_test(stdout, "")
+
+
 class PredictusageCertify(StratisCertify):
     """
     Tests that check that the stratis-predict-usage executable is installed,

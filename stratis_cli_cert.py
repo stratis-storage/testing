@@ -55,7 +55,7 @@ def _raise_error_exception(return_code, msg):
 def _skip(num_devices_required):
     """
     Custom method to allow skipping a test if there are not enough disks,
-    specified by StratisCertify.DISKS, available at runtime. The
+    specified by StratisCliCertify.DISKS, available at runtime. The
     unittest.skip* decorators are insufficient, since their conditions are
     evaluated at class loading time.
     """
@@ -72,10 +72,10 @@ def _skip(num_devices_required):
             The modified function, which includes a check for the number of
             disks.
             """
-            if len(StratisCertify.DISKS) < num_devices_required:
+            if len(StratisCliCertify.DISKS) < num_devices_required:
                 raise unittest.SkipTest(
                     f"Test requires {num_devices_required} devices; "
-                    f"only {len(StratisCertify.DISKS)} available"
+                    f"only {len(StratisCliCertify.DISKS)} available"
                 )
             return func(self)
 
@@ -121,9 +121,57 @@ def make_test_filesystem(pool_name):
     return filesystem_name
 
 
-class StratisCertify(unittest.TestCase):  # pylint: disable=too-many-public-methods
+class StratisCertify(unittest.TestCase):
     """
-    Unit tests for Stratis
+    Unit test base class.
+    """
+
+    def _unittest_command(
+        self, args, exp_exit_code, exp_stderr_is_empty, exp_stdout_is_empty
+    ):
+        """
+        Execute a test command and make assertions about the exit code, stderr, and stdout
+        :param list args: The arguments needed to execute the Stratis command being tested
+        :type args: List of str
+        :param exp_exit_code: The expected exit code, 0, 1, or 2
+        :param bool exp_stderr_is_empty: True if stderr is expected to be empty, otherwise False
+        :param bool exp_stdout_is_empty: True if stdout is expected to be empty, otherwise False
+        :return: None
+        """
+        exit_code, stdout, stderr = exec_test_command(args)
+
+        self.assertEqual(
+            exit_code,
+            exp_exit_code,
+            msg=os.linesep.join(["", f"stdout: {stdout}", f"stderr: {stderr}"]),
+        )
+
+        if exp_stderr_is_empty:
+            self.assertEqual(stderr, "")
+        else:
+            self.assertNotEqual(stderr, "")
+
+        if exp_stdout_is_empty:
+            self.assertEqual(stdout, "")
+        else:
+            self.assertNotEqual(stdout, "")
+
+
+class StratisCliManPageCertify(StratisCertify):
+    """
+    Tests that check that documentation is properly installed.
+    """
+
+    def test_access_stratis_man_page(self):
+        """
+        Test accessing the stratis-cli manual page file.
+        """
+        self._unittest_command(["man", "--where", "stratis"], 0, True, False)
+
+
+class StratisCliCertify(StratisCertify):  # pylint: disable=too-many-public-methods
+    """
+    Unit tests for the stratis-cli package.
     """
 
     def setUp(self):
@@ -162,9 +210,9 @@ class StratisCertify(unittest.TestCase):  # pylint: disable=too-many-public-meth
         os.seteuid(_NON_ROOT)
         try:
             if permissions:
-                self.unittest_command(command_line, 1, False, True)
+                self._unittest_command(command_line, 1, False, True)
             else:
-                self.unittest_command(command_line, 0, True, exp_stdout_empty)
+                self._unittest_command(command_line, 0, True, exp_stdout_empty)
         except Exception as err:
             os.seteuid(_ROOT)
             raise err
@@ -172,43 +220,13 @@ class StratisCertify(unittest.TestCase):  # pylint: disable=too-many-public-meth
         os.seteuid(_ROOT)
 
         if permissions:
-            self.unittest_command(command_line, 0, True, exp_stdout_empty)
-
-    def unittest_command(
-        self, args, exp_exit_code, exp_stderr_is_empty, exp_stdout_is_empty
-    ):
-        """
-        Execute a test command and make assertions about the exit code, stderr, and stdout
-        :param list args: The arguments needed to execute the Stratis command being tested
-        :type args: List of str
-        :param exp_exit_code: The expected exit code, 0, 1, or 2
-        :param bool exp_stderr_is_empty: True if stderr is expected to be empty, otherwise False
-        :param bool exp_stdout_is_empty: True if stdout is expected to be empty, otherwise False
-        :return: None
-        """
-        exit_code, stdout, stderr = exec_test_command(args)
-
-        self.assertEqual(
-            exit_code,
-            exp_exit_code,
-            msg=os.linesep.join(["", f"stdout: {stdout}", f"stderr: {stderr}"]),
-        )
-
-        if exp_stderr_is_empty:
-            self.assertEqual(stderr, "")
-        else:
-            self.assertNotEqual(stderr, "")
-
-        if exp_stdout_is_empty:
-            self.assertEqual(stdout, "")
-        else:
-            self.assertNotEqual(stdout, "")
+            self._unittest_command(command_line, 0, True, exp_stdout_empty)
 
     def test_stratisd_version(self):
         """
         Test getting the daemon version.
         """
-        self.unittest_command([_STRATIS_CLI, "daemon", "version"], 0, True, False)
+        self._unittest_command([_STRATIS_CLI, "daemon", "version"], 0, True, False)
 
     def test_stratisd_version_permissions(self):
         """
@@ -220,7 +238,9 @@ class StratisCertify(unittest.TestCase):  # pylint: disable=too-many-public-meth
         """
         Test getting the stopped_pools report.
         """
-        self.unittest_command([_STRATIS_CLI, "report", "stopped_pools"], 0, True, False)
+        self._unittest_command(
+            [_STRATIS_CLI, "report", "stopped_pools"], 0, True, False
+        )
 
     def test_stopped_pools_report_permissions(self):
         """
@@ -232,7 +252,7 @@ class StratisCertify(unittest.TestCase):  # pylint: disable=too-many-public-meth
         """
         Test getting the engine_state_report.
         """
-        self.unittest_command(
+        self._unittest_command(
             [_STRATIS_CLI, "report", "engine_state_report"], 0, True, False
         )
 
@@ -248,52 +268,54 @@ class StratisCertify(unittest.TestCase):  # pylint: disable=too-many-public-meth
         """
         Test getting the engine_state_report when a report name is not provided.
         """
-        self.unittest_command([_STRATIS_CLI, "report"], 0, True, False)
+        self._unittest_command([_STRATIS_CLI, "report"], 0, True, False)
 
     def test_invalid_report(self):
         """
         Test getting an invalid report.
         """
-        self.unittest_command([_STRATIS_CLI, "report", "invalid_name"], 2, False, True)
+        self._unittest_command([_STRATIS_CLI, "report", "invalid_name"], 2, False, True)
 
     def test_pool_list_empty(self):
         """
         Test listing a non-existent pool.
         """
-        self.unittest_command([_STRATIS_CLI, "pool", "list"], 0, True, False)
+        self._unittest_command([_STRATIS_CLI, "pool", "list"], 0, True, False)
 
     def test_filesystem_list_empty(self):
         """
         Test listing an non-existent filesystem.
         """
-        self.unittest_command([_STRATIS_CLI, "filesystem", "list"], 0, True, False)
+        self._unittest_command([_STRATIS_CLI, "filesystem", "list"], 0, True, False)
 
     def test_key_set_unset(self):
         """
         Test setting and unsetting a key.
         """
         with RandomKeyTmpFile() as fname:
-            self.unittest_command(
+            self._unittest_command(
                 [_STRATIS_CLI, "key", "set", "testkey1", "--keyfile-path", fname],
                 0,
                 True,
                 True,
             )
 
-        self.unittest_command([_STRATIS_CLI, "key", "unset", "testkey1"], 0, True, True)
+        self._unittest_command(
+            [_STRATIS_CLI, "key", "unset", "testkey1"], 0, True, True
+        )
 
     def test_key_set_reset_unset(self):
         """
         Test setting, resetting, and unsetting a key.
         """
         with RandomKeyTmpFile() as first_fname, RandomKeyTmpFile() as second_fname:
-            self.unittest_command(
+            self._unittest_command(
                 [_STRATIS_CLI, "key", "set", "testkey2", "--keyfile-path", first_fname],
                 0,
                 True,
                 True,
             )
-            self.unittest_command(
+            self._unittest_command(
                 [
                     _STRATIS_CLI,
                     "key",
@@ -307,7 +329,9 @@ class StratisCertify(unittest.TestCase):  # pylint: disable=too-many-public-meth
                 True,
             )
 
-        self.unittest_command([_STRATIS_CLI, "key", "unset", "testkey2"], 0, True, True)
+        self._unittest_command(
+            [_STRATIS_CLI, "key", "unset", "testkey2"], 0, True, True
+        )
 
     def test_key_set_reset_unset_permissions(self):
         """
@@ -340,8 +364,8 @@ class StratisCertify(unittest.TestCase):  # pylint: disable=too-many-public-meth
         Test creating a pool.
         """
         pool_name = p_n()
-        self.unittest_command(
-            [_STRATIS_CLI, "pool", "create", pool_name, StratisCertify.DISKS[0]],
+        self._unittest_command(
+            [_STRATIS_CLI, "pool", "create", pool_name, StratisCliCertify.DISKS[0]],
             0,
             True,
             True,
@@ -354,7 +378,7 @@ class StratisCertify(unittest.TestCase):  # pylint: disable=too-many-public-meth
         """
         pool_name = p_n()
         self._test_permissions(
-            [_STRATIS_CLI, "pool", "create", pool_name, StratisCertify.DISKS[0]],
+            [_STRATIS_CLI, "pool", "create", pool_name, StratisCliCertify.DISKS[0]],
             True,
             True,
         )
@@ -366,7 +390,7 @@ class StratisCertify(unittest.TestCase):  # pylint: disable=too-many-public-meth
         """
         with KernelKey("test-password") as key_desc:
             pool_name = p_n()
-            self.unittest_command(
+            self._unittest_command(
                 [
                     _STRATIS_CLI,
                     "pool",
@@ -374,7 +398,7 @@ class StratisCertify(unittest.TestCase):  # pylint: disable=too-many-public-meth
                     "--key-desc",
                     key_desc,
                     pool_name,
-                    StratisCertify.DISKS[0],
+                    StratisCliCertify.DISKS[0],
                 ],
                 0,
                 True,
@@ -389,14 +413,14 @@ class StratisCertify(unittest.TestCase):  # pylint: disable=too-many-public-meth
         This should fail.
         """
         with KernelKey("test-password") as key_desc:
-            pool_name = make_test_pool(StratisCertify.DISKS[0:2], key_desc)
-            self.unittest_command(
+            pool_name = make_test_pool(StratisCliCertify.DISKS[0:2], key_desc)
+            self._unittest_command(
                 [
                     _STRATIS_CLI,
                     "pool",
                     "init-cache",
                     pool_name,
-                    StratisCertify.DISKS[2],
+                    StratisCliCertify.DISKS[2],
                 ],
                 1,
                 False,
@@ -409,14 +433,14 @@ class StratisCertify(unittest.TestCase):  # pylint: disable=too-many-public-meth
         Test creating a pool with no overprovisioning.
         """
         pool_name = p_n()
-        self.unittest_command(
+        self._unittest_command(
             [
                 _STRATIS_CLI,
                 "pool",
                 "create",
                 pool_name,
                 "--no-overprovision",
-                StratisCertify.DISKS[0],
+                StratisCliCertify.DISKS[0],
             ],
             0,
             True,
@@ -428,22 +452,22 @@ class StratisCertify(unittest.TestCase):  # pylint: disable=too-many-public-meth
         """
         Test listing an existent pool.
         """
-        make_test_pool(StratisCertify.DISKS[0:1])
-        self.unittest_command([_STRATIS_CLI, "pool", "list"], 0, True, False)
+        make_test_pool(StratisCliCertify.DISKS[0:1])
+        self._unittest_command([_STRATIS_CLI, "pool", "list"], 0, True, False)
 
     @_skip(1)
     def test_pool_list_not_empty_permissions(self):
         """
         Test listing an existent pool succeeds with dropped permissions.
         """
-        make_test_pool(StratisCertify.DISKS[0:1])
+        make_test_pool(StratisCliCertify.DISKS[0:1])
         self._test_permissions([_STRATIS_CLI, "pool", "list"], False, False)
 
     def test_blockdev_list(self):
         """
         Test listing a blockdev.
         """
-        self.unittest_command([_STRATIS_CLI, "blockdev", "list"], 0, True, False)
+        self._unittest_command([_STRATIS_CLI, "blockdev", "list"], 0, True, False)
 
     def test_blockdev_list_permissions(self):
         """
@@ -456,13 +480,13 @@ class StratisCertify(unittest.TestCase):  # pylint: disable=too-many-public-meth
         """
         Test creating a pool that already exists.
         """
-        self.unittest_command(
+        self._unittest_command(
             [
                 _STRATIS_CLI,
                 "pool",
                 "create",
-                make_test_pool(StratisCertify.DISKS[0:1]),
-                StratisCertify.DISKS[1],
+                make_test_pool(StratisCliCertify.DISKS[0:1]),
+                StratisCliCertify.DISKS[1],
             ],
             1,
             False,
@@ -474,13 +498,13 @@ class StratisCertify(unittest.TestCase):  # pylint: disable=too-many-public-meth
         """
         Test initialzing the cache for a pool.
         """
-        self.unittest_command(
+        self._unittest_command(
             [
                 _STRATIS_CLI,
                 "pool",
                 "init-cache",
-                make_test_pool(StratisCertify.DISKS[0:2]),
-                StratisCertify.DISKS[2],
+                make_test_pool(StratisCliCertify.DISKS[0:2]),
+                StratisCliCertify.DISKS[2],
             ],
             0,
             True,
@@ -497,8 +521,8 @@ class StratisCertify(unittest.TestCase):  # pylint: disable=too-many-public-meth
                 _STRATIS_CLI,
                 "pool",
                 "init-cache",
-                make_test_pool(StratisCertify.DISKS[0:2]),
-                StratisCertify.DISKS[2],
+                make_test_pool(StratisCliCertify.DISKS[0:2]),
+                StratisCliCertify.DISKS[2],
             ],
             True,
             True,
@@ -510,28 +534,28 @@ class StratisCertify(unittest.TestCase):  # pylint: disable=too-many-public-meth
         Test initialzing the cache for a pool, then adding a data device.
         """
 
-        pool_name = make_test_pool(StratisCertify.DISKS[0:1])
+        pool_name = make_test_pool(StratisCliCertify.DISKS[0:1])
 
-        self.unittest_command(
+        self._unittest_command(
             [
                 _STRATIS_CLI,
                 "pool",
                 "init-cache",
                 pool_name,
-                StratisCertify.DISKS[1],
+                StratisCliCertify.DISKS[1],
             ],
             0,
             True,
             True,
         )
 
-        self.unittest_command(
+        self._unittest_command(
             [
                 _STRATIS_CLI,
                 "pool",
                 "add-data",
                 pool_name,
-                StratisCertify.DISKS[2],
+                StratisCliCertify.DISKS[2],
             ],
             0,
             True,
@@ -543,12 +567,12 @@ class StratisCertify(unittest.TestCase):  # pylint: disable=too-many-public-meth
         """
         Test destroying a pool.
         """
-        self.unittest_command(
+        self._unittest_command(
             [
                 _STRATIS_CLI,
                 "pool",
                 "destroy",
-                make_test_pool(StratisCertify.DISKS[0:1]),
+                make_test_pool(StratisCliCertify.DISKS[0:1]),
             ],
             0,
             True,
@@ -565,7 +589,7 @@ class StratisCertify(unittest.TestCase):  # pylint: disable=too-many-public-meth
                 _STRATIS_CLI,
                 "pool",
                 "destroy",
-                make_test_pool(StratisCertify.DISKS[0:1]),
+                make_test_pool(StratisCliCertify.DISKS[0:1]),
             ],
             True,
             True,
@@ -577,12 +601,12 @@ class StratisCertify(unittest.TestCase):  # pylint: disable=too-many-public-meth
         Test creating a filesystem.
         """
         filesystem_name = fs_n()
-        self.unittest_command(
+        self._unittest_command(
             [
                 _STRATIS_CLI,
                 "filesystem",
                 "create",
-                make_test_pool(StratisCertify.DISKS[0:1]),
+                make_test_pool(StratisCliCertify.DISKS[0:1]),
                 filesystem_name,
             ],
             0,
@@ -596,12 +620,12 @@ class StratisCertify(unittest.TestCase):  # pylint: disable=too-many-public-meth
         Test creating a filesystem with a specified size.
         """
         filesystem_name = fs_n()
-        self.unittest_command(
+        self._unittest_command(
             [
                 _STRATIS_CLI,
                 "filesystem",
                 "create",
-                make_test_pool(StratisCertify.DISKS[0:1]),
+                make_test_pool(StratisCliCertify.DISKS[0:1]),
                 filesystem_name,
                 "--size=8TiB",
             ],
@@ -616,12 +640,12 @@ class StratisCertify(unittest.TestCase):  # pylint: disable=too-many-public-meth
         Test creating a filesystem with a specified size that is too small.
         """
         filesystem_name = fs_n()
-        self.unittest_command(
+        self._unittest_command(
             [
                 _STRATIS_CLI,
                 "filesystem",
                 "create",
-                make_test_pool(StratisCertify.DISKS[0:1]),
+                make_test_pool(StratisCliCertify.DISKS[0:1]),
                 filesystem_name,
                 "--size=524284KiB",
             ],
@@ -641,7 +665,7 @@ class StratisCertify(unittest.TestCase):  # pylint: disable=too-many-public-meth
                 _STRATIS_CLI,
                 "filesystem",
                 "create",
-                make_test_pool(StratisCertify.DISKS[0:1]),
+                make_test_pool(StratisCliCertify.DISKS[0:1]),
                 filesystem_name,
             ],
             True,
@@ -653,9 +677,9 @@ class StratisCertify(unittest.TestCase):  # pylint: disable=too-many-public-meth
         """
         Test adding data to a pool.
         """
-        pool_name = make_test_pool(StratisCertify.DISKS[0:1])
-        self.unittest_command(
-            [_STRATIS_CLI, "pool", "add-data", pool_name, StratisCertify.DISKS[1]],
+        pool_name = make_test_pool(StratisCliCertify.DISKS[0:1])
+        self._unittest_command(
+            [_STRATIS_CLI, "pool", "add-data", pool_name, StratisCliCertify.DISKS[1]],
             0,
             True,
             True,
@@ -666,10 +690,10 @@ class StratisCertify(unittest.TestCase):  # pylint: disable=too-many-public-meth
         """
         Test adding data to a pool with a relative device path.
         """
-        pool_name = make_test_pool(StratisCertify.DISKS[0:1])
-        add_device = StratisCertify.DISKS[1]
+        pool_name = make_test_pool(StratisCliCertify.DISKS[0:1])
+        add_device = StratisCliCertify.DISKS[1]
         relative_device = create_relative_device_path(add_device)
-        self.unittest_command(
+        self._unittest_command(
             [_STRATIS_CLI, "pool", "add-data", pool_name, add_device, relative_device],
             0,
             True,
@@ -681,9 +705,9 @@ class StratisCertify(unittest.TestCase):  # pylint: disable=too-many-public-meth
         """
         Test adding data to a pool fails with dropped permissions.
         """
-        pool_name = make_test_pool(StratisCertify.DISKS[0:1])
+        pool_name = make_test_pool(StratisCliCertify.DISKS[0:1])
         self._test_permissions(
-            [_STRATIS_CLI, "pool", "add-data", pool_name, StratisCertify.DISKS[1]],
+            [_STRATIS_CLI, "pool", "add-data", pool_name, StratisCliCertify.DISKS[1]],
             True,
             True,
         )
@@ -693,8 +717,8 @@ class StratisCertify(unittest.TestCase):  # pylint: disable=too-many-public-meth
         """
         Test setting the pool filesystem limit too low fails.
         """
-        pool_name = make_test_pool(StratisCertify.DISKS[0:1])
-        self.unittest_command(
+        pool_name = make_test_pool(StratisCliCertify.DISKS[0:1])
+        self._unittest_command(
             [_STRATIS_CLI, "pool", "set-fs-limit", pool_name, "0"], 1, False, True
         )
 
@@ -703,8 +727,8 @@ class StratisCertify(unittest.TestCase):  # pylint: disable=too-many-public-meth
         """
         Test disabling overprovisioning after the pool is created.
         """
-        pool_name = make_test_pool(StratisCertify.DISKS[0:1])
-        self.unittest_command(
+        pool_name = make_test_pool(StratisCliCertify.DISKS[0:1])
+        self._unittest_command(
             [_STRATIS_CLI, "pool", "overprovision", pool_name, "no"], 0, True, True
         )
 
@@ -713,16 +737,16 @@ class StratisCertify(unittest.TestCase):  # pylint: disable=too-many-public-meth
         """
         Test listing an existent filesystem.
         """
-        pool_name = make_test_pool(StratisCertify.DISKS[0:1])
+        pool_name = make_test_pool(StratisCliCertify.DISKS[0:1])
         make_test_filesystem(pool_name)
-        self.unittest_command([_STRATIS_CLI, "filesystem", "list"], 0, True, False)
+        self._unittest_command([_STRATIS_CLI, "filesystem", "list"], 0, True, False)
 
     @_skip(1)
     def test_filesystem_list_not_empty_permissions(self):
         """
         Test listing an existent filesystem succeeds with dropped permissions.
         """
-        pool_name = make_test_pool(StratisCertify.DISKS[0:1])
+        pool_name = make_test_pool(StratisCliCertify.DISKS[0:1])
         make_test_filesystem(pool_name)
         self._test_permissions([_STRATIS_CLI, "filesystem", "list"], False, False)
 
@@ -731,9 +755,9 @@ class StratisCertify(unittest.TestCase):  # pylint: disable=too-many-public-meth
         """
         Test creating a filesystem that already exists.
         """
-        pool_name = make_test_pool(StratisCertify.DISKS[0:1])
+        pool_name = make_test_pool(StratisCliCertify.DISKS[0:1])
         filesystem_name = make_test_filesystem(pool_name)
-        self.unittest_command(
+        self._unittest_command(
             [_STRATIS_CLI, "filesystem", "create", pool_name, filesystem_name],
             1,
             False,
@@ -745,10 +769,10 @@ class StratisCertify(unittest.TestCase):  # pylint: disable=too-many-public-meth
         """
         Test renaming a filesystem to a new name.
         """
-        pool_name = make_test_pool(StratisCertify.DISKS[0:1])
+        pool_name = make_test_pool(StratisCliCertify.DISKS[0:1])
         filesystem_name = make_test_filesystem(pool_name)
         fs_name_rename = fs_n()
-        self.unittest_command(
+        self._unittest_command(
             [
                 _STRATIS_CLI,
                 "filesystem",
@@ -767,7 +791,7 @@ class StratisCertify(unittest.TestCase):  # pylint: disable=too-many-public-meth
         """
         Test renaming a filesystem fails with dropped permissions.
         """
-        pool_name = make_test_pool(StratisCertify.DISKS[0:1])
+        pool_name = make_test_pool(StratisCliCertify.DISKS[0:1])
         filesystem_name = make_test_filesystem(pool_name)
         fs_name_rename = fs_n()
         self._test_permissions(
@@ -788,9 +812,9 @@ class StratisCertify(unittest.TestCase):  # pylint: disable=too-many-public-meth
         """
         Test renaming a filesystem to the same name.
         """
-        pool_name = make_test_pool(StratisCertify.DISKS[0:1])
+        pool_name = make_test_pool(StratisCliCertify.DISKS[0:1])
         filesystem_name = make_test_filesystem(pool_name)
-        self.unittest_command(
+        self._unittest_command(
             [
                 _STRATIS_CLI,
                 "filesystem",
@@ -809,10 +833,10 @@ class StratisCertify(unittest.TestCase):  # pylint: disable=too-many-public-meth
         """
         Test snapshotting a filesystem.
         """
-        pool_name = make_test_pool(StratisCertify.DISKS[0:1])
+        pool_name = make_test_pool(StratisCliCertify.DISKS[0:1])
         filesystem_name = make_test_filesystem(pool_name)
         snapshot_name = fs_n()
-        self.unittest_command(
+        self._unittest_command(
             [
                 _STRATIS_CLI,
                 "filesystem",
@@ -831,7 +855,7 @@ class StratisCertify(unittest.TestCase):  # pylint: disable=too-many-public-meth
         """
         Test snapshotting a filesystem fails with dropped permissions.
         """
-        pool_name = make_test_pool(StratisCertify.DISKS[0:1])
+        pool_name = make_test_pool(StratisCliCertify.DISKS[0:1])
         filesystem_name = make_test_filesystem(pool_name)
         snapshot_name = fs_n()
         self._test_permissions(
@@ -852,9 +876,9 @@ class StratisCertify(unittest.TestCase):  # pylint: disable=too-many-public-meth
         """
         Test destroying a filesystem.
         """
-        pool_name = make_test_pool(StratisCertify.DISKS[0:1])
+        pool_name = make_test_pool(StratisCliCertify.DISKS[0:1])
         filesystem_name = make_test_filesystem(pool_name)
-        self.unittest_command(
+        self._unittest_command(
             [_STRATIS_CLI, "filesystem", "destroy", pool_name, filesystem_name],
             0,
             True,
@@ -866,7 +890,7 @@ class StratisCertify(unittest.TestCase):  # pylint: disable=too-many-public-meth
         """
         Test destroying a filesystem fails with dropped permissions.
         """
-        pool_name = make_test_pool(StratisCertify.DISKS[0:1])
+        pool_name = make_test_pool(StratisCliCertify.DISKS[0:1])
         filesystem_name = make_test_filesystem(pool_name)
         self._test_permissions(
             [_STRATIS_CLI, "filesystem", "destroy", pool_name, filesystem_name],
@@ -888,8 +912,8 @@ def main():
         help="disks to use, a minimum of 3 in order to run every test",
     )
     parsed_args, unittest_args = argument_parser.parse_known_args()
-    StratisCertify.DISKS = parsed_args.DISKS
-    print(f"Using block device(s) for tests: {StratisCertify.DISKS}")
+    StratisCliCertify.DISKS = parsed_args.DISKS
+    print(f"Using block device(s) for tests: {StratisCliCertify.DISKS}")
     unittest.main(argv=sys.argv[:1] + unittest_args)
 
 
