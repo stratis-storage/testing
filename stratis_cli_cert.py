@@ -21,7 +21,6 @@ import os
 import sys
 import time
 import unittest
-from functools import wraps
 
 # isort: LOCAL
 from testlib.dbus import fs_n, p_n
@@ -32,6 +31,7 @@ from testlib.utils import (
     exec_command,
     exec_test_command,
     process_exists,
+    skip,
 )
 
 _STRATIS_CLI = os.getenv("STRATIS_CLI", "/usr/bin/stratis")
@@ -52,36 +52,15 @@ def _raise_error_exception(return_code, msg):
         )
 
 
-def _skip(num_devices_required):
-    """
-    Custom method to allow skipping a test if there are not enough disks,
-    specified by StratisCliCertify.DISKS, available at runtime. The
-    unittest.skip* decorators are insufficient, since their conditions are
-    evaluated at class loading time.
-    """
+def _skip_condition(num_devices_required):
+    def the_func():
+        if len(StratisCliCertify.DISKS) < num_devices_required:
+            raise unittest.SkipTest(
+                f"Test requires {num_devices_required} devices; "
+                f"only {len(StratisCliCertify.DISKS)} available"
+            )
 
-    def func_generator(func):
-        """
-        A function to be used as a decorator to generate a modified function
-        for tests that require devices.
-        """
-
-        @wraps(func)
-        def modified_func(self):
-            """
-            The modified function, which includes a check for the number of
-            disks.
-            """
-            if len(StratisCliCertify.DISKS) < num_devices_required:
-                raise unittest.SkipTest(
-                    f"Test requires {num_devices_required} devices; "
-                    f"only {len(StratisCliCertify.DISKS)} available"
-                )
-            return func(self)
-
-        return modified_func
-
-    return func_generator
+    return the_func
 
 
 def make_test_pool(pool_disks, key_desc=None):
@@ -358,7 +337,7 @@ class StratisCliCertify(StratisCertify):  # pylint: disable=too-many-public-meth
 
         self._test_permissions([_STRATIS_CLI, "key", "unset", "testkey2"], True, True)
 
-    @_skip(1)
+    @skip(_skip_condition(1))
     def test_pool_create(self):
         """
         Test creating a pool.
@@ -371,7 +350,7 @@ class StratisCliCertify(StratisCertify):  # pylint: disable=too-many-public-meth
             True,
         )
 
-    @_skip(1)
+    @skip(_skip_condition(1))
     def test_pool_create_permissions(self):
         """
         Test creating a pool fails with dropped permissions.
@@ -383,7 +362,7 @@ class StratisCliCertify(StratisCertify):  # pylint: disable=too-many-public-meth
             True,
         )
 
-    @_skip(1)
+    @skip(_skip_condition(1))
     def test_pool_create_encrypted(self):
         """
         Test creating an encrypted pool.
@@ -405,7 +384,7 @@ class StratisCliCertify(StratisCertify):  # pylint: disable=too-many-public-meth
                 True,
             )
 
-    @_skip(3)
+    @skip(_skip_condition(3))
     def test_pool_create_encrypted_with_cache(self):
         """
         Test creating an encrypted pool with cache.
@@ -427,7 +406,7 @@ class StratisCliCertify(StratisCertify):  # pylint: disable=too-many-public-meth
                 True,
             )
 
-    @_skip(1)
+    @skip(_skip_condition(1))
     def test_pool_create_no_overprovision(self):
         """
         Test creating a pool with no overprovisioning.
@@ -447,7 +426,7 @@ class StratisCliCertify(StratisCertify):  # pylint: disable=too-many-public-meth
             True,
         )
 
-    @_skip(1)
+    @skip(_skip_condition(1))
     def test_pool_list_not_empty(self):
         """
         Test listing an existent pool.
@@ -455,7 +434,7 @@ class StratisCliCertify(StratisCertify):  # pylint: disable=too-many-public-meth
         make_test_pool(StratisCliCertify.DISKS[0:1])
         self._unittest_command([_STRATIS_CLI, "pool", "list"], 0, True, False)
 
-    @_skip(1)
+    @skip(_skip_condition(1))
     def test_pool_list_not_empty_permissions(self):
         """
         Test listing an existent pool succeeds with dropped permissions.
@@ -475,7 +454,7 @@ class StratisCliCertify(StratisCertify):  # pylint: disable=too-many-public-meth
         """
         self._test_permissions([_STRATIS_CLI, "blockdev", "list"], False, False)
 
-    @_skip(2)
+    @skip(_skip_condition(2))
     def test_pool_create_same_name(self):
         """
         Test creating a pool that already exists.
@@ -493,7 +472,7 @@ class StratisCliCertify(StratisCertify):  # pylint: disable=too-many-public-meth
             True,
         )
 
-    @_skip(3)
+    @skip(_skip_condition(3))
     def test_pool_init_cache(self):
         """
         Test initialzing the cache for a pool.
@@ -511,7 +490,7 @@ class StratisCliCertify(StratisCertify):  # pylint: disable=too-many-public-meth
             True,
         )
 
-    @_skip(3)
+    @skip(_skip_condition(3))
     def test_pool_init_cache_permissions(self):
         """
         Test initialzing the cache for a pool fails with dropped permissions.
@@ -528,7 +507,7 @@ class StratisCliCertify(StratisCertify):  # pylint: disable=too-many-public-meth
             True,
         )
 
-    @_skip(3)
+    @skip(_skip_condition(3))
     def test_pool_init_cache_add_data(self):
         """
         Test initialzing the cache for a pool, then adding a data device.
@@ -562,7 +541,7 @@ class StratisCliCertify(StratisCertify):  # pylint: disable=too-many-public-meth
             True,
         )
 
-    @_skip(1)
+    @skip(_skip_condition(1))
     def test_pool_destroy(self):
         """
         Test destroying a pool.
@@ -579,7 +558,7 @@ class StratisCliCertify(StratisCertify):  # pylint: disable=too-many-public-meth
             True,
         )
 
-    @_skip(1)
+    @skip(_skip_condition(1))
     def test_pool_destroy_permissions(self):
         """
         Test destroying a pool fails with dropped permissions.
@@ -595,7 +574,7 @@ class StratisCliCertify(StratisCertify):  # pylint: disable=too-many-public-meth
             True,
         )
 
-    @_skip(1)
+    @skip(_skip_condition(1))
     def test_filesystem_create(self):
         """
         Test creating a filesystem.
@@ -614,7 +593,7 @@ class StratisCliCertify(StratisCertify):  # pylint: disable=too-many-public-meth
             True,
         )
 
-    @_skip(1)
+    @skip(_skip_condition(1))
     def test_filesystem_create_specified_size(self):
         """
         Test creating a filesystem with a specified size.
@@ -634,7 +613,7 @@ class StratisCliCertify(StratisCertify):  # pylint: disable=too-many-public-meth
             True,
         )
 
-    @_skip(1)
+    @skip(_skip_condition(1))
     def test_filesystem_create_specified_size_toosmall(self):
         """
         Test creating a filesystem with a specified size that is too small.
@@ -654,7 +633,7 @@ class StratisCliCertify(StratisCertify):  # pylint: disable=too-many-public-meth
             True,
         )
 
-    @_skip(1)
+    @skip(_skip_condition(1))
     def test_filesystem_create_permissions(self):
         """
         Test creating a filesystem fails with dropped permissions.
@@ -672,7 +651,7 @@ class StratisCliCertify(StratisCertify):  # pylint: disable=too-many-public-meth
             True,
         )
 
-    @_skip(2)
+    @skip(_skip_condition(2))
     def test_pool_add_data(self):
         """
         Test adding data to a pool.
@@ -685,7 +664,7 @@ class StratisCliCertify(StratisCertify):  # pylint: disable=too-many-public-meth
             True,
         )
 
-    @_skip(2)
+    @skip(_skip_condition(2))
     def test_pool_add_data_relative_path(self):
         """
         Test adding data to a pool with a relative device path.
@@ -700,7 +679,7 @@ class StratisCliCertify(StratisCertify):  # pylint: disable=too-many-public-meth
             True,
         )
 
-    @_skip(2)
+    @skip(_skip_condition(2))
     def test_pool_add_data_permissions(self):
         """
         Test adding data to a pool fails with dropped permissions.
@@ -712,7 +691,7 @@ class StratisCliCertify(StratisCertify):  # pylint: disable=too-many-public-meth
             True,
         )
 
-    @_skip(1)
+    @skip(_skip_condition(1))
     def test_pool_set_fs_limit_too_low(self):
         """
         Test setting the pool filesystem limit too low fails.
@@ -722,7 +701,7 @@ class StratisCliCertify(StratisCertify):  # pylint: disable=too-many-public-meth
             [_STRATIS_CLI, "pool", "set-fs-limit", pool_name, "0"], 1, False, True
         )
 
-    @_skip(1)
+    @skip(_skip_condition(1))
     def test_pool_disable_overprovisioning(self):
         """
         Test disabling overprovisioning after the pool is created.
@@ -732,7 +711,7 @@ class StratisCliCertify(StratisCertify):  # pylint: disable=too-many-public-meth
             [_STRATIS_CLI, "pool", "overprovision", pool_name, "no"], 0, True, True
         )
 
-    @_skip(1)
+    @skip(_skip_condition(1))
     def test_filesystem_list_not_empty(self):
         """
         Test listing an existent filesystem.
@@ -741,7 +720,7 @@ class StratisCliCertify(StratisCertify):  # pylint: disable=too-many-public-meth
         make_test_filesystem(pool_name)
         self._unittest_command([_STRATIS_CLI, "filesystem", "list"], 0, True, False)
 
-    @_skip(1)
+    @skip(_skip_condition(1))
     def test_filesystem_list_not_empty_permissions(self):
         """
         Test listing an existent filesystem succeeds with dropped permissions.
@@ -750,7 +729,7 @@ class StratisCliCertify(StratisCertify):  # pylint: disable=too-many-public-meth
         make_test_filesystem(pool_name)
         self._test_permissions([_STRATIS_CLI, "filesystem", "list"], False, False)
 
-    @_skip(1)
+    @skip(_skip_condition(1))
     def test_filesystem_create_same_name(self):
         """
         Test creating a filesystem that already exists.
@@ -764,7 +743,7 @@ class StratisCliCertify(StratisCertify):  # pylint: disable=too-many-public-meth
             True,
         )
 
-    @_skip(1)
+    @skip(_skip_condition(1))
     def test_filesystem_rename(self):
         """
         Test renaming a filesystem to a new name.
@@ -786,7 +765,7 @@ class StratisCliCertify(StratisCertify):  # pylint: disable=too-many-public-meth
             True,
         )
 
-    @_skip(1)
+    @skip(_skip_condition(1))
     def test_filesystem_rename_permissions(self):
         """
         Test renaming a filesystem fails with dropped permissions.
@@ -807,7 +786,7 @@ class StratisCliCertify(StratisCertify):  # pylint: disable=too-many-public-meth
             True,
         )
 
-    @_skip(1)
+    @skip(_skip_condition(1))
     def test_filesystem_rename_same_name(self):
         """
         Test renaming a filesystem to the same name.
@@ -828,7 +807,7 @@ class StratisCliCertify(StratisCertify):  # pylint: disable=too-many-public-meth
             True,
         )
 
-    @_skip(1)
+    @skip(_skip_condition(1))
     def test_filesystem_snapshot(self):
         """
         Test snapshotting a filesystem.
@@ -850,7 +829,7 @@ class StratisCliCertify(StratisCertify):  # pylint: disable=too-many-public-meth
             True,
         )
 
-    @_skip(1)
+    @skip(_skip_condition(1))
     def test_filesystem_snapshot_permissions(self):
         """
         Test snapshotting a filesystem fails with dropped permissions.
@@ -871,7 +850,7 @@ class StratisCliCertify(StratisCertify):  # pylint: disable=too-many-public-meth
             True,
         )
 
-    @_skip(1)
+    @skip(_skip_condition(1))
     def test_filesystem_destroy(self):
         """
         Test destroying a filesystem.
@@ -885,7 +864,7 @@ class StratisCliCertify(StratisCertify):  # pylint: disable=too-many-public-meth
             True,
         )
 
-    @_skip(1)
+    @skip(_skip_condition(1))
     def test_filesystem_destroy_permissions(self):
         """
         Test destroying a filesystem fails with dropped permissions.
