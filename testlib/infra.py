@@ -20,12 +20,16 @@ import time
 import unittest
 from tempfile import NamedTemporaryFile
 
+# isort: THIRDPARTY
+import dbus
+
 from .dbus import StratisDbus
 from .utils import exec_command, process_exists, terminate_traces
 
 _OK = 0
 
 MONITOR_DBUS_SIGNALS = "./scripts/monitor_dbus_signals.py"
+DBUS_NAME_HAS_NO_OWNER_ERROR = "org.freedesktop.DBus.Error.NameHasNoOwner"
 
 
 def clean_up():
@@ -121,6 +125,32 @@ class StratisdSystemdStart(unittest.TestCase):
         if process_exists("stratisd") is None:
             exec_command(["systemctl", "start", "stratisd"])
             time.sleep(20)
+
+        if process_exists("stratisd") is None:
+            raise RuntimeError(
+                "stratisd was started by systemd but has since been terminated"
+            )
+
+        try:
+            StratisDbus.stratisd_version()
+        except dbus.exceptions.DBusException as err:
+            if process_exists("stratisd") is None:
+                raise RuntimeError(
+                    "stratisd appears to have terminated while processing a "
+                    "D-Bus request"
+                ) from err
+
+            if err.get_dbus_name() == DBUS_NAME_HAS_NO_OWNER_ERROR:
+                raise RuntimeError(
+                    "stratisd is running but D-Bus method call returns "
+                    f"{DBUS_NAME_HAS_NO_OWNER_ERROR} indicating that "
+                    "stratisd could not connect to the D-Bus"
+                ) from err
+
+            raise RuntimeError(
+                "stratisd is running but something prevented the test D-Bus "
+                "method call from succeeding"
+            ) from err
 
         clean_up()
 
