@@ -16,10 +16,12 @@ Methods and classes that do infrastructure tasks.
 """
 # isort: STDLIB
 import base64
+import time
+import unittest
 from tempfile import NamedTemporaryFile
 
 from .dbus import StratisDbus
-from .utils import exec_command, terminate_traces
+from .utils import exec_command, process_exists, terminate_traces
 
 _OK = 0
 
@@ -96,6 +98,34 @@ def clean_up():
         raise RuntimeError(
             f'clean_up may not have succeeded: {"; ".join(error_strings)}'
         )
+
+
+class StratisdSystemdStart(unittest.TestCase):
+    """
+    Handles starting and stopping stratisd via systemd.
+    """
+
+    def setUp(self):
+        """
+        Setup for an individual test.
+        * Register a cleanup action, to be run if the test fails.
+        * Ensure that stratisd is running via systemd.
+        * Use the running stratisd instance to destroy any existing
+        Stratis filesystems, pools, etc.
+        * Call "udevadm settle" so udev database can be updated with changes
+        to Stratis devices.
+        :return: None
+        """
+        self.addCleanup(clean_up)
+
+        if process_exists("stratisd") is None:
+            exec_command(["systemctl", "start", "stratisd"])
+            time.sleep(20)
+
+        clean_up()
+
+        time.sleep(1)
+        exec_command(["udevadm", "settle"])
 
 
 class KernelKey:  # pylint: disable=attribute-defined-outside-init
