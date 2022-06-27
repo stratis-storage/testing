@@ -25,7 +25,6 @@ import subprocess
 import sys
 import time
 import unittest
-from functools import wraps
 from tempfile import NamedTemporaryFile
 
 # isort: THIRDPARTY
@@ -40,6 +39,7 @@ from testlib.utils import (
     exec_test_command,
     process_exists,
     resolve_symlink,
+    skip,
 )
 
 _ROOT = 0
@@ -66,36 +66,20 @@ def _raise_error_exception(return_code, msg, return_value_exists):
         )
 
 
-def _skip(num_devices_required):
+def _skip_condition(num_devices_required):
     """
-    Custom method to allow skipping a test if there are not enough disks,
-    specified by StratisCertify.DISKS, available at runtime. The
-    unittest.skip* decorators are insufficient, since their conditions are
-    evaluated at class loading time.
+    Returns a function that raises a skipTest exception if a test should be
+    skipped.
     """
 
-    def func_generator(func):
-        """
-        A function to be used as a decorator to generate a modified function
-        for tests that require devices.
-        """
+    def the_func():
+        if len(StratisCertify.DISKS) < num_devices_required:
+            raise unittest.SkipTest(
+                f"Test requires {num_devices_required} devices; "
+                f"only {len(StratisCertify.DISKS)} available"
+            )
 
-        @wraps(func)
-        def modified_func(self):
-            """
-            The modified function, which includes a check for the number of
-            disks.
-            """
-            if len(StratisCertify.DISKS) < num_devices_required:
-                raise unittest.SkipTest(
-                    f"Test requires {num_devices_required} devices; "
-                    f"only {len(StratisCertify.DISKS)} available"
-                )
-            return func(self)
-
-        return modified_func
-
-    return func_generator
+    return the_func
 
 
 def make_test_pool(pool_name, pool_disks):
@@ -443,7 +427,7 @@ class StratisdCertify(StratisCertify):  # pylint: disable=too-many-public-method
             StratisDbus.unset_key, [], True, kwargs={"key_desc": key_desc}
         )
 
-    @_skip(1)
+    @skip(_skip_condition(1))
     def test_pool_create(self):
         """
         Test creating a pool.
@@ -455,7 +439,7 @@ class StratisdCertify(StratisCertify):  # pylint: disable=too-many-public-method
             dbus.UInt16(0),
         )
 
-    @_skip(1)
+    @skip(_skip_condition(1))
     def test_pool_create_invalid_redundancy(self):
         """
         Test that creating a pool with an invalid redundancy value fails.
@@ -470,7 +454,7 @@ class StratisdCertify(StratisCertify):  # pylint: disable=too-many-public-method
             dbus.UInt16(1),
         )
 
-    @_skip(1)
+    @skip(_skip_condition(1))
     def test_pool_create_permissions(self):
         """
         Test that creating a pool fails when root permissions are dropped.
@@ -480,7 +464,7 @@ class StratisdCertify(StratisCertify):  # pylint: disable=too-many-public-method
             StratisDbus.pool_create, [pool_name, StratisCertify.DISKS], True
         )
 
-    @_skip(1)
+    @skip(_skip_condition(1))
     def test_pool_create_encrypted(self):
         """
         Test creating an encrypted pool.
@@ -495,7 +479,7 @@ class StratisdCertify(StratisCertify):  # pylint: disable=too-many-public-method
                 dbus.UInt16(0),
             )
 
-    @_skip(1)
+    @skip(_skip_condition(1))
     def test_pool_create_no_overprovisioning(self):
         """
         Test creating a pool with no overprovisioning
@@ -511,7 +495,7 @@ class StratisdCertify(StratisCertify):  # pylint: disable=too-many-public-method
             None,
         )
 
-    @_skip(3)
+    @skip(_skip_condition(3))
     def test_pool_add_cache(self):
         """
         Test adding cache to a pool.
@@ -528,7 +512,7 @@ class StratisdCertify(StratisCertify):  # pylint: disable=too-many-public-method
             dbus.UInt16(0),
         )
 
-    @_skip(2)
+    @skip(_skip_condition(2))
     def test_pool_add_cache_permissions(self):
         """
         Test that adding cache to pool fails when root permissions are dropped.
@@ -545,7 +529,7 @@ class StratisdCertify(StratisCertify):  # pylint: disable=too-many-public-method
             StratisDbus.pool_add_cache, [pool_path, StratisCertify.DISKS[2:3]], True
         )
 
-    @_skip(2)
+    @skip(_skip_condition(2))
     def test_pool_create_after_cache(self):
         """
         Test creating existing pool after cache was added
@@ -562,7 +546,7 @@ class StratisdCertify(StratisCertify):  # pylint: disable=too-many-public-method
             dbus.UInt16(0),
         )
 
-    @_skip(2)
+    @skip(_skip_condition(2))
     def test_pool_add_data_after_cache(self):
         """
         Test adding a data device after a cache is created.
@@ -579,7 +563,7 @@ class StratisdCertify(StratisCertify):  # pylint: disable=too-many-public-method
             dbus.UInt16(0),
         )
 
-    @_skip(3)
+    @skip(_skip_condition(3))
     def test_pool_add_different_data_after_cache(self):
         """
         Test adding a different data device after a cache is created.
@@ -596,7 +580,7 @@ class StratisdCertify(StratisCertify):  # pylint: disable=too-many-public-method
             dbus.UInt16(0),
         )
 
-    @_skip(2)
+    @skip(_skip_condition(2))
     def test_pool_create_with_cache(self):
         """
         Test creating existing pool with device already used by cache fails
@@ -613,7 +597,7 @@ class StratisdCertify(StratisCertify):  # pylint: disable=too-many-public-method
             dbus.UInt16(1),
         )
 
-    @_skip(3)
+    @skip(_skip_condition(3))
     def test_pool_add_data(self):
         """
         Test adding data to a pool.
@@ -626,7 +610,7 @@ class StratisdCertify(StratisCertify):  # pylint: disable=too-many-public-method
             dbus.UInt16(0),
         )
 
-    @_skip(3)
+    @skip(_skip_condition(3))
     def test_pool_add_data_relative_path(self):
         """
         Test adding data to a pool with a relative device path.
@@ -642,7 +626,7 @@ class StratisdCertify(StratisCertify):  # pylint: disable=too-many-public-method
             dbus.UInt16(0),
         )
 
-    @_skip(3)
+    @skip(_skip_condition(3))
     def test_pool_add_data_permissions(self):
         """
         Test that adding data to a pool fails when root permissions are dropped.
@@ -654,7 +638,7 @@ class StratisdCertify(StratisCertify):  # pylint: disable=too-many-public-method
             StratisDbus.pool_add_data, [pool_path, StratisCertify.DISKS[2:3]], True
         )
 
-    @_skip(1)
+    @skip(_skip_condition(1))
     def test_pool_list_not_empty(self):
         """
         Test listing an non-existent pool.
@@ -664,7 +648,7 @@ class StratisdCertify(StratisCertify):  # pylint: disable=too-many-public-method
 
         self._inequality_test(StratisDbus.pool_list(), [])
 
-    @_skip(1)
+    @skip(_skip_condition(1))
     def test_pool_create_same_name_and_devices(self):
         """
         Test creating a pool that already exists with the same devices.
@@ -677,7 +661,7 @@ class StratisdCertify(StratisCertify):  # pylint: disable=too-many-public-method
             dbus.UInt16(0),
         )
 
-    @_skip(3)
+    @skip(_skip_condition(3))
     def test_pool_create_same_name_different_devices(self):
         """
         Test creating a pool that already exists with different devices.
@@ -690,7 +674,7 @@ class StratisdCertify(StratisCertify):  # pylint: disable=too-many-public-method
             dbus.UInt16(1),
         )
 
-    @_skip(1)
+    @skip(_skip_condition(1))
     def test_pool_destroy(self):
         """
         Test destroying a pool.
@@ -702,7 +686,7 @@ class StratisdCertify(StratisCertify):  # pylint: disable=too-many-public-method
 
         self.assertEqual(StratisDbus.fs_list(), {})
 
-    @_skip(1)
+    @skip(_skip_condition(1))
     def test_pool_destroy_permissions(self):
         """
         Test that destroying a pool fails when root permissions are dropped.
@@ -712,7 +696,7 @@ class StratisdCertify(StratisCertify):  # pylint: disable=too-many-public-method
 
         self._test_permissions(StratisDbus.pool_destroy, [pool_name], True)
 
-    @_skip(1)
+    @skip(_skip_condition(1))
     def test_pool_set_fs_limit_too_low(self):
         """
         Test setting the pool filesystem limit too low fails.
@@ -728,7 +712,7 @@ class StratisdCertify(StratisCertify):  # pylint: disable=too-many-public-method
             "org.freedesktop.DBus.Error.Failed",
         )
 
-    @_skip(1)
+    @skip(_skip_condition(1))
     def test_filesystem_create(self):
         """
         Test creating a filesystem.
@@ -742,7 +726,7 @@ class StratisdCertify(StratisCertify):  # pylint: disable=too-many-public-method
             StratisDbus.fs_create(pool_path, fs_name), dbus.UInt16(0)
         )
 
-    @_skip(1)
+    @skip(_skip_condition(1))
     def test_filesystem_create_specified_size(self):
         """
         Test creating a filesystem with a specified size.
@@ -757,7 +741,7 @@ class StratisdCertify(StratisCertify):  # pylint: disable=too-many-public-method
             dbus.UInt16(0),
         )
 
-    @_skip(1)
+    @skip(_skip_condition(1))
     def test_filesystem_create_specified_size_toosmall(self):
         """
         Test creating a filesystem with a specified size that is too small.
@@ -772,7 +756,7 @@ class StratisdCertify(StratisCertify):  # pylint: disable=too-many-public-method
             dbus.UInt16(1),
         )
 
-    @_skip(1)
+    @skip(_skip_condition(1))
     def test_filesystem_create_permissions(self):
         """
         Test that creating a filesystem fails when root permissions are dropped.
@@ -784,7 +768,7 @@ class StratisdCertify(StratisCertify):  # pylint: disable=too-many-public-method
 
         self._test_permissions(StratisDbus.fs_create, [pool_path, fs_name], True)
 
-    @_skip(1)
+    @skip(_skip_condition(1))
     def test_filesystem_udev_symlink_create(self):
         """
         Test the udev symlink creation for filesystem devices.
@@ -800,7 +784,7 @@ class StratisdCertify(StratisCertify):  # pylint: disable=too-many-public-method
         )
         self.assertEqual(fsdevdest, fsdevmapperlinkdest)
 
-    @_skip(1)
+    @skip(_skip_condition(1))
     def test_filesystem_udev_symlink_fsrename(self):
         """
         Test the udev symlink creation for filesystem devices after fs rename.
@@ -824,7 +808,7 @@ class StratisdCertify(StratisCertify):  # pylint: disable=too-many-public-method
         )
         self.assertEqual(fsdevdest, fsdevmapperlinkdest)
 
-    @_skip(1)
+    @skip(_skip_condition(1))
     def test_filesystem_udev_symlink_poolrename(self):
         """
         Test the udev symlink creation for filesystem devices after pool rename.
@@ -848,7 +832,7 @@ class StratisdCertify(StratisCertify):  # pylint: disable=too-many-public-method
         )
         self.assertEqual(fsdevdest, fsdevmapperlinkdest)
 
-    @_skip(1)
+    @skip(_skip_condition(1))
     def test_filesystem_udev_symlink_fsrename_poolrename(self):
         """
         Test the udev symlink creation for filesystem devices after fs and pool rename.
@@ -880,7 +864,7 @@ class StratisdCertify(StratisCertify):  # pylint: disable=too-many-public-method
         )
         self.assertEqual(fsdevdest, fsdevmapperlinkdest)
 
-    @_skip(1)
+    @skip(_skip_condition(1))
     def test_filesystem_rename(self):
         """
         Test renaming a filesystem.
@@ -897,7 +881,7 @@ class StratisdCertify(StratisCertify):  # pylint: disable=too-many-public-method
             StratisDbus.fs_rename(pool_name, fs_name, fs_name_rename), dbus.UInt16(0)
         )
 
-    @_skip(1)
+    @skip(_skip_condition(1))
     def test_filesystem_rename_permissions(self):
         """
         Test that renaming a filesystem fails when root permissions are dropped.
@@ -914,7 +898,7 @@ class StratisdCertify(StratisCertify):  # pylint: disable=too-many-public-method
             StratisDbus.fs_rename, [pool_name, fs_name, fs_name_rename], True
         )
 
-    @_skip(1)
+    @skip(_skip_condition(1))
     def test_filesystem_rename_same_name(self):
         """
         Test renaming a filesystem.
@@ -929,7 +913,7 @@ class StratisdCertify(StratisCertify):  # pylint: disable=too-many-public-method
             StratisDbus.fs_rename(pool_name, fs_name, fs_name), dbus.UInt16(0)
         )
 
-    @_skip(1)
+    @skip(_skip_condition(1))
     def test_filesystem_snapshot(self):
         """
         Test snapshotting a filesystem.
@@ -946,7 +930,7 @@ class StratisdCertify(StratisCertify):  # pylint: disable=too-many-public-method
             StratisDbus.fs_snapshot(pool_path, fs_path, snapshot_name), dbus.UInt16(0)
         )
 
-    @_skip(1)
+    @skip(_skip_condition(1))
     def test_filesystem_snapshot_permissions(self):
         """
         Test snapshotting a filesystem fails when root permissions are dropped.
@@ -963,7 +947,7 @@ class StratisdCertify(StratisCertify):  # pylint: disable=too-many-public-method
             StratisDbus.fs_snapshot, [pool_path, fs_path, snapshot_name], True
         )
 
-    @_skip(1)
+    @skip(_skip_condition(1))
     def test_filesystem_list_not_empty(self):
         """
         Test listing an existent filesystem.
@@ -976,7 +960,7 @@ class StratisdCertify(StratisCertify):  # pylint: disable=too-many-public-method
 
         self._inequality_test(StratisDbus.fs_list(), {})
 
-    @_skip(1)
+    @skip(_skip_condition(1))
     def test_filesystem_create_same_name(self):
         """
         Test creating a filesystem that already exists.
@@ -991,7 +975,7 @@ class StratisdCertify(StratisCertify):  # pylint: disable=too-many-public-method
             StratisDbus.fs_create(pool_path, fs_name), dbus.UInt16(0)
         )
 
-    @_skip(1)
+    @skip(_skip_condition(1))
     def test_filesystem_destroy(self):
         """
         Test destroying a filesystem.

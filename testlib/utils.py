@@ -18,6 +18,7 @@ Utility functions for blackbox testing.
 import os
 import random
 import string
+from functools import wraps
 from subprocess import PIPE, Popen, run
 from tempfile import NamedTemporaryFile
 
@@ -183,3 +184,31 @@ class RandomKeyTmpFile:
                 raise error
 
             raise error from exc_value
+
+
+def skip(condition):
+    """
+    Custom method to allow skipping a test. condition is a method that will
+    raise a unittest.SkipTest exception if the condition is false. The
+    unittest.skip* decorators are insufficient, since their conditions are
+    evaluated at class loading time.
+    """
+
+    def func_generator(func):
+        """
+        A function to be used as a decorator to generate a modified function
+        for tests that require devices.
+        """
+
+        @wraps(func)
+        def modified_func(self):
+            """
+            The modified function, which checks a condition before the test is
+            run.
+            """
+            condition()
+            return func(self)
+
+        return modified_func
+
+    return func_generator
