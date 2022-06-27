@@ -1,3 +1,28 @@
+testing 3.2.0 (UNRELEASED)
+==========================
+Required stratisd version: 3.2.0
+Required stratis-cli version: 3.2.0
+
+Recommended release for development: Fedora 36
+
+- Increase D-Bus revision to 2:
+  https://github.com/stratis-storage/testing/pull/126
+
+- Changed 'errored_pool_report" test to 'stopped_pools' test:
+  https://github.com/stratis-storage/testing/pull/127
+
+- Add a test for creating a pool with no overprovisioning specified:
+  https://github.com/stratis-storage/testing/pull/128
+
+- Add man page tests:
+  https://github.com/stratis-storage/testing/issues/116
+  https://github.com/stratis-storage/testing/pull/133
+
+- Improve property setting test infrastructure:
+  https://github.com/stratis-storage/testing/issues/129
+  https://github.com/stratis-storage/testing/pull/131
+
+
 testing 3.1.1
 =============
 Required stratisd version: 3.1.0
