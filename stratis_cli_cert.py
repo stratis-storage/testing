@@ -19,18 +19,15 @@ Tests of the stratis CLI.
 import argparse
 import os
 import sys
-import time
 import unittest
 
 # isort: LOCAL
 from testlib.dbus import fs_n, p_n
-from testlib.infra import KernelKey, clean_up
+from testlib.infra import KernelKey, StratisdSystemdStart
 from testlib.utils import (
     RandomKeyTmpFile,
     create_relative_device_path,
-    exec_command,
     exec_test_command,
-    process_exists,
     skip,
 )
 
@@ -148,32 +145,12 @@ class StratisCliManPageCertify(StratisCertify):
         self._unittest_command(["man", "--where", "stratis"], 0, True, False)
 
 
-class StratisCliCertify(StratisCertify):  # pylint: disable=too-many-public-methods
+class StratisCliCertify(
+    StratisdSystemdStart, StratisCertify
+):  # pylint: disable=too-many-public-methods
     """
     Unit tests for the stratis-cli package.
     """
-
-    def setUp(self):
-        """
-        Setup for an individual test.
-        * Register a cleanup action, to be run if the test fails.
-        * Ensure that stratisd is running via systemd.
-        * Use the running stratisd instance to destroy any existing
-        Stratis filesystems, pools, etc.
-        * Call "udevadm settle" so udev database can be updated with changes
-        to Stratis devices.
-        :return: None
-        """
-        self.addCleanup(clean_up)
-
-        if process_exists("stratisd") is None:
-            exec_command(["systemctl", "start", "stratisd"])
-            time.sleep(20)
-
-        clean_up()
-
-        time.sleep(1)
-        exec_command(["udevadm", "settle"])
 
     def _test_permissions(self, command_line, permissions, exp_stdout_empty):
         """

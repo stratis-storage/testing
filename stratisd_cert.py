@@ -32,12 +32,11 @@ import dbus
 
 # isort: LOCAL
 from testlib.dbus import StratisDbus, fs_n, p_n
-from testlib.infra import MONITOR_DBUS_SIGNALS, KernelKey, clean_up
+from testlib.infra import MONITOR_DBUS_SIGNALS, KernelKey, StratisdSystemdStart
 from testlib.utils import (
     create_relative_device_path,
     exec_command,
     exec_test_command,
-    process_exists,
     resolve_symlink,
     skip,
 )
@@ -192,7 +191,9 @@ class StratisCertify(unittest.TestCase):
         )
 
 
-class StratisdCertify(StratisCertify):  # pylint: disable=too-many-public-methods
+class StratisdCertify(
+    StratisdSystemdStart, StratisCertify
+):  # pylint: disable=too-many-public-methods
     """
     Tests on stratisd, the principal daemon.
     """
@@ -200,24 +201,10 @@ class StratisdCertify(StratisCertify):  # pylint: disable=too-many-public-method
     def setUp(self):
         """
         Setup for an individual test.
-        * Register a cleanup action, to be run if the test fails.
-        * Ensure that stratisd is running via systemd.
-        * Use the running stratisd instance to destroy any existing
-        Stratis filesystems, pools, etc.
-        * Call "udevadm settle" so udev database can be updated with changes
-        to Stratis devices.
+
         :return: None
         """
-        self.addCleanup(clean_up)
-
-        if process_exists("stratisd") is None:
-            exec_command(["systemctl", "start", "stratisd"])
-            time.sleep(20)
-
-        clean_up()
-
-        time.sleep(1)
-        exec_command(["udevadm", "settle"])
+        super().setUp()
 
         if StratisCertify.monitor_dbus is True:
             command = [

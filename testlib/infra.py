@@ -16,14 +16,20 @@ Methods and classes that do infrastructure tasks.
 """
 # isort: STDLIB
 import base64
+import time
+import unittest
 from tempfile import NamedTemporaryFile
 
+# isort: THIRDPARTY
+import dbus
+
 from .dbus import StratisDbus
-from .utils import exec_command, terminate_traces
+from .utils import exec_command, process_exists, terminate_traces
 
 _OK = 0
 
 MONITOR_DBUS_SIGNALS = "./scripts/monitor_dbus_signals.py"
+DBUS_NAME_HAS_NO_OWNER_ERROR = "org.freedesktop.DBus.Error.NameHasNoOwner"
 
 
 def clean_up():
@@ -96,6 +102,60 @@ def clean_up():
         raise RuntimeError(
             f'clean_up may not have succeeded: {"; ".join(error_strings)}'
         )
+
+
+class StratisdSystemdStart(unittest.TestCase):
+    """
+    Handles starting and stopping stratisd via systemd.
+    """
+
+    def setUp(self):
+        """
+        Setup for an individual test.
+        * Register a cleanup action, to be run if the test fails.
+        * Ensure that stratisd is running via systemd.
+        * Use the running stratisd instance to destroy any existing
+        Stratis filesystems, pools, etc.
+        * Call "udevadm settle" so udev database can be updated with changes
+        to Stratis devices.
+        :return: None
+        """
+        self.addCleanup(clean_up)
+
+        if process_exists("stratisd") is None:
+            exec_command(["systemctl", "start", "stratisd"])
+            time.sleep(20)
+
+        if process_exists("stratisd") is None:
+            raise RuntimeError(
+                "stratisd was started by systemd but has since been terminated"
+            )
+
+        try:
+            StratisDbus.stratisd_version()
+        except dbus.exceptions.DBusException as err:
+            if process_exists("stratisd") is None:
+                raise RuntimeError(
+                    "stratisd appears to have terminated while processing a "
+                    "D-Bus request"
+                ) from err
+
+            if err.get_dbus_name() == DBUS_NAME_HAS_NO_OWNER_ERROR:
+                raise RuntimeError(
+                    "stratisd is running but D-Bus method call returns "
+                    f"{DBUS_NAME_HAS_NO_OWNER_ERROR} indicating that "
+                    "stratisd could not connect to the D-Bus"
+                ) from err
+
+            raise RuntimeError(
+                "stratisd is running but something prevented the test D-Bus "
+                "method call from succeeding"
+            ) from err
+
+        clean_up()
+
+        time.sleep(1)
+        exec_command(["udevadm", "settle"])
 
 
 class KernelKey:  # pylint: disable=attribute-defined-outside-init
