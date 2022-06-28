@@ -26,18 +26,6 @@ _OK = 0
 MONITOR_DBUS_SIGNALS = "./scripts/monitor_dbus_signals.py"
 
 
-def umount_mdv():
-    """
-    Locate and umount any stratis mdv mounts
-    :return: None
-    """
-    with open("/proc/self/mounts", "r", encoding="utf-8") as mounts:
-        for line in mounts.readlines():
-            if "/stratis/.mdv-" in line:
-                mountpoint = line.split()[1]
-                exec_command(["umount", mountpoint])
-
-
 def clean_up():
     """
     Try to clean up after a test failure.
@@ -46,8 +34,6 @@ def clean_up():
     """
 
     exec_command(["udevadm", "settle"])
-
-    umount_mdv()
 
     error_strings = []
 
