@@ -983,7 +983,7 @@ class StratisdCertify(
         """
         Test getting a valid and invalid report.
         """
-        (result, return_code, _) = StratisDbus.get_report("stopped_pools")
+        (result, return_code, _) = StratisDbus.get_report("errored_pool_report")
         self._inequality_test(result, dbus.String(""))
         self.assertEqual(return_code, dbus.UInt16(0))
         # Test that we have received valid JSON.
