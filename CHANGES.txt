@@ -1,3 +1,37 @@
+testing 3.1.2
+=============
+Required stratisd version: 3.1.0
+Required stratis-cli version: 3.1.0
+
+Recommended release for development: Fedora 36
+
+- Add a test for creating a pool with no overprovisioning specified:
+  https://github.com/stratis-storage/testing/pull/128
+
+- Add version tests for stratis-cli and stratisd:
+  https://github.com/stratis-storage/testing/issues/141
+  https://github.com/stratis-storage/testing/pull/142
+
+- Add man page tests:
+  https://github.com/stratis-storage/testing/issues/116
+  https://github.com/stratis-storage/testing/pull/133
+
+- Improve property setting test infrastructure:
+  https://github.com/stratis-storage/testing/issues/129
+  https://github.com/stratis-storage/testing/pull/131
+
+- Improve test skipping infrastructure:
+  https://github.com/stratis-storage/testing/issues/134
+  https://github.com/stratis-storage/testing/pull/136
+
+- Improve error reporting on stratisd start up:
+  https://github.com/stratis-storage/testing/issues/135
+  https://github.com/stratis-storage/testing/pull/138
+
+- Remove an obsolete method invoked by clean up code:
+  https://github.com/stratis-storage/testing/pull/139
+
+
 testing 3.1.1
 =============
 Required stratisd version: 3.1.0
