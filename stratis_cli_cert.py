@@ -133,6 +133,18 @@ class StratisCertify(unittest.TestCase):
             self.assertNotEqual(stdout, "")
 
 
+class StratisCliVersionCertify(StratisCertify):
+    """
+    Tests that check that the stratis command returns a version.
+    """
+
+    def test_stratis_command_version(self):
+        """
+        Test running "stratis --version".
+        """
+        self._unittest_command(["stratis", "--version"], 0, True, False)
+
+
 class StratisCliManPageCertify(StratisCertify):
     """
     Tests that check that documentation is properly installed.

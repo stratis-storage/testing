@@ -1096,6 +1096,23 @@ class StratisMinCertify(StratisCertify):
         self._inequality_test(stdout, "")
 
 
+class StratisdCmdCertify(StratisCertify):
+    """
+    Tests for the stratisd command-line
+    """
+
+    def test_stratisd_version(self):
+        """
+        Verify that stratisd can return a version string.
+        """
+        (return_code, stdout, stderr) = exec_test_command(
+            ["/usr/libexec/stratisd", "--version"]
+        )
+        self.assertEqual(return_code, 0)
+        self.assertEqual(stderr, "")
+        self._inequality_test(stdout, "")
+
+
 def main():
     """
     The main method.
