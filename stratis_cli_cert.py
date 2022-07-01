@@ -202,21 +202,19 @@ class StratisCliCertify(
         """
         self._test_permissions([_STRATIS_CLI, "daemon", "version"], False, False)
 
-    def test_errored_pool_report(self):
+    def test_stopped_pools_report(self):
         """
-        Test getting errored_pool_report.
+        Test getting the stopped_pools report.
         """
         self._unittest_command(
-            [_STRATIS_CLI, "report", "errored_pool_report"], 0, True, False
+            [_STRATIS_CLI, "report", "stopped_pools"], 0, True, False
         )
 
-    def test_errored_pool_report_permissions(self):
+    def test_stopped_pools_report_permissions(self):
         """
-        Test gettign the errored_pool_report succeeds with dropped permissions.
+        Test getting the stopped_pools report succeeds with dropped permissions.
         """
-        self._test_permissions(
-            [_STRATIS_CLI, "report", "errored_pool_report"], False, False
-        )
+        self._test_permissions([_STRATIS_CLI, "report", "stopped_pools"], False, False)
 
     def test_engine_state_report(self):
         """
