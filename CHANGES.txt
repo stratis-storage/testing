@@ -1,3 +1,14 @@
+testing 3.2.0
+=============
+Required stratisd version: 3.2.0
+Required stratis-cli version: 3.2.0
+
+Recommended release for development: Fedora 36
+
+- Reintroduce tests and revision bumps for Stratis 3.2.0:
+  https://github.com/stratis-storage/testing/pull/143
+
+
 testing 3.1.2
 =============
 Required stratisd version: 3.1.0
