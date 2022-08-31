@@ -51,6 +51,10 @@ def clean_up():
             return
         error_strings.append(f"{format_str % format_str_args}: {msg}")
 
+    # Start any stopped pools
+    for uuid in StratisDbus.stopped_pools():
+        StratisDbus.pool_start(uuid)
+
     # Remove FS
     for name, pool_name in StratisDbus.fs_list().items():
         check_result(

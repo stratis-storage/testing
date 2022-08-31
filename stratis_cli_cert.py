@@ -531,6 +531,23 @@ class StratisCliCertify(
         )
 
     @skip(_skip_condition(1))
+    def test_pool_stop_started(self):
+        """
+        Test stopping a started pool.
+        """
+        self._unittest_command(
+            [
+                _STRATIS_CLI,
+                "pool",
+                "stop",
+                make_test_pool(StratisCliCertify.DISKS[0:1]),
+            ],
+            0,
+            True,
+            True,
+        )
+
+    @skip(_skip_condition(1))
     def test_pool_destroy(self):
         """
         Test destroying a pool.
@@ -863,6 +880,35 @@ class StratisCliCertify(
         self._test_permissions(
             [_STRATIS_CLI, "filesystem", "destroy", pool_name, filesystem_name],
             True,
+            True,
+        )
+
+    @skip(_skip_condition(1))
+    def test_pool_stop_stopped(self):
+        """
+        Test stopping a stopped pool fails.
+        """
+        pool_name = make_test_pool(StratisCliCertify.DISKS[0:1])
+        self._unittest_command(
+            [
+                _STRATIS_CLI,
+                "pool",
+                "stop",
+                pool_name,
+            ],
+            0,
+            True,
+            True,
+        )
+        self._unittest_command(
+            [
+                _STRATIS_CLI,
+                "pool",
+                "stop",
+                pool_name,
+            ],
+            1,
+            False,
             True,
         )
 
