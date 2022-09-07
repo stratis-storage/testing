@@ -157,6 +157,21 @@ class StratisDbus:
         )
 
     @staticmethod
+    def stopped_pools():
+        """
+        Get stopped pools
+        :return: The current list of stopped pools
+        :rtype: str
+        """
+        iface = dbus.Interface(
+            StratisDbus._BUS.get_object(StratisDbus._BUS_NAME, StratisDbus._TOP_OBJECT),
+            dbus.PROPERTIES_IFACE,
+        )
+        return iface.Get(
+            StratisDbus._MNGR_IFACE, "StoppedPools", timeout=StratisDbus._TIMEOUT
+        )
+
+    @staticmethod
     def pool_list():
         """
         Query the pools
@@ -229,6 +244,42 @@ class StratisDbus:
             StratisDbus._MNGR_IFACE,
         )
         return iface.ListKeys(timeout=StratisDbus._TIMEOUT)
+
+    @staticmethod
+    def pool_start(uuid):
+        """
+        Start a pool
+        """
+        manager_iface = dbus.Interface(
+            StratisDbus._BUS.get_object(StratisDbus._BUS_NAME, StratisDbus._TOP_OBJECT),
+            StratisDbus._MNGR_IFACE,
+        )
+
+        return manager_iface.StartPool(uuid, (False, ""))
+
+    @staticmethod
+    def pool_stop(pool_path):
+        """
+        Stop a pool
+        """
+        manager_iface = dbus.Interface(
+            StratisDbus._BUS.get_object(StratisDbus._BUS_NAME, StratisDbus._TOP_OBJECT),
+            StratisDbus._MNGR_IFACE,
+        )
+
+        return manager_iface.StopPool(pool_path)
+
+    @staticmethod
+    def pool_uuid(pool_path):
+        """
+        Find a pool UUID given an object path.
+        """
+        iface = dbus.Interface(
+            StratisDbus._BUS.get_object(StratisDbus._BUS_NAME, pool_path),
+            dbus.PROPERTIES_IFACE,
+        )
+
+        return iface.Get(StratisDbus._POOL_IFACE, "Uuid", timeout=StratisDbus._TIMEOUT)
 
     @staticmethod
     def pool_create(

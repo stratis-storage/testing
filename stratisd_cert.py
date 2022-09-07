@@ -482,6 +482,72 @@ class StratisdCertify(
             None,
         )
 
+    @skip(_skip_condition(1))
+    def test_pool_stop_started(self):
+        """
+        Test stopping a started pool
+        """
+        pool_name = p_n()
+        pool_path = make_test_pool(pool_name, StratisCertify.DISKS[0:1])
+
+        self._unittest_command(
+            StratisDbus.pool_stop(pool_path),
+            dbus.UInt16(0),
+        )
+
+    @skip(_skip_condition(1))
+    def test_pool_stop_stopped(self):
+        """
+        Test stopping a stopped pool
+        """
+        pool_name = p_n()
+        pool_path = make_test_pool(pool_name, StratisCertify.DISKS[0:1])
+
+        self._unittest_command(
+            StratisDbus.pool_stop(pool_path),
+            dbus.UInt16(0),
+        )
+
+        self._unittest_command(
+            StratisDbus.pool_stop(pool_path),
+            dbus.UInt16(0),
+        )
+
+    @skip(_skip_condition(1))
+    def test_pool_start_stopped(self):
+        """
+        Test starting a stopped pool
+        """
+        pool_name = p_n()
+        pool_path = make_test_pool(pool_name, StratisCertify.DISKS[0:1])
+
+        pool_uuid = StratisDbus.pool_uuid(pool_path)
+
+        self._unittest_command(
+            StratisDbus.pool_stop(pool_path),
+            dbus.UInt16(0),
+        )
+
+        self._unittest_command(
+            StratisDbus.pool_start(pool_uuid),
+            dbus.UInt16(0),
+        )
+
+    @skip(_skip_condition(1))
+    def test_pool_start_started(self):
+        """
+        Test starting a started pool
+        """
+        pool_name = p_n()
+        pool_path = make_test_pool(pool_name, StratisCertify.DISKS[0:1])
+
+        pool_uuid = StratisDbus.pool_uuid(pool_path)
+
+        self._unittest_command(
+            StratisDbus.pool_start(pool_uuid),
+            dbus.UInt16(0),
+        )
+
     @skip(_skip_condition(3))
     def test_pool_add_cache(self):
         """
