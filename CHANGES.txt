@@ -8,6 +8,10 @@ Recommended release for development: Fedora 36
 - Increase D-Bus revision number to 3:
   https://github.com/stratis-storage/testing/pull/146
 
+- Add tests for starting and stopping pools:
+  https://github.com/stratis-storage/testing/issues/148
+  https://github.com/stratis-storage/testing/pull/149
+
 
 testing 3.2.0
 =============
