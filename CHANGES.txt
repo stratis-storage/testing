@@ -1,3 +1,21 @@
+testing 3.3.0
+=============
+Required stratisd version: 3.3.0
+Required stratis-cli version: 3.3.0
+
+Recommended release for development: Fedora 36
+
+- Increase D-Bus revision number to 3:
+  https://github.com/stratis-storage/testing/pull/146
+
+- Add tests for starting and stopping pools:
+  https://github.com/stratis-storage/testing/issues/148
+  https://github.com/stratis-storage/testing/pull/149
+
+- Tidies and Maintenance:
+  https://github.com/stratis-storage/testing/pull/151
+
+
 testing 3.2.0
 =============
 Required stratisd version: 3.2.0
