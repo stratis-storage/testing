@@ -41,6 +41,11 @@ def clean_up():
 
     exec_command(["udevadm", "settle"])
 
+    terminate_traces(MONITOR_DBUS_SIGNALS)
+
+    if process_exists("stratisd") is None:
+        raise RuntimeError("stratisd process is not running")
+
     error_strings = []
 
     def check_result(result, format_str, format_str_args):
@@ -98,8 +103,6 @@ def clean_up():
     else:
         if remnant_keys != []:
             error_strings.append(f'remnant keys: {", ".join(remnant_keys)}')
-
-    terminate_traces(MONITOR_DBUS_SIGNALS)
 
     assert isinstance(error_strings, list)
     if error_strings:
