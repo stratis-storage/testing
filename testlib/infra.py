@@ -58,7 +58,7 @@ def clean_up():
 
     # Start any stopped pools
     for uuid in StratisDbus.stopped_pools():
-        StratisDbus.pool_start(uuid)
+        StratisDbus.pool_start(uuid, "uuid")
 
     # Remove FS
     for name, pool_name in StratisDbus.fs_list().items():

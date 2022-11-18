@@ -548,6 +548,38 @@ class StratisCliCertify(
         )
 
     @skip(_skip_condition(1))
+    def test_pool_start_by_name(self):
+        """
+        Test starting a stopped pool by its name.
+        """
+        pool_name = make_test_pool(StratisCliCertify.DISKS[0:1])
+
+        self._unittest_command(
+            [
+                _STRATIS_CLI,
+                "pool",
+                "stop",
+                pool_name,
+            ],
+            0,
+            True,
+            True,
+        )
+
+        self._unittest_command(
+            [
+                _STRATIS_CLI,
+                "pool",
+                "start",
+                "--name",
+                pool_name,
+            ],
+            0,
+            True,
+            True,
+        )
+
+    @skip(_skip_condition(1))
     def test_pool_destroy(self):
         """
         Test destroying a pool.
