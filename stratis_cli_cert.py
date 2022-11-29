@@ -377,8 +377,6 @@ class StratisCliCertify(
     def test_pool_create_encrypted_with_cache(self):
         """
         Test creating an encrypted pool with cache.
-
-        This should fail.
         """
         with KernelKey("test-password") as key_desc:
             pool_name = make_test_pool(StratisCliCertify.DISKS[0:2], key_desc)
@@ -390,8 +388,8 @@ class StratisCliCertify(
                     pool_name,
                     StratisCliCertify.DISKS[2],
                 ],
-                1,
-                False,
+                0,
+                True,
                 True,
             )
 
