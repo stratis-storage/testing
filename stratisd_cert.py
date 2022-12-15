@@ -81,7 +81,7 @@ def _skip_condition(num_devices_required):
     return the_func
 
 
-def make_test_pool(pool_name, pool_disks):
+def make_test_pool(pool_name, pool_disks, *, key_desc=None):
     """
     Create a test pool that will later get destroyed
     :param str pool_name: Name of the pool to be created
@@ -91,6 +91,7 @@ def make_test_pool(pool_name, pool_disks):
     (obj_path_exists, (obj_path, _)), return_code, msg = StratisDbus.pool_create(
         pool_name,
         pool_disks,
+        key_desc=key_desc,
     )
 
     _raise_error_exception(return_code, msg, obj_path_exists)
@@ -463,6 +464,22 @@ class StratisdCertify(
                 StratisDbus.pool_create(
                     pool_name, StratisCertify.DISKS, key_desc=key_desc
                 ),
+                dbus.UInt16(0),
+            )
+
+    @skip(_skip_condition(2))
+    def test_pool_create_encrypted_with_cache(self):
+        """
+        Test creating an encrypted pool with cache.
+        """
+        with KernelKey("test-password") as key_desc:
+            pool_name = p_n()
+            pool_path = make_test_pool(
+                pool_name, StratisCertify.DISKS[0:1], key_desc=key_desc
+            )
+
+            self._unittest_command(
+                StratisDbus.pool_init_cache(pool_path, StratisCertify.DISKS[1:2]),
                 dbus.UInt16(0),
             )
 
