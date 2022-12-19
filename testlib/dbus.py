@@ -285,7 +285,11 @@ class StratisDbus:
 
     @staticmethod
     def pool_create(
-        pool_name, devices, *, key_desc=None, clevis_info=None, redundancy=None
+        pool_name,
+        devices,
+        *,
+        key_desc=None,
+        clevis_info=None,
     ):
         """
         Create a pool
@@ -295,8 +299,6 @@ class StratisDbus:
         :type key_desc: str or NoneType
         :param clevis_info: pin identifier and JSON clevis configuration
         :type clevis_info: str * str OR NoneType
-        :param redundancy: redundancy
-        :type redundancy: int
         :return: The return values of the CreatePool call
         :rtype: The D-Bus types (b(oao)), q, and s
         """
@@ -306,7 +308,6 @@ class StratisDbus:
         )
         return iface.CreatePool(
             pool_name,
-            (True, redundancy) if redundancy is not None else (False, 0),
             devices,
             (True, key_desc) if key_desc is not None else (False, ""),
             (True, clevis_info) if clevis_info is not None else (False, ("", "")),
