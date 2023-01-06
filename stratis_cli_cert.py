@@ -327,6 +327,18 @@ class StratisCliCertify(
         self._test_permissions([_STRATIS_CLI, "key", "unset", "testkey2"], True, True)
 
     @skip(_skip_condition(1))
+    def test_debug_uevent(self):
+        """
+        Test sending a debug uevent.
+        """
+        self._unittest_command(
+            [_STRATIS_CLI, "debug", "uevent", StratisCliCertify.DISKS[0]],
+            0,
+            True,
+            True,
+        )
+
+    @skip(_skip_condition(1))
     def test_pool_create(self):
         """
         Test creating a pool.
