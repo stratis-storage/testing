@@ -1,3 +1,26 @@
+testing 3.5.0
+=============
+Required stratisd version: 3.5.0
+Required stratis-cli version: 3.5.0
+
+Recommended release for development: Fedora 37
+
+- Increase D-Bus revision number to 5:
+  https://github.com/stratis-storage/testing/pull/160
+
+- Add/modify tests for creating pools with encrypted cache
+  https://github.com/stratis-storage/testing/pull/159
+
+- Remove redundancy value from testlib/dbus.py create_pool()
+  https://github.com/stratis-storage/testing/pull/162
+
+- Add test_debug_uevent:
+  https://github.com/stratis-storage/testing/pull/163
+
+- Tidies and Maintenance:
+  https://github.com/stratis-storage/testing/pull/156
+
+
 testing 3.4.0
 =============
 Required stratisd version: 3.4.0
