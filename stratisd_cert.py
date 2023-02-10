@@ -1210,6 +1210,23 @@ class StratisdCmdCertify(StratisCertify):
         self._inequality_test(stdout, "")
 
 
+class StratisDumpMetadataCertify(StratisCertify):
+    """
+    Tests for the stratis-dumpmetadata command
+    """
+
+    def test_stratis_dumpmetadata_help(self):
+        """
+        Test stratis-dumpmetadata help
+        """
+        (return_code, stdout, stderr) = exec_test_command(
+            ["stratis-dumpmetadata", "--help"]
+        )
+        self.assertEqual(return_code, 0)
+        self.assertEqual(stderr, "")
+        self._inequality_test(stdout, "")
+
+
 def main():
     """
     The main method.
