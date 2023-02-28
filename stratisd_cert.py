@@ -1133,6 +1133,17 @@ class StratisdManPageCertify(StratisCertify):
         self.assertEqual(stderr, "")
         self._inequality_test(stdout, "")
 
+    def test_access_stratis_dumpmetadata_man_page(self):
+        """
+        Test accessing the stratis-dumpmetadata manual page file.
+        """
+        (return_code, stdout, stderr) = exec_test_command(
+            ["man", "--where", "stratis-dumpmetadata"]
+        )
+        self.assertEqual(return_code, 0)
+        self.assertEqual(stderr, "")
+        self._inequality_test(stdout, "")
+
 
 class PredictusageCertify(StratisCertify):
     """
@@ -1193,6 +1204,23 @@ class StratisdCmdCertify(StratisCertify):
         """
         (return_code, stdout, stderr) = exec_test_command(
             ["/usr/libexec/stratisd", "--version"]
+        )
+        self.assertEqual(return_code, 0)
+        self.assertEqual(stderr, "")
+        self._inequality_test(stdout, "")
+
+
+class StratisDumpMetadataCertify(StratisCertify):
+    """
+    Tests for the stratis-dumpmetadata command
+    """
+
+    def test_stratis_dumpmetadata_help(self):
+        """
+        Test stratis-dumpmetadata help
+        """
+        (return_code, stdout, stderr) = exec_test_command(
+            ["stratis-dumpmetadata", "--help"]
         )
         self.assertEqual(return_code, 0)
         self.assertEqual(stderr, "")
