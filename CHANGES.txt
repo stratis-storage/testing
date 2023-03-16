@@ -1,3 +1,21 @@
+testing 3.5.1
+=============
+Required stratisd version: 3.5.2
+Required stratis-cli version: 3.5.0
+
+Recommended release for development: Fedora 37
+
+- Add some tests for stratis-dumpmetadata:
+  https://github.com/stratis-storage/testing/issues/165
+  https://github.com/stratis-storage/testing/pull/166
+
+- Add a script called test_harness.py:
+  https://github.com/stratis-storage/testing/pull/167
+
+- Tidies and Maintenance:
+  https://github.com/stratis-storage/testing/pull/168
+
+
 testing 3.5.0
 =============
 Required stratisd version: 3.5.0
