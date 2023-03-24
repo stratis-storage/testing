@@ -237,7 +237,7 @@ class StratisdCertify(
         """
         trace = getattr(self, "trace", None)
         if trace is not None:
-            time.sleep(1)
+            time.sleep(2)
             self.trace.send_signal(signal.SIGINT)
             (stdoutdata, _) = self.trace.communicate()
             msg = stdoutdata.decode("utf-8")
