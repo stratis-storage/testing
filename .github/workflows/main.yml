@@ -42,7 +42,7 @@ jobs:
           - dependencies: yamllint
             image: fedora:37  # CURRENT DEVELOPMENT ENVIRONMENT
             task: make -f Makefile yamllint
-    runs-on: ubuntu-18.04
+    runs-on: ubuntu-latest
     container: ${{ matrix.image }}
     steps:
       - uses: actions/checkout@v3
