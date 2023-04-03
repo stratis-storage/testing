@@ -26,7 +26,7 @@ jobs:
             task: make -f Makefile fmt-travis
           - dependencies: yamllint
             task: make -f Makefile yamllint
-    runs-on: ubuntu-18.04
+    runs-on: ubuntu-latest
     container: fedora:38  # NEXT DEVELOPMENT ENVIRONMENT
     steps:
       - uses: actions/checkout@v3
