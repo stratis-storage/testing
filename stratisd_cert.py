@@ -207,7 +207,7 @@ class StratisdCertify(
         """
         super().setUp()
 
-        if StratisCertify.monitor_dbus is True:
+        if StratisdCertify.monitor_dbus is True:
             command = [
                 MONITOR_DBUS_SIGNALS,
                 StratisDbus.BUS_NAME,
@@ -1248,7 +1248,7 @@ def main():
     )
     parsed_args, unittest_args = argument_parser.parse_known_args()
     StratisCertify.DISKS = parsed_args.DISKS
-    StratisCertify.monitor_dbus = parsed_args.monitor_dbus
+    StratisdCertify.monitor_dbus = parsed_args.monitor_dbus
     print(f"Using block device(s) for tests: {StratisCertify.DISKS}")
     unittest.main(argv=sys.argv[:1] + unittest_args)
 
