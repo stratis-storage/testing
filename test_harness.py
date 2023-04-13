@@ -65,8 +65,14 @@ def _run_command(num_devices, command):
     subprocess.run(command, check=True)
 
 
-def _run_stratisd_cert(_namespace):
-    _run_command(3, ["python3", "stratisd_cert.py", "--monitor-dbus", "-v"])
+def _run_stratisd_cert(namespace):
+    command = (
+        ["python3", "stratisd_cert.py"]
+        + (["--monitor-dbus"] if namespace.monitor_dbus else [])
+        + (["--verify-devices"] if namespace.verify_devices else [])
+        + ["-v"]
+    )
+    _run_command(3, command)
 
 
 def _run_stratis_cli_cert(_namespace):
@@ -91,6 +97,12 @@ def _gen_parser():
         "stratisd_cert", help="Run stratisd_cert.py"
     )
     stratisd_cert_parser.set_defaults(func=_run_stratisd_cert)
+    stratisd_cert_parser.add_argument(
+        "--monitor-dbus", help="Monitor D-Bus", action="store_true"
+    )
+    stratisd_cert_parser.add_argument(
+        "--verify-devices", help="Verify /dev/disk/by-id devices", action="store_true"
+    )
 
     stratis_cli_cert_parser = subparsers.add_parser(
         "stratis_cli_cert", help="Run stratis_cli_cert.py"
