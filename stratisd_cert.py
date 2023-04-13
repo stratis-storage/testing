@@ -18,6 +18,7 @@ Tests of stratisd.
 
 # isort: STDLIB
 import argparse
+import fnmatch
 import json
 import os
 import signal
@@ -235,6 +236,18 @@ class StratisdCertify(
         D-Bus trace.
         :return: None
         """
+        if StratisdCertify.verify_devices is True:
+            try:
+                disallowed_symlinks = []
+                for dev in os.listdir("/dev/disk/by-id"):
+                    if fnmatch.fnmatch(
+                        dev, "*stratis-1-private-*"
+                    ) and not fnmatch.fnmatch(dev, "*stratis-1-private-*-crypt"):
+                        disallowed_symlinks.append(dev)
+                self.assertEqual(disallowed_symlinks, [])
+            except FileNotFoundError:
+                pass
+
         trace = getattr(self, "trace", None)
         if trace is not None:
             # An eleven second sleep will make it virtually certain that
@@ -1246,9 +1259,14 @@ def main():
     argument_parser.add_argument(
         "--monitor-dbus", help="Monitor D-Bus", action="store_true"
     )
+    argument_parser.add_argument(
+        "--verify-devices", help="Verify /dev/disk/by-id devices", action="store_true"
+    )
     parsed_args, unittest_args = argument_parser.parse_known_args()
     StratisCertify.DISKS = parsed_args.DISKS
     StratisdCertify.monitor_dbus = parsed_args.monitor_dbus
+    StratisdCertify.verify_devices = parsed_args.verify_devices
+    StratisCertify.maxDiff = None
     print(f"Using block device(s) for tests: {StratisCertify.DISKS}")
     unittest.main(argv=sys.argv[:1] + unittest_args)
 
