@@ -217,7 +217,16 @@ try:
             if _MO is None:
                 _MO = _MAKE_MO()
             else:
-                data = _MO[object_path]
+                try:
+                    data = _MO[object_path]
+                except KeyError as err:
+                    err_str = (
+                        f"Attempted to update managed version of managed "
+                        f"objects data structure with new property information "
+                        f"for object path {object_path}, but there was no "
+                        f"entry for that object path"
+                    )
+                    raise RuntimeError(err_str) from err
 
                 if interface_name not in data:
                     data[interface_name] = {}
