@@ -1,3 +1,29 @@
+testing 3.5.2
+=============
+Required stratisd version: 3.5.2
+Required stratis-cli version: 3.5.0
+
+Recommended release for development: Fedora 38
+
+- Increase wait for D-Bus signals:
+  https://github.com/stratis-storage/testing/pull/173
+  https://github.com/stratis-storage/testing/pull/172
+
+- Add optional check for udev symlinks:
+  https://github.com/stratis-storage/testing/pull/175
+
+- Add more informative exception on KeyError for dbus-monitor tests:
+  https://github.com/stratis-storage/testing/pull/178
+
+- Adapt test harness so that stratis_cert.py parameters are optional:
+  https://github.com/stratis-storage/testing/pull/177
+
+- Tidies and Maintenance:
+  https://github.com/stratis-storage/testing/pull/179
+  https://github.com/stratis-storage/testing/pull/176
+  https://github.com/stratis-storage/testing/pull/174
+
+
 testing 3.5.1
 =============
 Required stratisd version: 3.5.2
