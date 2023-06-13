@@ -70,6 +70,11 @@ def _run_stratisd_cert(namespace):
         ["python3", "stratisd_cert.py"]
         + (["--monitor-dbus"] if namespace.monitor_dbus else [])
         + (["--verify-devices"] if namespace.verify_devices else [])
+        + (
+            []
+            if namespace.highest_revision_number is None
+            else [f"--highest-revision-number={namespace.highest_revision_number}"]
+        )
         + ["-v"]
     )
     _run_command(3, command)
@@ -102,6 +107,17 @@ def _gen_parser():
     )
     stratisd_cert_parser.add_argument(
         "--verify-devices", help="Verify /dev/disk/by-id devices", action="store_true"
+    )
+
+    stratisd_cert_parser.add_argument(
+        "--highest-revision-number",
+        dest="highest_revision_number",
+        default=None,
+        help=(
+            "Option to be passed as stratisd_cert.py --highest-revision-number "
+            "option. Not passed to stratisd_cert.py if set to default value of "
+            "None."
+        ),
     )
 
     stratis_cli_cert_parser = subparsers.add_parser(

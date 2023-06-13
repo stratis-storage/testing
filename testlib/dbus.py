@@ -116,18 +116,6 @@ class StratisDbus:
     )
 
     @staticmethod
-    def legacy_manager_interfaces():
-        """
-        Return a list of legacy manager interfaces, i.e., all Manager
-        interfaces that precede the current, newest one.
-        :rtype: list of str
-        """
-        interface_prefix = f"{StratisDbus.BUS_NAME}.Manager"
-        return [
-            f"{interface_prefix}.r{rn}" for rn in range(StratisDbus.REVISION_NUMBER)
-        ]
-
-    @staticmethod
     def get_managed_objects():
         """
         Get managed objects for stratis
