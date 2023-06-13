@@ -46,6 +46,26 @@ _ROOT = 0
 _NON_ROOT = 1
 
 
+def _revision_number_type(revision_number):
+    """
+    Raise value error if revision number is not valid.
+    :param revision_number: stratisd D-Bus interface revision number
+    """
+    revision_number = int(revision_number)
+    if revision_number < 0:
+        raise ValueError(revision_number)
+
+
+def _manager_interfaces(revision_number):
+    """
+    Return a list of manager interfaces from 0 to revision_number - 1.
+    :param int revision_number: highest D-Bus interface number
+    :rtype: list of str
+    """
+    interface_prefix = f"{StratisDbus.BUS_NAME}.Manager"
+    return [f"{interface_prefix}.r{rn}" for rn in range(revision_number)]
+
+
 def _raise_error_exception(return_code, msg, return_value_exists):
     """
     Check result of a D-Bus call in a context where it is in error
@@ -213,11 +233,12 @@ class StratisdCertify(
                 MONITOR_DBUS_SIGNALS,
                 StratisDbus.BUS_NAME,
                 StratisDbus.TOP_OBJECT,
-                f"--top-interface={StratisDbus.MNGR_IFACE}",
             ]
             command.extend(
                 f"--top-interface={intf}"
-                for intf in StratisDbus.legacy_manager_interfaces()
+                for intf in _manager_interfaces(
+                    StratisdCertify.highest_revision_number + 1
+                )
             )
             # pylint: disable=consider-using-with
             try:
@@ -1262,11 +1283,25 @@ def main():
     argument_parser.add_argument(
         "--verify-devices", help="Verify /dev/disk/by-id devices", action="store_true"
     )
+
+    argument_parser.add_argument(
+        "--higest-revision-number",
+        dest="highest_revision_number",
+        type=_revision_number_type,
+        default=StratisDbus.REVISION_NUMBER,
+        help=(
+            "The highest revision number of Manager interface to be "
+            "used when constructing Manager interface names to pass as an "
+            "argument to the optionally executed dbus monitor script."
+        ),
+    )
+
     parsed_args, unittest_args = argument_parser.parse_known_args()
     StratisCertify.DISKS = parsed_args.DISKS
     StratisdCertify.monitor_dbus = parsed_args.monitor_dbus
     StratisdCertify.verify_devices = parsed_args.verify_devices
     StratisCertify.maxDiff = None
+    StratisdCertify.highest_revision_number = parsed_args.highest_revision_number
     print(f"Using block device(s) for tests: {StratisCertify.DISKS}")
     unittest.main(argv=sys.argv[:1] + unittest_args)
 
