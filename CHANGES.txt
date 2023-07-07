@@ -1,3 +1,54 @@
+testing 3.5.3
+=============
+Required stratisd version: 3.5.8
+Required stratis-cli version: 3.5.0
+
+Recommended release for development: Fedora 38
+
+- Add test for setting blockdev property UserInfo:
+  https://github.com/stratis-storage/testing/pull/185
+
+- Make highest revision number an option for D-Bus monitor script:
+  https://github.com/stratis-storage/testing/pull/183
+
+- In D-Bus monitor script, introspect to find value of EmitsChangedSignal:
+  https://github.com/stratis-storage/testing/pull/190
+  https://github.com/stratis-storage/testing/pull/189
+
+- Add --monitor-dbus option to stratis-cli_cert.py:
+  https://github.com/stratis-storage/testing/pull/193
+
+- Add more output in D-Bus monitor script on key lookup failure:
+  https://github.com/stratis-storage/testing/pull/194
+
+- In D-Bus monitor script, get the initial GetManagedObjects result early:
+  https://github.com/stratis-storage/testing/pull/195
+
+- In D-Bus monitor script, use set-operations to calculate differences:
+  https://github.com/stratis-storage/testing/pull/202
+
+- In D-Bus monitor script, log while trying to get initial D-Bus connection:
+  https://github.com/stratis-storage/testing/pull/203
+
+- In D-Bus monitor script, use a special value to indicate a missing interface:
+  https://github.com/stratis-storage/testing/pull/205
+
+- Use mixin classes to share code for checks in tearDown and setUp:
+  https://github.com/stratis-storage/testing/pull/201
+  https://github.com/stratis-storage/testing/pull/200
+  https://github.com/stratis-storage/testing/pull/197
+
+- Add setup.py and setup.cfg to the repo:
+  https://github.com/stratis-storage/testing/pull/187
+
+- Re-add reverted commits:
+  https://github.com/stratis-storage/testing/pull/182
+
+- Tidies and Maintenance:
+  https://github.com/stratis-storage/testing/pull/206
+  https://github.com/stratis-storage/testing/pull/204
+
+
 testing 3.5.2
 =============
 Required stratisd version: 3.5.2
