@@ -107,16 +107,16 @@ def make_test_pool(pool_name, pool_disks, *, key_desc=None):
     Create a test pool that will later get destroyed
     :param str pool_name: Name of the pool to be created
     :param list pool_disks: List of disks with which the pool will be created
-    :return: Object path of the created pool
+    :return: Object path of the created pool, and list of block devices
     """
-    (obj_path_exists, (obj_path, _)), return_code, msg = StratisDbus.pool_create(
+    (obj_path_exists, (obj_path, blkdevs)), return_code, msg = StratisDbus.pool_create(
         pool_name,
         pool_disks,
         key_desc=key_desc,
     )
 
     _raise_error_exception(return_code, msg, obj_path_exists)
-    return obj_path
+    return obj_path, blkdevs
 
 
 def make_test_filesystem(pool_path, fs_name):
@@ -286,10 +286,10 @@ class StratisdCertify(
             )
 
     def _unittest_set_property(
-        self, pool_path, param_iface, dbus_param, dbus_value, exception_name
+        self, object_path, param_iface, dbus_param, dbus_value, exception_name
     ):  # pylint: disable=too-many-arguments
         """
-        :param pool_path: path to the pool
+        :param object_path: path to the object
         :param param_iface: D-Bus interface to use for parameter
         :param dbus_param: D-Bus parameter to be set
         :param dbus_value: Desired value for the D-Bus parameter
@@ -298,7 +298,7 @@ class StratisdCertify(
         """
         try:
             StratisDbus.pool_set_property(
-                pool_path, param_iface, dbus_param, dbus_value
+                object_path, param_iface, dbus_param, dbus_value
             )
 
         except dbus.exceptions.DBusException as err:
@@ -497,7 +497,7 @@ class StratisdCertify(
         """
         with KernelKey("test-password") as key_desc:
             pool_name = p_n()
-            pool_path = make_test_pool(
+            pool_path, _ = make_test_pool(
                 pool_name, StratisCertify.DISKS[0:1], key_desc=key_desc
             )
 
@@ -512,7 +512,7 @@ class StratisdCertify(
         Test creating a pool with no overprovisioning
         """
         pool_name = p_n()
-        pool_path = make_test_pool(pool_name, StratisCertify.DISKS[0:1])
+        pool_path, _ = make_test_pool(pool_name, StratisCertify.DISKS[0:1])
 
         self._unittest_set_property(
             pool_path,
@@ -559,7 +559,7 @@ class StratisdCertify(
         Test starting a stopped pool
         """
         pool_name = p_n()
-        pool_path = make_test_pool(pool_name, StratisCertify.DISKS[0:1])
+        pool_path, _ = make_test_pool(pool_name, StratisCertify.DISKS[0:1])
 
         pool_uuid = StratisDbus.pool_uuid(pool_path)
 
@@ -597,7 +597,7 @@ class StratisdCertify(
         Test starting a started pool
         """
         pool_name = p_n()
-        pool_path = make_test_pool(pool_name, StratisCertify.DISKS[0:1])
+        pool_path, _ = make_test_pool(pool_name, StratisCertify.DISKS[0:1])
 
         pool_uuid = StratisDbus.pool_uuid(pool_path)
 
@@ -612,7 +612,7 @@ class StratisdCertify(
         Test adding cache to a pool.
         """
         pool_name = p_n()
-        pool_path = make_test_pool(pool_name, StratisCertify.DISKS[0:1])
+        pool_path, _ = make_test_pool(pool_name, StratisCertify.DISKS[0:1])
 
         self._unittest_command(
             StratisDbus.pool_init_cache(pool_path, StratisCertify.DISKS[1:2]),
@@ -629,7 +629,7 @@ class StratisdCertify(
         Test that adding cache to pool fails when root permissions are dropped.
         """
         pool_name = p_n()
-        pool_path = make_test_pool(pool_name, StratisCertify.DISKS[0:1])
+        pool_path, _ = make_test_pool(pool_name, StratisCertify.DISKS[0:1])
 
         self._test_permissions(
             StratisDbus.pool_init_cache,
@@ -646,7 +646,7 @@ class StratisdCertify(
         Test creating existing pool after cache was added
         """
         pool_name = p_n()
-        pool_path = make_test_pool(pool_name, StratisCertify.DISKS[0:1])
+        pool_path, _ = make_test_pool(pool_name, StratisCertify.DISKS[0:1])
 
         self._unittest_command(
             StratisDbus.pool_init_cache(pool_path, StratisCertify.DISKS[1:2]),
@@ -663,7 +663,7 @@ class StratisdCertify(
         Test adding a data device after a cache is created.
         """
         pool_name = p_n()
-        pool_path = make_test_pool(pool_name, StratisCertify.DISKS[0:1])
+        pool_path, _ = make_test_pool(pool_name, StratisCertify.DISKS[0:1])
 
         self._unittest_command(
             StratisDbus.pool_init_cache(pool_path, StratisCertify.DISKS[1:2]),
@@ -680,7 +680,7 @@ class StratisdCertify(
         Test adding a different data device after a cache is created.
         """
         pool_name = p_n()
-        pool_path = make_test_pool(pool_name, StratisCertify.DISKS[0:1])
+        pool_path, _ = make_test_pool(pool_name, StratisCertify.DISKS[0:1])
 
         self._unittest_command(
             StratisDbus.pool_init_cache(pool_path, StratisCertify.DISKS[1:2]),
@@ -697,7 +697,7 @@ class StratisdCertify(
         Test creating existing pool with device already used by cache fails
         """
         pool_name = p_n()
-        pool_path = make_test_pool(pool_name, StratisCertify.DISKS[0:1])
+        pool_path, _ = make_test_pool(pool_name, StratisCertify.DISKS[0:1])
 
         self._unittest_command(
             StratisDbus.pool_init_cache(pool_path, StratisCertify.DISKS[1:2]),
@@ -714,7 +714,7 @@ class StratisdCertify(
         Test adding data to a pool.
         """
         pool_name = p_n()
-        pool_path = make_test_pool(pool_name, StratisCertify.DISKS[0:2])
+        pool_path, _ = make_test_pool(pool_name, StratisCertify.DISKS[0:2])
 
         self._unittest_command(
             StratisDbus.pool_add_data(pool_path, StratisCertify.DISKS[2:3]),
@@ -727,7 +727,7 @@ class StratisdCertify(
         Test adding data to a pool with a relative device path.
         """
         pool_name = p_n()
-        pool_path = make_test_pool(pool_name, StratisCertify.DISKS[0:2])
+        pool_path, _ = make_test_pool(pool_name, StratisCertify.DISKS[0:2])
 
         add_device = StratisCertify.DISKS[2]
         relative_device = create_relative_device_path(add_device)
@@ -743,7 +743,7 @@ class StratisdCertify(
         Test that adding data to a pool fails when root permissions are dropped.
         """
         pool_name = p_n()
-        pool_path = make_test_pool(pool_name, StratisCertify.DISKS[0:2])
+        pool_path, _ = make_test_pool(pool_name, StratisCertify.DISKS[0:2])
 
         self._test_permissions(
             StratisDbus.pool_add_data, [pool_path, StratisCertify.DISKS[2:3]], True
@@ -813,7 +813,7 @@ class StratisdCertify(
         Test setting the pool filesystem limit too low fails.
         """
         pool_name = p_n()
-        pool_path = make_test_pool(pool_name, StratisCertify.DISKS[0:1])
+        pool_path, _ = make_test_pool(pool_name, StratisCertify.DISKS[0:1])
 
         self._unittest_set_property(
             pool_path,
@@ -824,12 +824,28 @@ class StratisdCertify(
         )
 
     @skip(_skip_condition(1))
+    def test_blockdev_set_userinfo_property(self):
+        """
+        Test setting the UserInfo property on a block device.
+        """
+        pool_name = p_n()
+        _, blkdev_paths = make_test_pool(pool_name, StratisCertify.DISKS[0:1])
+
+        self._unittest_set_property(
+            blkdev_paths[0],
+            StratisDbus.BLKDEV_IFACE,
+            "UserInfo",
+            (dbus.Boolean(True), dbus.String("eeeeeeeeee")),
+            None,
+        )
+
+    @skip(_skip_condition(1))
     def test_filesystem_create(self):
         """
         Test creating a filesystem.
         """
         pool_name = p_n()
-        pool_path = make_test_pool(pool_name, StratisCertify.DISKS[0:1])
+        pool_path, _ = make_test_pool(pool_name, StratisCertify.DISKS[0:1])
 
         fs_name = fs_n()
 
@@ -843,7 +859,7 @@ class StratisdCertify(
         Test creating a filesystem with a specified size.
         """
         pool_name = p_n()
-        pool_path = make_test_pool(pool_name, StratisCertify.DISKS[0:1])
+        pool_path, _ = make_test_pool(pool_name, StratisCertify.DISKS[0:1])
 
         fs_name = fs_n()
 
@@ -858,7 +874,7 @@ class StratisdCertify(
         Test creating a filesystem with a specified size that is too small.
         """
         pool_name = p_n()
-        pool_path = make_test_pool(pool_name, StratisCertify.DISKS[0:1])
+        pool_path, _ = make_test_pool(pool_name, StratisCertify.DISKS[0:1])
 
         fs_name = fs_n()
 
@@ -873,7 +889,7 @@ class StratisdCertify(
         Test that creating a filesystem fails when root permissions are dropped.
         """
         pool_name = p_n()
-        pool_path = make_test_pool(pool_name, StratisCertify.DISKS[0:1])
+        pool_path, _ = make_test_pool(pool_name, StratisCertify.DISKS[0:1])
 
         fs_name = fs_n()
 
@@ -885,7 +901,7 @@ class StratisdCertify(
         Test the udev symlink creation for filesystem devices.
         """
         pool_name = p_n()
-        pool_path = make_test_pool(pool_name, StratisCertify.DISKS[0:1])
+        pool_path, _ = make_test_pool(pool_name, StratisCertify.DISKS[0:1])
 
         fs_name = fs_n()
         filesystem_path = make_test_filesystem(pool_path, fs_name)
@@ -901,7 +917,7 @@ class StratisdCertify(
         Test the udev symlink creation for filesystem devices after fs rename.
         """
         pool_name = p_n()
-        pool_path = make_test_pool(pool_name, StratisCertify.DISKS[0:1])
+        pool_path, _ = make_test_pool(pool_name, StratisCertify.DISKS[0:1])
 
         fs_name = fs_n()
         filesystem_path = make_test_filesystem(pool_path, fs_name)
@@ -925,7 +941,7 @@ class StratisdCertify(
         Test the udev symlink creation for filesystem devices after pool rename.
         """
         pool_name = p_n()
-        pool_path = make_test_pool(pool_name, StratisCertify.DISKS[0:1])
+        pool_path, _ = make_test_pool(pool_name, StratisCertify.DISKS[0:1])
 
         fs_name = fs_n()
         filesystem_path = make_test_filesystem(pool_path, fs_name)
@@ -949,7 +965,7 @@ class StratisdCertify(
         Test the udev symlink creation for filesystem devices after fs and pool rename.
         """
         pool_name = p_n()
-        pool_path = make_test_pool(pool_name, StratisCertify.DISKS[0:1])
+        pool_path, _ = make_test_pool(pool_name, StratisCertify.DISKS[0:1])
 
         fs_name = fs_n()
         filesystem_path = make_test_filesystem(pool_path, fs_name)
@@ -981,7 +997,7 @@ class StratisdCertify(
         Test renaming a filesystem.
         """
         pool_name = p_n()
-        pool_path = make_test_pool(pool_name, StratisCertify.DISKS[0:1])
+        pool_path, _ = make_test_pool(pool_name, StratisCertify.DISKS[0:1])
 
         fs_name = fs_n()
         make_test_filesystem(pool_path, fs_name)
@@ -998,7 +1014,7 @@ class StratisdCertify(
         Test that renaming a filesystem fails when root permissions are dropped.
         """
         pool_name = p_n()
-        pool_path = make_test_pool(pool_name, StratisCertify.DISKS[0:1])
+        pool_path, _ = make_test_pool(pool_name, StratisCertify.DISKS[0:1])
 
         fs_name = fs_n()
         make_test_filesystem(pool_path, fs_name)
@@ -1015,7 +1031,7 @@ class StratisdCertify(
         Test renaming a filesystem.
         """
         pool_name = p_n()
-        pool_path = make_test_pool(pool_name, StratisCertify.DISKS[0:1])
+        pool_path, _ = make_test_pool(pool_name, StratisCertify.DISKS[0:1])
 
         fs_name = fs_n()
         make_test_filesystem(pool_path, fs_name)
@@ -1030,7 +1046,7 @@ class StratisdCertify(
         Test snapshotting a filesystem.
         """
         pool_name = p_n()
-        pool_path = make_test_pool(pool_name, StratisCertify.DISKS[0:1])
+        pool_path, _ = make_test_pool(pool_name, StratisCertify.DISKS[0:1])
 
         fs_name = fs_n()
         fs_path = make_test_filesystem(pool_path, fs_name)
@@ -1047,7 +1063,7 @@ class StratisdCertify(
         Test snapshotting a filesystem fails when root permissions are dropped.
         """
         pool_name = p_n()
-        pool_path = make_test_pool(pool_name, StratisCertify.DISKS[0:1])
+        pool_path, _ = make_test_pool(pool_name, StratisCertify.DISKS[0:1])
 
         fs_name = fs_n()
         fs_path = make_test_filesystem(pool_path, fs_name)
@@ -1064,7 +1080,7 @@ class StratisdCertify(
         Test listing an existent filesystem.
         """
         pool_name = p_n()
-        pool_path = make_test_pool(pool_name, StratisCertify.DISKS[0:1])
+        pool_path, _ = make_test_pool(pool_name, StratisCertify.DISKS[0:1])
 
         fs_name = fs_n()
         make_test_filesystem(pool_path, fs_name)
@@ -1077,7 +1093,7 @@ class StratisdCertify(
         Test creating a filesystem that already exists.
         """
         pool_name = p_n()
-        pool_path = make_test_pool(pool_name, StratisCertify.DISKS[0:1])
+        pool_path, _ = make_test_pool(pool_name, StratisCertify.DISKS[0:1])
 
         fs_name = fs_n()
         make_test_filesystem(pool_path, fs_name)
@@ -1092,7 +1108,7 @@ class StratisdCertify(
         Test destroying a filesystem.
         """
         pool_name = p_n()
-        pool_path = make_test_pool(pool_name, StratisCertify.DISKS[0:1])
+        pool_path, _ = make_test_pool(pool_name, StratisCertify.DISKS[0:1])
 
         fs_name = fs_n()
         make_test_filesystem(pool_path, fs_name)
