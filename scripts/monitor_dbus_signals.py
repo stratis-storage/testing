@@ -19,12 +19,14 @@ with respect to their properties.
 """
 
 _MO = None
+_SERVICE = None
 _TOP_OBJECT = None
 _TOP_OBJECT_PATH = None
 _TOP_OBJECT_INTERFACES = None
 
 _OBJECT_MANAGER = None
 _PROPERTIES = None
+_INTROSPECTABLE = None
 
 
 INVALIDATED = None
@@ -33,6 +35,8 @@ _MAKE_MO = None
 
 _CALLBACK_ERRORS = []
 
+_EMITS_CHANGED_PROP = "org.freedesktop.DBus.Property.EmitsChangedSignal"
+
 try:
 
     # isort: STDLIB
@@ -40,6 +44,7 @@ try:
     import os
     import sys
     import xml.etree.ElementTree as ET
+    from enum import Enum
 
     # isort: THIRDPARTY
     import dbus
@@ -48,6 +53,29 @@ try:
 
     # isort: FIRSTPARTY
     from dbus_python_client_gen import make_class
+
+    class EmitsChangedSignal(Enum):
+        """
+        Values for EmitsChangedSignal introspection property.
+        """
+
+        TRUE = "true"
+        INVALIDATES = "invalidates"
+        CONST = "const"
+        FALSE = "false"
+
+        def __str__(self):
+            return self.value
+
+        @staticmethod
+        def from_str(code_str):
+            """
+            Get constant from string.
+            """
+            for item in list(EmitsChangedSignal):
+                if code_str == str(item):
+                    return item
+            return None
 
     class Invalidated:  # pylint: disable=too-few-public-methods
         """
@@ -77,12 +105,20 @@ try:
                 </method>
             </interface>
         """,
+        "org.freedesktop.DBus.Introspectable": """
+            <interface name="org.freedesktop.DBus.Introspectable">
+                <method name="Introspect">
+                    <arg name="xml_data" type="s" direction="out"/>
+                </method>
+            </interface>
+        """,
     }
 
     _TIMEOUT = 120000
 
     _OBJECT_MANAGER_IFACE = "org.freedesktop.DBus.ObjectManager"
     _PROPERTIES_IFACE = "org.freedesktop.DBus.Properties"
+    _INTROSPECTABLE_IFACE = "org.freedesktop.DBus.Introspectable"
 
     _OBJECT_MANAGER = make_class(
         "ObjectManager", ET.fromstring(_SPECS[_OBJECT_MANAGER_IFACE]), _TIMEOUT
@@ -90,6 +126,10 @@ try:
 
     _PROPERTIES = make_class(
         "Properties", ET.fromstring(_SPECS[_PROPERTIES_IFACE]), _TIMEOUT
+    )
+
+    _INTROSPECTABLE = make_class(
+        "Introspectable", ET.fromstring(_SPECS[_INTROSPECTABLE_IFACE]), _TIMEOUT
     )
 
     def _make_mo():
@@ -248,10 +288,11 @@ try:
         :type manager_interfaces: list of str
         """
 
-        global _TOP_OBJECT, _TOP_OBJECT_PATH, _TOP_OBJECT_INTERFACES  # pylint: disable=global-statement
+        global _TOP_OBJECT, _TOP_OBJECT_PATH, _TOP_OBJECT_INTERFACES, _SERVICE  # pylint: disable=global-statement
 
         dbus.mainloop.glib.DBusGMainLoop(set_as_default=True)
         bus = dbus.SystemBus()
+        _SERVICE = service
         _TOP_OBJECT_PATH = manager
         _TOP_OBJECT_INTERFACES = manager_interfaces
         _TOP_OBJECT = bus.get_object(service, _TOP_OBJECT_PATH)
@@ -451,6 +492,11 @@ except KeyboardInterrupt:
 
         diffs = []
 
+        bus = dbus.SystemBus()
+        proxy = bus.get_object(_SERVICE, object_path, introspect=False)
+        string_data = _INTROSPECTABLE.Methods.Introspect(proxy, {})
+        xml_data = ET.fromstring(string_data)
+
         for key, new_value in new_props.items():
             if key not in old_props:
                 diffs.append(AddedProperty(object_path, ifn, key, new_value))
@@ -458,10 +504,23 @@ except KeyboardInterrupt:
 
             old_value = old_props[key]
 
-            if (not old_value is INVALIDATED) and new_value != old_value:
-                diffs.append(
-                    DifferentProperty(object_path, ifn, key, old_value, new_value)
+            if new_value != old_value:
+                emits_signal_prop = xml_data.findall(
+                    f'./interface[@name="{ifn}"]/property[@name="{key}"]'
+                    f'/annotation[@name="{_EMITS_CHANGED_PROP}"]'
                 )
+                emits_signal = (
+                    EmitsChangedSignal.TRUE
+                    if emits_signal_prop == []
+                    else EmitsChangedSignal.from_str(
+                        emits_signal_prop[0].attrib["value"]
+                    )
+                )
+
+                if emits_signal is EmitsChangedSignal.TRUE:
+                    diffs.append(
+                        DifferentProperty(object_path, ifn, key, old_value, new_value)
+                    )
 
             del old_props[key]
 
