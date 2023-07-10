@@ -277,12 +277,16 @@ class StratisdCertify(
             # second to send out any resulting signals.
             time.sleep(11)
             self.trace.send_signal(signal.SIGINT)
-            (stdoutdata, _) = self.trace.communicate()
+            (stdoutdata, stderrdata) = self.trace.communicate()
             msg = stdoutdata.decode("utf-8")
             self.assertEqual(
                 self.trace.returncode,
                 0,
-                "Error from monitor_dbus_signals: " + os.linesep + os.linesep + msg,
+                stderrdata.decode("utf-8")
+                if len(msg) == 0
+                else (
+                    "Error from monitor_dbus_signals: " + os.linesep + os.linesep + msg
+                ),
             )
 
     def _unittest_set_property(
