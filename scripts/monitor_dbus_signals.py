@@ -421,6 +421,50 @@ except KeyboardInterrupt:
                 f"{self.key!r}, {self.old_value!r}, {self.new_value!r})"
             )
 
+    class NotInvalidatedProperty(Diff):  # pylint: disable=too-few-public-methods
+        """
+        Represents a case where the property should have been invalidated but
+        was updated instead.
+        """
+
+        def __init__(
+            self, object_path, interface_name, key, old_value, new_value
+        ):  # pylint: disable=too-many-arguments
+            self.object_path = object_path
+            self.interface_name = interface_name
+            self.key = key
+            self.old_value = old_value
+            self.new_value = new_value
+
+        def __repr__(self):
+            return (
+                f"NotInvalidatedProperty({self.object_path!r}, "
+                f"{self.interface_name!r}, {self.key!r}, {self.old_value!r}, "
+                f"{self.new_value!r})"
+            )
+
+    class ChangedProperty(Diff):  # pylint: disable=too-few-public-methods
+        """
+        Represents a case where the property should have been constant but
+        seems to have changed.
+        """
+
+        def __init__(
+            self, object_path, interface_name, key, old_value, new_value
+        ):  # pylint: disable=too-many-arguments
+            self.object_path = object_path
+            self.interface_name = interface_name
+            self.key = key
+            self.old_value = old_value
+            self.new_value = new_value
+
+        def __repr__(self):
+            return (
+                f"ChangedProperty({self.object_path!r}, "
+                f"{self.interface_name!r}, {self.key!r}, {self.old_value!r}, "
+                f"{self.new_value!r})"
+            )
+
     class RemovedObjectPath(Diff):  # pylint: disable=too-few-public-methods
         """
         Object path appears in recorded result but not in new result.
@@ -520,6 +564,21 @@ except KeyboardInterrupt:
                 if emits_signal is EmitsChangedSignal.TRUE:
                     diffs.append(
                         DifferentProperty(object_path, ifn, key, old_value, new_value)
+                    )
+
+                if (
+                    emits_signal is EmitsChangedSignal.INVALIDATES
+                    and old_value is not INVALIDATED
+                ):
+                    diffs.append(
+                        NotInvalidatedProperty(
+                            object_path, ifn, key, old_value, new_value
+                        )
+                    )
+
+                if emits_signal is EmitsChangedSignal.CONST:
+                    diffs.append(
+                        ChangedProperty(object_path, ifn, key, old_value, new_value)
                     )
 
             del old_props[key]
