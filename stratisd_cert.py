@@ -32,38 +32,19 @@ from tempfile import NamedTemporaryFile
 import dbus
 
 # isort: LOCAL
-from testlib.dbus import StratisDbus, fs_n, p_n
+from testlib.dbus import StratisDbus, fs_n, manager_interfaces, p_n
 from testlib.infra import MONITOR_DBUS_SIGNALS, KernelKey, StratisdSystemdStart
 from testlib.utils import (
     create_relative_device_path,
     exec_command,
     exec_test_command,
     resolve_symlink,
+    revision_number_type,
     skip,
 )
 
 _ROOT = 0
 _NON_ROOT = 1
-
-
-def _revision_number_type(revision_number):
-    """
-    Raise value error if revision number is not valid.
-    :param revision_number: stratisd D-Bus interface revision number
-    """
-    revision_number = int(revision_number)
-    if revision_number < 0:
-        raise ValueError(revision_number)
-
-
-def _manager_interfaces(revision_number):
-    """
-    Return a list of manager interfaces from 0 to revision_number - 1.
-    :param int revision_number: highest D-Bus interface number
-    :rtype: list of str
-    """
-    interface_prefix = f"{StratisDbus.BUS_NAME}.Manager"
-    return [f"{interface_prefix}.r{rn}" for rn in range(revision_number)]
 
 
 def _raise_error_exception(return_code, msg, return_value_exists):
@@ -236,7 +217,7 @@ class StratisdCertify(
             ]
             command.extend(
                 f"--top-interface={intf}"
-                for intf in _manager_interfaces(
+                for intf in manager_interfaces(
                     StratisdCertify.highest_revision_number + 1
                 )
             )
@@ -1307,7 +1288,7 @@ def main():
     argument_parser.add_argument(
         "--higest-revision-number",
         dest="highest_revision_number",
-        type=_revision_number_type,
+        type=revision_number_type,
         default=StratisDbus.REVISION_NUMBER,
         help=(
             "The highest revision number of Manager interface to be "

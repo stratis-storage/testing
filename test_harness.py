@@ -80,8 +80,19 @@ def _run_stratisd_cert(namespace):
     _run_command(3, command)
 
 
-def _run_stratis_cli_cert(_namespace):
-    _run_command(3, ["python3", "stratis_cli_cert.py", "-v"])
+def _run_stratis_cli_cert(namespace):
+    command = (
+        ["python3", "stratis_cli_cert.py"]
+        + (["--monitor-dbus"] if namespace.monitor_dbus else [])
+        + (["--verify-devices"] if namespace.verify_devices else [])
+        + (
+            []
+            if namespace.highest_revision_number is None
+            else [f"--highest-revision-number={namespace.highest_revision_number}"]
+        )
+        + ["-v"]
+    )
+    _run_command(3, command)
 
 
 def _gen_parser():
