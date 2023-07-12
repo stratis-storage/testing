@@ -33,22 +33,13 @@ from testlib.utils import (
     RandomKeyTmpFile,
     create_relative_device_path,
     exec_test_command,
+    revision_number_type,
     skip,
 )
 
 _STRATIS_CLI = os.getenv("STRATIS_CLI", "/usr/bin/stratis")
 _ROOT = 0
 _NON_ROOT = 1
-
-
-def _revision_number_type(revision_number):
-    """
-    Raise value error if revision number is not valid.
-    :param revision_number: stratisd D-Bus interface revision number
-    """
-    revision_number = int(revision_number)
-    if revision_number < 0:
-        raise ValueError(revision_number)
 
 
 def _manager_interfaces(revision_number):
@@ -1069,7 +1060,7 @@ def main():
     argument_parser.add_argument(
         "--higest-revision-number",
         dest="highest_revision_number",
-        type=_revision_number_type,
+        type=revision_number_type,
         default=StratisDbus.REVISION_NUMBER,
         help=(
             "The highest revision number of Manager interface to be "

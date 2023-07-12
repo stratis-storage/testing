@@ -44,6 +44,16 @@ def resolve_symlink(link):
     return os.path.abspath(os.path.join(os.path.dirname(link), os.readlink(link)))
 
 
+def revision_number_type(revision_number):
+    """
+    Raise value error if revision number is not valid.
+    :param revision_number: stratisd D-Bus interface revision number
+    """
+    revision_number = int(revision_number)
+    if revision_number < 0:
+        raise ValueError(revision_number)
+
+
 def create_relative_device_path(devpath):
     """
     Create a relative device path from an absolute device path
