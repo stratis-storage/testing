@@ -263,10 +263,14 @@ try:
                     err_str = (
                         f"Attempted to update managed version of managed "
                         f"objects data structure with new property information "
-                        f"for object path {object_path}, but there was no "
-                        f"entry for that object path"
+                        f"for object path {object_path} and interface "
+                        f"{interface_name}, but there was no entry for that "
+                        f"object path."
                     )
-                    raise RuntimeError(err_str) from err
+                    debug_str = "Value of GetManagedObjects result: "
+                    raise RuntimeError(
+                        os.linesep.join([err_str, debug_str, str(_MO)])
+                    ) from err
 
                 if interface_name not in data:
                     data[interface_name] = {}
