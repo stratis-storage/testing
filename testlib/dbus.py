@@ -41,6 +41,16 @@ def fs_n():
     return _TEST_PREF + "fs" + random_string()
 
 
+def manager_interfaces(revision_number):
+    """
+    Return a list of manager interfaces from 0 to revision_number - 1.
+    :param int revision_number: highest D-Bus interface number
+    :rtype: list of str
+    """
+    interface_prefix = f"{StratisDbus.BUS_NAME}.Manager"
+    return [f"{interface_prefix}.r{rn}" for rn in range(revision_number)]
+
+
 # This function is an exact copy of the get_timeout function in
 # the stratis_cli source code, except that it raises RuntimeError where
 # that function raises StratisCliEnvironmentError.

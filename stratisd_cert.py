@@ -32,7 +32,7 @@ from tempfile import NamedTemporaryFile
 import dbus
 
 # isort: LOCAL
-from testlib.dbus import StratisDbus, fs_n, p_n
+from testlib.dbus import StratisDbus, fs_n, manager_interfaces, p_n
 from testlib.infra import MONITOR_DBUS_SIGNALS, KernelKey, StratisdSystemdStart
 from testlib.utils import (
     create_relative_device_path,
@@ -45,16 +45,6 @@ from testlib.utils import (
 
 _ROOT = 0
 _NON_ROOT = 1
-
-
-def _manager_interfaces(revision_number):
-    """
-    Return a list of manager interfaces from 0 to revision_number - 1.
-    :param int revision_number: highest D-Bus interface number
-    :rtype: list of str
-    """
-    interface_prefix = f"{StratisDbus.BUS_NAME}.Manager"
-    return [f"{interface_prefix}.r{rn}" for rn in range(revision_number)]
 
 
 def _raise_error_exception(return_code, msg, return_value_exists):
@@ -227,7 +217,7 @@ class StratisdCertify(
             ]
             command.extend(
                 f"--top-interface={intf}"
-                for intf in _manager_interfaces(
+                for intf in manager_interfaces(
                     StratisdCertify.highest_revision_number + 1
                 )
             )
