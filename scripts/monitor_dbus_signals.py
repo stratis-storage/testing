@@ -43,6 +43,7 @@ try:
     import argparse
     import os
     import sys
+    import time
     import xml.etree.ElementTree as ET
     from enum import Enum
 
@@ -284,7 +285,14 @@ try:
         _SERVICE = service
         _TOP_OBJECT_PATH = manager
         _TOP_OBJECT_INTERFACES = manager_interfaces
-        _TOP_OBJECT = bus.get_object(service, _TOP_OBJECT_PATH)
+
+        while True:
+            try:
+                _TOP_OBJECT = bus.get_object(service, _TOP_OBJECT_PATH)
+            except:  # pylint: disable=bare-except
+                time.sleep(1)
+            else:
+                break
 
         _TOP_OBJECT.connect_to_signal(
             dbus_interface=_OBJECT_MANAGER_IFACE,
@@ -304,7 +312,13 @@ try:
             path_keyword="object_path",
         )
 
-        _MO = _MAKE_MO()
+        while True:
+            try:
+                _MO = _MAKE_MO()
+            except:  # pylint: disable=bare-except
+                time.sleep(1)
+            else:
+                break
 
         loop = GLib.MainLoop()
         loop.run()
