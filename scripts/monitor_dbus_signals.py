@@ -158,8 +158,6 @@ try:
         :param str object_path: D-Bus object path
         :param dict interfaces_added: map of interfaces to D-Bus properties
         """
-        global _MO  # pylint: disable=global-statement
-
         try:
             print(
                 "Interfaces added:",
@@ -171,14 +169,11 @@ try:
                 flush=True,
             )
 
-            if _MO is None:
-                _MO = _MAKE_MO()
+            if object_path in _MO.keys():
+                for interface, props in interfaces_added.items():
+                    _MO[object_path][interface] = props
             else:
-                if object_path in _MO.keys():
-                    for interface, props in interfaces_added.items():
-                        _MO[object_path][interface] = props
-                else:
-                    _MO[object_path] = interfaces_added
+                _MO[object_path] = interfaces_added
         except Exception as exc:  # pylint: disable=broad-except
             _CALLBACK_ERRORS.append(exc)
 
@@ -190,8 +185,6 @@ try:
         :param str object_path: D-Bus object path
         :param list interfaces: list of interfaces removed
         """
-        global _MO  # pylint: disable=global-statement
-
         try:
             print(
                 "Interfaces removed:",
@@ -203,19 +196,16 @@ try:
                 flush=True,
             )
 
-            if _MO is None:
-                _MO = _MAKE_MO()
-            else:
-                if object_path in _MO.keys():
-                    for interface in interfaces:
-                        del _MO[object_path][interface]
+            if object_path in _MO.keys():
+                for interface in interfaces:
+                    del _MO[object_path][interface]
 
-                    # The InterfacesRemoved signal is sent when an object is
-                    # removed as well as when a single interface is removed.
-                    # Assume that when all the interfaces are gone, this means
-                    # that the object itself has been removed.
-                    if _MO[object_path] == {}:
-                        del _MO[object_path]
+                # The InterfacesRemoved signal is sent when an object is
+                # removed as well as when a single interface is removed.
+                # Assume that when all the interfaces are gone, this means
+                # that the object itself has been removed.
+                if _MO[object_path] == {}:
+                    del _MO[object_path]
         except Exception as exc:  # pylint: disable=broad-except
             _CALLBACK_ERRORS.append(exc)
 
@@ -231,8 +221,6 @@ try:
         arguments or as a tuple. For this reason it is necessary to use a
         * argument, rather than the expected arguments.
         """
-        global _MO  # pylint: disable=global-statement
-
         try:
             if not object_path.startswith(_TOP_OBJECT_PATH):
                 return
@@ -254,31 +242,28 @@ try:
                 flush=True,
             )
 
-            if _MO is None:
-                _MO = _MAKE_MO()
-            else:
-                try:
-                    data = _MO[object_path]
-                except KeyError as err:
-                    err_str = (
-                        f"Attempted to update managed version of managed "
-                        f"objects data structure with new property information "
-                        f"for object path {object_path} and interface "
-                        f"{interface_name}, but there was no entry for that "
-                        f"object path."
-                    )
-                    debug_str = "Value of GetManagedObjects result: "
-                    raise RuntimeError(
-                        os.linesep.join([err_str, debug_str, str(_MO)])
-                    ) from err
+            try:
+                data = _MO[object_path]
+            except KeyError as err:
+                err_str = (
+                    f"Attempted to update managed version of managed "
+                    f"objects data structure with new property information "
+                    f"for object path {object_path} and interface "
+                    f"{interface_name}, but there was no entry for that "
+                    f"object path."
+                )
+                debug_str = "Value of GetManagedObjects result: "
+                raise RuntimeError(
+                    os.linesep.join([err_str, debug_str, str(_MO)])
+                ) from err
 
-                if interface_name not in data:
-                    data[interface_name] = {}
+            if interface_name not in data:
+                data[interface_name] = {}
 
-                for prop, value in properties_changed.items():
-                    data[interface_name][prop] = value
-                for prop in properties_invalidated:
-                    data[interface_name][prop] = INVALIDATED
+            for prop, value in properties_changed.items():
+                data[interface_name][prop] = value
+            for prop in properties_invalidated:
+                data[interface_name][prop] = INVALIDATED
         except Exception as exc:  # pylint: disable=broad-except
             _CALLBACK_ERRORS.append(exc)
 
@@ -292,7 +277,7 @@ try:
         :type manager_interfaces: list of str
         """
 
-        global _TOP_OBJECT, _TOP_OBJECT_PATH, _TOP_OBJECT_INTERFACES, _SERVICE  # pylint: disable=global-statement
+        global _TOP_OBJECT, _TOP_OBJECT_PATH, _TOP_OBJECT_INTERFACES, _SERVICE, _MO  # pylint: disable=global-statement
 
         dbus.mainloop.glib.DBusGMainLoop(set_as_default=True)
         bus = dbus.SystemBus()
@@ -318,6 +303,8 @@ try:
             signal_name="PropertiesChanged",
             path_keyword="object_path",
         )
+
+        _MO = _MAKE_MO()
 
         loop = GLib.MainLoop()
         loop.run()
