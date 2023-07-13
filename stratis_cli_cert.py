@@ -20,15 +20,12 @@ Tests of the stratis CLI.
 import argparse
 import fnmatch
 import os
-import signal
-import subprocess
 import sys
-import time
 import unittest
 
 # isort: LOCAL
-from testlib.dbus import StratisDbus, fs_n, manager_interfaces, p_n
-from testlib.infra import MONITOR_DBUS_SIGNALS, KernelKey, StratisdSystemdStart
+from testlib.dbus import StratisDbus, fs_n, p_n
+from testlib.infra import DbusMonitor, KernelKey, StratisdSystemdStart
 from testlib.utils import (
     RandomKeyTmpFile,
     create_relative_device_path,
@@ -164,7 +161,7 @@ class StratisCliManPageCertify(StratisCertify):
 
 
 class StratisCliCertify(
-    StratisdSystemdStart, StratisCertify
+    StratisdSystemdStart, StratisCertify, DbusMonitor
 ):  # pylint: disable=too-many-public-methods
     """
     Unit tests for the stratis-cli package.
@@ -178,28 +175,7 @@ class StratisCliCertify(
         """
         super().setUp()
 
-        if StratisCliCertify.monitor_dbus is True:
-            command = [
-                MONITOR_DBUS_SIGNALS,
-                StratisDbus.BUS_NAME,
-                StratisDbus.TOP_OBJECT,
-            ]
-            command.extend(
-                f"--top-interface={intf}"
-                for intf in manager_interfaces(
-                    StratisCliCertify.highest_revision_number + 1
-                )
-            )
-            # pylint: disable=consider-using-with
-            try:
-                self.trace = subprocess.Popen(
-                    command,
-                    stdout=subprocess.PIPE,
-                    stderr=subprocess.PIPE,
-                    shell=False,
-                )
-            except FileNotFoundError as err:
-                raise RuntimeError("monitor_dbus_signals script not found.") from err
+        DbusMonitor.setUp(self)
 
     def tearDown(self):
         """
@@ -219,25 +195,7 @@ class StratisCliCertify(
             except FileNotFoundError:
                 pass
 
-        trace = getattr(self, "trace", None)
-        if trace is not None:
-            # An eleven second sleep will make it virtually certain that
-            # stratisd has a chance to do one of its 10 second timer passes on
-            # pools and filesystems _and_ that the D-Bus task has at least one
-            # second to send out any resulting signals.
-            time.sleep(11)
-            self.trace.send_signal(signal.SIGINT)
-            (stdoutdata, stderrdata) = self.trace.communicate()
-            msg = stdoutdata.decode("utf-8")
-            self.assertEqual(
-                self.trace.returncode,
-                0,
-                stderrdata.decode("utf-8")
-                if len(msg) == 0
-                else (
-                    "Error from monitor_dbus_signals: " + os.linesep + os.linesep + msg
-                ),
-            )
+        DbusMonitor.tearDown(self)
 
     def _test_permissions(self, command_line, permissions, exp_stdout_empty):
         """
@@ -1061,10 +1019,10 @@ def main():
 
     parsed_args, unittest_args = argument_parser.parse_known_args()
     StratisCliCertify.DISKS = parsed_args.DISKS
-    StratisCliCertify.monitor_dbus = parsed_args.monitor_dbus
+    DbusMonitor.monitor_dbus = parsed_args.monitor_dbus
     StratisCliCertify.verify_devices = parsed_args.verify_devices
     StratisCertify.maxDiff = None
-    StratisCliCertify.highest_revision_number = parsed_args.highest_revision_number
+    DbusMonitor.highest_revision_number = parsed_args.highest_revision_number
 
     print(f"Using block device(s) for tests: {StratisCliCertify.DISKS}")
     unittest.main(argv=sys.argv[:1] + unittest_args)

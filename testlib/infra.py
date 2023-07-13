@@ -16,6 +16,9 @@ Methods and classes that do infrastructure tasks.
 """
 # isort: STDLIB
 import base64
+import os
+import signal
+import subprocess
 import time
 import unittest
 from tempfile import NamedTemporaryFile
@@ -23,7 +26,7 @@ from tempfile import NamedTemporaryFile
 # isort: THIRDPARTY
 import dbus
 
-from .dbus import StratisDbus
+from .dbus import StratisDbus, manager_interfaces
 from .utils import exec_command, process_exists, terminate_traces
 
 _OK = 0
@@ -163,6 +166,65 @@ class StratisdSystemdStart(unittest.TestCase):
 
         time.sleep(1)
         exec_command(["udevadm", "settle"])
+
+
+class DbusMonitor(unittest.TestCase):
+    """
+    Manage starting and stopping the D-Bus monitor script.
+    """
+
+    def setUp(self):
+        """
+        Set up the D-Bus monitor for a test run.
+        """
+        if DbusMonitor.monitor_dbus:  # pylint: disable=no-member
+            command = [
+                MONITOR_DBUS_SIGNALS,
+                StratisDbus.BUS_NAME,
+                StratisDbus.TOP_OBJECT,
+            ]
+            command.extend(
+                f"--top-interface={intf}"
+                for intf in manager_interfaces(
+                    # pylint: disable=no-member
+                    DbusMonitor.highest_revision_number
+                    + 1
+                )
+            )
+            # pylint: disable=consider-using-with
+            try:
+                self.trace = subprocess.Popen(
+                    command,
+                    stdout=subprocess.PIPE,
+                    stderr=subprocess.PIPE,
+                    shell=False,
+                )
+            except FileNotFoundError as err:
+                raise RuntimeError("monitor_dbus_signals script not found.") from err
+
+    def tearDown(self):
+        """
+        Stop the D-Bus monitor script and check the results.
+        """
+        trace = getattr(self, "trace", None)
+        if trace is not None:
+            # An eleven second sleep will make it virtually certain that
+            # stratisd has a chance to do one of its 10 second timer passes on
+            # pools and filesystems _and_ that the D-Bus task has at least one
+            # second to send out any resulting signals.
+            time.sleep(11)
+            self.trace.send_signal(signal.SIGINT)
+            (stdoutdata, stderrdata) = self.trace.communicate()
+            msg = stdoutdata.decode("utf-8")
+            self.assertEqual(
+                self.trace.returncode,
+                0,
+                stderrdata.decode("utf-8")
+                if len(msg) == 0
+                else (
+                    "Error from monitor_dbus_signals: " + os.linesep + os.linesep + msg
+                ),
+            )
 
 
 class KernelKey:  # pylint: disable=attribute-defined-outside-init
