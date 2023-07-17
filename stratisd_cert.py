@@ -18,7 +18,6 @@ Tests of stratisd.
 
 # isort: STDLIB
 import argparse
-import fnmatch
 import json
 import os
 import sys
@@ -30,7 +29,7 @@ import dbus
 
 # isort: LOCAL
 from testlib.dbus import StratisDbus, fs_n, p_n
-from testlib.infra import DbusMonitor, KernelKey, StratisdSystemdStart
+from testlib.infra import DbusMonitor, KernelKey, StratisdSystemdStart, SymlinkMonitor
 from testlib.utils import (
     create_relative_device_path,
     exec_command,
@@ -214,17 +213,7 @@ class StratisdCertify(
         D-Bus trace.
         :return: None
         """
-        if StratisdCertify.verify_devices is True:
-            try:
-                disallowed_symlinks = []
-                for dev in os.listdir("/dev/disk/by-id"):
-                    if fnmatch.fnmatch(
-                        dev, "*stratis-1-private-*"
-                    ) and not fnmatch.fnmatch(dev, "*stratis-1-private-*-crypt"):
-                        disallowed_symlinks.append(dev)
-                self.assertEqual(disallowed_symlinks, [])
-            except FileNotFoundError:
-                pass
+        SymlinkMonitor.tearDown(self)
 
         DbusMonitor.tearDown(self)
 
@@ -1258,7 +1247,7 @@ def main():
     parsed_args, unittest_args = argument_parser.parse_known_args()
     StratisCertify.DISKS = parsed_args.DISKS
     DbusMonitor.monitor_dbus = parsed_args.monitor_dbus
-    StratisdCertify.verify_devices = parsed_args.verify_devices
+    SymlinkMonitor.verify_devices = parsed_args.verify_devices
     StratisCertify.maxDiff = None
     DbusMonitor.highest_revision_number = parsed_args.highest_revision_number
     print(f"Using block device(s) for tests: {StratisCertify.DISKS}")
