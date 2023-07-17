@@ -178,8 +178,8 @@ class StratisCliCertify(
 
     def tearDown(self):
         """
-        Tear down an individual test.  For now, this only stops the
-        D-Bus trace.
+        Tear down an individual test.
+
         :return: None
         """
         SymlinkMonitor.tearDown(self)
