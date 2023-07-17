@@ -16,6 +16,7 @@ Methods and classes that do infrastructure tasks.
 """
 # isort: STDLIB
 import base64
+import fnmatch
 import os
 import signal
 import subprocess
@@ -166,6 +167,25 @@ class StratisdSystemdStart(unittest.TestCase):
 
         time.sleep(1)
         exec_command(["udevadm", "settle"])
+
+
+class SymlinkMonitor(unittest.TestCase):
+    """
+    Manage verification of device symlinks.
+    """
+
+    def tearDown(self):
+        if SymlinkMonitor.verify_devices:  # pylint: disable=no-member
+            try:
+                disallowed_symlinks = []
+                for dev in os.listdir("/dev/disk/by-id"):
+                    if fnmatch.fnmatch(
+                        dev, "*stratis-1-private-*"
+                    ) and not fnmatch.fnmatch(dev, "*stratis-1-private-*-crypt"):
+                        disallowed_symlinks.append(dev)
+                self.assertEqual(disallowed_symlinks, [])
+            except FileNotFoundError:
+                pass
 
 
 class DbusMonitor(unittest.TestCase):
