@@ -561,18 +561,17 @@ except KeyboardInterrupt:
             new_value = new_props[key]
             old_value = old_props[key]
 
+            emits_signal_prop = xml_data.findall(
+                f'./interface[@name="{ifn}"]/property[@name="{key}"]'
+                f'/annotation[@name="{_EMITS_CHANGED_PROP}"]'
+            )
+            emits_signal = (
+                EmitsChangedSignal.TRUE
+                if emits_signal_prop == []
+                else EmitsChangedSignal.from_str(emits_signal_prop[0].attrib["value"])
+            )
+
             if new_value != old_value:
-                emits_signal_prop = xml_data.findall(
-                    f'./interface[@name="{ifn}"]/property[@name="{key}"]'
-                    f'/annotation[@name="{_EMITS_CHANGED_PROP}"]'
-                )
-                emits_signal = (
-                    EmitsChangedSignal.TRUE
-                    if emits_signal_prop == []
-                    else EmitsChangedSignal.from_str(
-                        emits_signal_prop[0].attrib["value"]
-                    )
-                )
 
                 if emits_signal is EmitsChangedSignal.TRUE:
                     diffs.append(
