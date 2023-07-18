@@ -541,30 +541,33 @@ except KeyboardInterrupt:
 
         diffs = []
 
-        bus = dbus.SystemBus()
-        proxy = bus.get_object(_SERVICE, object_path, introspect=False)
-        string_data = _INTROSPECTABLE.Methods.Introspect(proxy, {})
-        xml_data = ET.fromstring(string_data)
+        proxy = dbus.SystemBus().get_object(_SERVICE, object_path, introspect=False)
+        xml_data = ET.fromstring(_INTROSPECTABLE.Methods.Introspect(proxy, {}))
 
-        for key, new_value in new_props.items():
-            if key not in old_props:
-                diffs.append(AddedProperty(object_path, ifn, key, new_value))
-                continue
+        old_props_keys = frozenset(old_props.keys())
+        new_props_keys = frozenset(new_props.keys())
 
+        for key in old_props_keys - new_props_keys:
+            diffs.append(RemovedProperty(object_path, ifn, key, old_props[key]))
+
+        for key in new_props_keys - old_props_keys:
+            diffs.append(AddedProperty(object_path, ifn, key, new_props[key]))
+
+        for key in new_props_keys & old_props_keys:
+            new_value = new_props[key]
             old_value = old_props[key]
 
+            emits_signal_prop = xml_data.findall(
+                f'./interface[@name="{ifn}"]/property[@name="{key}"]'
+                f'/annotation[@name="{_EMITS_CHANGED_PROP}"]'
+            )
+            emits_signal = (
+                EmitsChangedSignal.TRUE
+                if emits_signal_prop == []
+                else EmitsChangedSignal.from_str(emits_signal_prop[0].attrib["value"])
+            )
+
             if new_value != old_value:
-                emits_signal_prop = xml_data.findall(
-                    f'./interface[@name="{ifn}"]/property[@name="{key}"]'
-                    f'/annotation[@name="{_EMITS_CHANGED_PROP}"]'
-                )
-                emits_signal = (
-                    EmitsChangedSignal.TRUE
-                    if emits_signal_prop == []
-                    else EmitsChangedSignal.from_str(
-                        emits_signal_prop[0].attrib["value"]
-                    )
-                )
 
                 if emits_signal is EmitsChangedSignal.TRUE:
                     diffs.append(
@@ -585,11 +588,6 @@ except KeyboardInterrupt:
                     diffs.append(
                         ChangedProperty(object_path, ifn, key, old_value, new_value)
                     )
-
-            del old_props[key]
-
-        for key, old_value in old_props.items():
-            diffs.append(RemovedProperty(object_path, ifn, key, old_value))
 
         return diffs
 
@@ -618,32 +616,38 @@ except KeyboardInterrupt:
         mos = _MAKE_MO()  # pylint: disable=not-callable
 
         diffs = []
-        for object_path, new_data in mos.items():
-            if object_path not in _MO:  # pylint: disable=unsupported-membership-test
-                diffs.append(AddedObjectPath(object_path, new_data))
-                continue
 
+        old_object_paths = frozenset(_MO.keys())
+        new_object_paths = frozenset(mos.keys())
+
+        for object_path in old_object_paths - new_object_paths:
+            diffs.append(
+                # pylint: disable=unsubscriptable-object
+                RemovedObjectPath(object_path, _MO[object_path])
+            )
+
+        for object_path in new_object_paths - old_object_paths:
+            diffs.append(AddedObjectPath(object_path, mos[object_path]))
+
+        for object_path in new_object_paths & old_object_paths:
             old_data = _MO[object_path]  # pylint: disable=unsubscriptable-object
+            new_data = mos[object_path]
 
-            for ifn, new_props in new_data.items():
-                if ifn not in old_data:
-                    diffs.append(AddedInterface(object_path, ifn, new_props))
-                    continue
+            old_ifns = frozenset(old_data.keys())
+            new_ifns = frozenset(new_data.keys())
 
+            for ifn in new_ifns - old_ifns:
+                diffs.append(AddedInterface(object_path, ifn, new_data[ifn]))
+
+            for ifn in old_ifns - new_ifns:
+                diffs.append(RemovedInterface(object_path, ifn, old_data[ifn]))
+
+            for ifn in old_ifns & new_ifns:
                 old_props = old_data[ifn]
+                new_props = new_data[ifn]
+
                 prop_diffs = _check_props(object_path, ifn, old_props, new_props)
                 diffs.extend(prop_diffs)
-                del old_data[ifn]
-
-            for ifn, old_props in old_data.items():
-                diffs.append(RemovedInterface(object_path, ifn, old_props))
-
-            del _MO[object_path]  # pylint: disable=unsupported-delete-operation
-
-        assert isinstance(_MO, dict)
-        if _MO:
-            for object_path, old_data in _MO.items():
-                diffs.append(RemovedObjectPath(object_path, old_data))
 
         return diffs
 
