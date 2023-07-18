@@ -526,9 +526,7 @@ except KeyboardInterrupt:
                 f"{self.old_value!r})"
             )
 
-    def _check_props(
-        object_path, ifn, old_props, new_props
-    ):  # pylint: disable=too-many-locals
+    def _check_props(object_path, ifn, old_props, new_props):
         """
         Find differences between two sets of properties.
 
@@ -543,10 +541,8 @@ except KeyboardInterrupt:
 
         diffs = []
 
-        bus = dbus.SystemBus()
-        proxy = bus.get_object(_SERVICE, object_path, introspect=False)
-        string_data = _INTROSPECTABLE.Methods.Introspect(proxy, {})
-        xml_data = ET.fromstring(string_data)
+        proxy = dbus.SystemBus().get_object(_SERVICE, object_path, introspect=False)
+        xml_data = ET.fromstring(_INTROSPECTABLE.Methods.Introspect(proxy, {}))
 
         old_props_keys = frozenset(old_props.keys())
         new_props_keys = frozenset(new_props.keys())
