@@ -289,8 +289,12 @@ try:
         while True:
             try:
                 _TOP_OBJECT = bus.get_object(service, _TOP_OBJECT_PATH)
-            except:  # pylint: disable=bare-except
-                time.sleep(1)
+            except Exception as err:  # pylint: disable=broad-exception-caught
+                print(
+                    f'Failed to get top object "{_TOP_OBJECT_PATH}" for '
+                    f'service "{_SERVICE}". Error: {err}. Retrying.'
+                )
+                time.sleep(4)
             else:
                 break
 
@@ -315,8 +319,13 @@ try:
         while True:
             try:
                 _MO = _MAKE_MO()
-            except:  # pylint: disable=bare-except
-                time.sleep(1)
+            except Exception as err:  # pylint: disable=broad-exception-caught
+                print(
+                    "Failed to get initial GetManagedObjects result for "
+                    f'service "{_SERVICE}" and top object '
+                    f'"{_TOP_OBJECT_PATH}". Error: {err}. Retrying.'
+                )
+                time.sleep(4)
             else:
                 break
 
