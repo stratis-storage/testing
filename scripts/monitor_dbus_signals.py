@@ -81,7 +81,7 @@ try:
     class Invalidated:  # pylint: disable=too-few-public-methods
         """
         Used to record in the updated GetManagedObjects value that a value has
-        been invalidates.
+        been invalidated.
         """
 
         def __repr__(self):
