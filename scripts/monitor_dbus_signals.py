@@ -89,6 +89,18 @@ try:
 
     INVALIDATED = Invalidated()
 
+    class MissingInterface:  # pylint: disable=too-few-public-methods
+        """
+        Used to record in the updated GetManagedObjects value that when a
+        property changed signal was received, the interface for that property
+        could not be be found.
+        """
+
+        def __repr__(self):
+            return "MissingInterface()"
+
+    MISSING_INTERFACE = MissingInterface()
+
     # a minimal chunk of introspection data, enough for the methods needed.
     _SPECS = {
         "org.freedesktop.DBus.ObjectManager": """
@@ -259,7 +271,10 @@ try:
                 ) from err
 
             if interface_name not in data:
-                data[interface_name] = {}
+                data[interface_name] = MISSING_INTERFACE
+
+            if data[interface_name] is MISSING_INTERFACE:
+                return
 
             for prop, value in properties_changed.items():
                 data[interface_name][prop] = value
@@ -535,13 +550,27 @@ except KeyboardInterrupt:
                 f"{self.old_value!r})"
             )
 
+    class MissingInterface(Diff):  # pylint: disable=too-few-public-methods
+        """
+        Attempted to update a property on this interface, but the interface
+        itself was missing when that happened.
+        """
+
+        def __init__(self, object_path, interface_name):
+            self.object_path = object_path
+            self.interface_name = interface_name
+
+        def __repr__(self):
+            return f"MissingInterface({self.object_path!r}, {self.interface_name!r}"
+
     def _check_props(object_path, ifn, old_props, new_props):
         """
         Find differences between two sets of properties.
 
         :param str object_path: D-Bus object path
         :param str ifn: a single interface name
-        :param dict old_props: map of keys to stored property values
+        :param old_props: map of keys to stored property values
+        :type old_props: dict or MISSING_INTERFACE
         :param dict new_props: map of keys to current property values
 
         :rtype list:
@@ -552,6 +581,10 @@ except KeyboardInterrupt:
 
         proxy = dbus.SystemBus().get_object(_SERVICE, object_path, introspect=False)
         xml_data = ET.fromstring(_INTROSPECTABLE.Methods.Introspect(proxy, {}))
+
+        if old_props is MISSING_INTERFACE:
+            diffs.append(MissingInterface(object_path, ifn))
+            return diffs
 
         old_props_keys = frozenset(old_props.keys())
         new_props_keys = frozenset(new_props.keys())
