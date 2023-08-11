@@ -106,7 +106,7 @@ class StratisDbus:
     _BUS = dbus.SystemBus()
     _BUS_NAME = "org.storage.stratis3"
     _TOP_OBJECT = "/org/storage/stratis3"
-    REVISION_NUMBER = 6
+    REVISION_NUMBER = 5
     _REVISION = f"r{REVISION_NUMBER}"
     BUS_NAME = _BUS_NAME
     TOP_OBJECT = _TOP_OBJECT
