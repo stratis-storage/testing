@@ -106,7 +106,7 @@ class StratisDbus:
     _BUS = dbus.SystemBus()
     _BUS_NAME = "org.storage.stratis3"
     _TOP_OBJECT = "/org/storage/stratis3"
-    REVISION_NUMBER = 6
+    REVISION_NUMBER = 5
     _REVISION = f"r{REVISION_NUMBER}"
     BUS_NAME = _BUS_NAME
     TOP_OBJECT = _TOP_OBJECT
@@ -118,7 +118,6 @@ class StratisDbus:
     _BLKDEV_IFACE = f"{_BUS_NAME}.blockdev.{_REVISION}"
     POOL_IFACE = _POOL_IFACE
     FS_IFACE = _FS_IFACE
-    BLKDEV_IFACE = _BLKDEV_IFACE
     MNGR_IFACE = _MNGR_IFACE
 
     _DBUS_TIMEOUT_SECONDS = 120
@@ -259,7 +258,7 @@ class StratisDbus:
         return manager_iface.StartPool(id_string, id_type, (False, ""))
 
     @staticmethod
-    def pool_stop(id_string, id_type):
+    def pool_stop(pool_path):
         """
         Stop a pool
         """
@@ -268,7 +267,7 @@ class StratisDbus:
             StratisDbus._MNGR_IFACE,
         )
 
-        return manager_iface.StopPool(id_string, id_type)
+        return manager_iface.StopPool(pool_path)
 
     @staticmethod
     def pool_uuid(pool_path):
