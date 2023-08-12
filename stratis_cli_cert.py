@@ -567,13 +567,9 @@ class StratisCliCertify(
         """
         Test stopping a started pool.
         """
+        pool_name = make_test_pool(StratisCliCertify.DISKS[0:1])
         self._unittest_command(
-            [
-                _STRATIS_CLI,
-                "pool",
-                "stop",
-                make_test_pool(StratisCliCertify.DISKS[0:1]),
-            ],
+            [_STRATIS_CLI, "pool", "stop", f"--name={pool_name}"],
             0,
             True,
             True,
@@ -591,7 +587,7 @@ class StratisCliCertify(
                 _STRATIS_CLI,
                 "pool",
                 "stop",
-                pool_name,
+                f"--name={pool_name}",
             ],
             0,
             True,
@@ -958,7 +954,7 @@ class StratisCliCertify(
                 _STRATIS_CLI,
                 "pool",
                 "stop",
-                pool_name,
+                f"--name={pool_name}",
             ],
             0,
             True,
@@ -969,7 +965,7 @@ class StratisCliCertify(
                 _STRATIS_CLI,
                 "pool",
                 "stop",
-                pool_name,
+                f"--name={pool_name}",
             ],
             1,
             False,
