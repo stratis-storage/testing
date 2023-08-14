@@ -48,10 +48,13 @@ def revision_number_type(revision_number):
     """
     Raise value error if revision number is not valid.
     :param revision_number: stratisd D-Bus interface revision number
+    :rtype: int
+    :return: proper revision number
     """
     revision_number = int(revision_number)
     if revision_number < 0:
         raise ValueError(revision_number)
+    return revision_number
 
 
 def create_relative_device_path(devpath):
