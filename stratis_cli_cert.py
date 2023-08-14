@@ -995,7 +995,7 @@ def main():
     )
 
     argument_parser.add_argument(
-        "--higest-revision-number",
+        "--highest-revision-number",
         dest="highest_revision_number",
         type=revision_number_type,
         default=StratisDbus.REVISION_NUMBER,
