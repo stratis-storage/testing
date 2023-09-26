@@ -496,7 +496,7 @@ class StratisCliCertify(
     @skip(_skip_condition(3))
     def test_pool_init_cache(self):
         """
-        Test initialzing the cache for a pool.
+        Test initializing the cache for a pool.
         """
         self._unittest_command(
             [
@@ -514,7 +514,7 @@ class StratisCliCertify(
     @skip(_skip_condition(3))
     def test_pool_init_cache_permissions(self):
         """
-        Test initialzing the cache for a pool fails with dropped permissions.
+        Test initializing the cache for a pool fails with dropped permissions.
         """
         self._test_permissions(
             [
@@ -531,7 +531,7 @@ class StratisCliCertify(
     @skip(_skip_condition(3))
     def test_pool_init_cache_add_data(self):
         """
-        Test initialzing the cache for a pool, then adding a data device.
+        Test initializing the cache for a pool, then adding a data device.
         """
 
         pool_name = make_test_pool(StratisCliCertify.DISKS[0:1])

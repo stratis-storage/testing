@@ -329,7 +329,7 @@ class StratisdCertify(
 
     def test_blockdev_list_permissions(self):
         """
-        Test that listing blockdevs suceeds when root permissions are dropped.
+        Test that listing blockdevs succeeds when root permissions are dropped.
         """
         self._test_permissions(StratisDbus.blockdev_list, [], False)
 
@@ -342,7 +342,7 @@ class StratisdCertify(
 
     def test_filesystem_list_permissions(self):
         """
-        Test that listing filesystem suceeds when root permissions are dropped.
+        Test that listing filesystem succeeds when root permissions are dropped.
         """
         self._test_permissions(StratisDbus.fs_list, [], False)
 

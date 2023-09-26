@@ -384,7 +384,7 @@ YAML linter: yamllint (1.26.0)
 - Add very basic testing for stratis-min executable:
   https://github.com/stratis-storage/testing/pull/23
 
-- Calulate filesystem devlinks directly, not from stratisd D-Bus property:
+- Calculate filesystem devlinks directly, not from stratisd D-Bus property:
   https://github.com/stratis-storage/testing/pull/7
 
 - Adapt tests to r4 Manager interface:
@@ -393,7 +393,7 @@ YAML linter: yamllint (1.26.0)
 - Bump stratisd interface revision numbers:
   https://github.com/stratis-storage/testing/pull/11
 
-- Adapt test to accomodate bug fix in dbus crate:
+- Adapt test to accommodate bug fix in dbus crate:
   https://github.com/stratis-storage/testing/pull/9
 
 - Always settle before creating a pool:
