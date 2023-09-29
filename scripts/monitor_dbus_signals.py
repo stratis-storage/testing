@@ -38,7 +38,6 @@ _CALLBACK_ERRORS = []
 _EMITS_CHANGED_PROP = "org.freedesktop.DBus.Property.EmitsChangedSignal"
 
 try:
-
     # isort: STDLIB
     import argparse
     import os
@@ -610,7 +609,6 @@ except KeyboardInterrupt:
             )
 
             if new_value != old_value:
-
                 if emits_signal is EmitsChangedSignal.TRUE:
                     diffs.append(
                         DifferentProperty(object_path, ifn, key, old_value, new_value)
