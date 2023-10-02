@@ -65,7 +65,7 @@ def _run_command(num_devices, command):
     subprocess.run(command, check=True)
 
 
-def _run_stratisd_cert(namespace):
+def _run_stratisd_cert(namespace, unittest_args):
     command = (
         ["python3", "stratisd_cert.py"]
         + (["--monitor-dbus"] if namespace.monitor_dbus else [])
@@ -76,11 +76,12 @@ def _run_stratisd_cert(namespace):
             else [f"--highest-revision-number={namespace.highest_revision_number}"]
         )
         + ["-v"]
+        + unittest_args
     )
     _run_command(3, command)
 
 
-def _run_stratis_cli_cert(namespace):
+def _run_stratis_cli_cert(namespace, unittest_args):
     command = (
         ["python3", "stratis_cli_cert.py"]
         + (["--monitor-dbus"] if namespace.monitor_dbus else [])
@@ -91,6 +92,7 @@ def _run_stratis_cli_cert(namespace):
             else [f"--highest-revision-number={namespace.highest_revision_number}"]
         )
         + ["-v"]
+        + unittest_args
     )
     _run_command(3, command)
 
@@ -145,9 +147,9 @@ def main():
     """
     parser = _gen_parser()
 
-    namespace = parser.parse_args()
+    namespace, unittest_args = parser.parse_known_args()
 
-    namespace.func(namespace)
+    namespace.func(namespace, unittest_args)
 
 
 if __name__ == "__main__":
