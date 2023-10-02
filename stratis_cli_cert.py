@@ -973,6 +973,50 @@ class StratisCliCertify(
         )
 
 
+class Config:  # pylint: disable=too-few-public-methods
+    """
+    Test configuration
+    """
+
+    def __init__(
+        self,
+        disks,
+        *,
+        monitor_dbus=False,
+        verify_filesystem_symlinks=False,
+        highest_revision_number=StratisDbus.REVISION_NUMBER,
+    ):
+        """
+        Initializer.
+
+        :param disks: The disks to use for the tests.
+        :type disks: list of str
+        :param bool monitor_dbus: whether or not to monitor the D-Bus signals
+        :param bool verify_filesystem_symlinks: if true, verify symlinks
+        :param int highest_revision_number: highest revision on D-Bus
+        """
+        self.disks = disks
+        self.monitor_dbus = monitor_dbus
+        self.verify_filesystem_symlinks = verify_filesystem_symlinks
+        self.highest_revision_number = highest_revision_number
+
+
+def run_tests(config, unittest_args):
+    """
+    Run tests according to the specified configuration.
+
+    :param Config config: configuration for the tests
+    :param unittest_args: values to pass to unittest framework
+    """
+    StratisCliCertify.DISKS = config.disks
+    DbusMonitor.monitor_dbus = config.monitor_dbus
+    SymlinkMonitor.verify_devices = config.verify_filesystem_symlinks
+    StratisCertify.maxDiff = None
+    DbusMonitor.highest_revision_number = config.highest_revision_number
+    print(f"Using block device(s) for tests: {StratisCliCertify.DISKS}")
+    unittest.main(argv=sys.argv[:1] + unittest_args)
+
+
 def main():
     """
     The main method.
@@ -1007,14 +1051,15 @@ def main():
     )
 
     parsed_args, unittest_args = argument_parser.parse_known_args()
-    StratisCliCertify.DISKS = parsed_args.DISKS
-    DbusMonitor.monitor_dbus = parsed_args.monitor_dbus
-    SymlinkMonitor.verify_devices = parsed_args.verify_devices
-    StratisCertify.maxDiff = None
-    DbusMonitor.highest_revision_number = parsed_args.highest_revision_number
 
-    print(f"Using block device(s) for tests: {StratisCliCertify.DISKS}")
-    unittest.main(argv=sys.argv[:1] + unittest_args)
+    config = Config(
+        parsed_args.DISKS,
+        monitor_dbus=parsed_args.monitor_dbus,
+        verify_filesystem_symlinks=parsed_args.verify_devices,
+        highest_revision_number=parsed_args.highest_revision_number,
+    )
+
+    run_tests(config, unittest_args)
 
 
 if __name__ == "__main__":
