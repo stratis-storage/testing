@@ -17,10 +17,12 @@ Simple test harness for running test scripts on loopbacked devices.
 
 # isort: STDLIB
 import argparse
-import itertools
 import os
 import subprocess
 import tempfile
+
+# isort: LOCAL
+from testlib.dbus import StratisDbus
 
 _LOSETUP_BIN = "/usr/sbin/losetup"
 _SIZE_OF_DEVICE = 1024**4  # 1 TiB
@@ -53,46 +55,42 @@ def _make_loopbacked_devices(num):
     return devices
 
 
-def _run_command(num_devices, command):
-    """
-    Prepare devices and run command on devices.
+def _run_stratisd_cert(namespace, unittest_args):
+    # isort: FIRSTPARTY
+    # pylint: disable=import-outside-toplevel
+    from stratisd_cert import Config, run_tests
 
-    :param int num_devices: number of loopbacked devices
-    :param list command: the command to be run
-    """
-    devices = _make_loopbacked_devices(num_devices)
-    command = command + list(itertools.chain(*[["--disk", dev] for dev in devices]))
-    subprocess.run(command, check=True)
+    devices = _make_loopbacked_devices(3)
 
-
-def _run_stratisd_cert(namespace):
-    command = (
-        ["python3", "stratisd_cert.py"]
-        + (["--monitor-dbus"] if namespace.monitor_dbus else [])
-        + (["--verify-devices"] if namespace.verify_devices else [])
-        + (
-            []
-            if namespace.highest_revision_number is None
-            else [f"--highest-revision-number={namespace.highest_revision_number}"]
-        )
-        + ["-v"]
+    config = Config(
+        devices,
+        monitor_dbus=namespace.monitor_dbus,
+        verify_filesystem_symlinks=namespace.verify_devices,
     )
-    _run_command(3, command)
+
+    if namespace.highest_revision_number is not None:
+        config.highest_revision_number = namespace.highest_revision_number
+
+    run_tests(config, unittest_args + ["-v"])
 
 
-def _run_stratis_cli_cert(namespace):
-    command = (
-        ["python3", "stratis_cli_cert.py"]
-        + (["--monitor-dbus"] if namespace.monitor_dbus else [])
-        + (["--verify-devices"] if namespace.verify_devices else [])
-        + (
-            []
-            if namespace.highest_revision_number is None
-            else [f"--highest-revision-number={namespace.highest_revision_number}"]
-        )
-        + ["-v"]
+def _run_stratis_cli_cert(namespace, unittest_args):
+    # isort: FIRSTPARTY
+    # pylint: disable=import-outside-toplevel
+    from stratis_cli_cert import Config, run_tests
+
+    devices = _make_loopbacked_devices(3)
+
+    config = Config(
+        devices,
+        monitor_dbus=namespace.monitor_dbus,
+        verify_filesystem_symlinks=namespace.verify_devices,
     )
-    _run_command(3, command)
+
+    if namespace.highest_revision_number is not None:
+        config.highest_revision_number = namespace.highest_revision_number
+
+    run_tests(config, unittest_args + ["-v"])
 
 
 def _gen_parser():
@@ -123,12 +121,8 @@ def _gen_parser():
     stratisd_cert_parser.add_argument(
         "--highest-revision-number",
         dest="highest_revision_number",
-        default=None,
-        help=(
-            "Option to be passed as stratisd_cert.py --highest-revision-number "
-            "option. Not passed to stratisd_cert.py if set to default value of "
-            "None."
-        ),
+        default=StratisDbus.REVISION_NUMBER,
+        help=("Highest D-Bus revision number to be used by D-Bus monitor tests."),
     )
 
     stratis_cli_cert_parser = subparsers.add_parser(
@@ -145,9 +139,9 @@ def main():
     """
     parser = _gen_parser()
 
-    namespace = parser.parse_args()
+    namespace, unittest_args = parser.parse_known_args()
 
-    namespace.func(namespace)
+    namespace.func(namespace, unittest_args)
 
 
 if __name__ == "__main__":
