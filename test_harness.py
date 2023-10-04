@@ -18,6 +18,7 @@ Simple test harness for running test scripts on loopbacked devices.
 # isort: STDLIB
 import argparse
 import itertools
+import logging
 import os
 import subprocess
 import tempfile
@@ -61,6 +62,13 @@ def _run_command(num_devices, command):
     :param list command: the command to be run
     """
     devices = _make_loopbacked_devices(num_devices)
+    for device in devices:
+        for option in ["--getss", "--getpbsz", "--getiomin", "--getioopt"]:
+            diagcmd = ["blockdev", option, device]
+            with subprocess.Popen(diagcmd, stdout=subprocess.PIPE) as proc:
+                blockdevoutput = proc.stdout.readline().strip().decode("utf-8")
+            logging.debug("output of %s: %s", diagcmd, blockdevoutput)
+
     command = command + list(itertools.chain(*[["--disk", dev] for dev in devices]))
     subprocess.run(command, check=True)
 
@@ -108,6 +116,13 @@ def _gen_parser():
             "clean up resources, such as temporary directories."
         )
     )
+    parser.add_argument(
+        "--log-level",
+        help="Log level",
+        action="store",
+        choices=["debug", "info", "warning", "error", "critical"],
+        default="info",
+    )
 
     subparsers = parser.add_subparsers(title="subcommand")
 
@@ -148,6 +163,8 @@ def main():
     parser = _gen_parser()
 
     namespace, unittest_args = parser.parse_known_args()
+
+    logging.basicConfig(level=namespace.log_level.upper())
 
     namespace.func(namespace, unittest_args)
 
