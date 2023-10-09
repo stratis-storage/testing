@@ -35,6 +35,7 @@ def _make_loopbacked_devices(num):
     """
 
     tdir = tempfile.mkdtemp("_stratis_test_loopback")
+    logging.info("temporary directory for loopbacked devices: %s", tdir)
 
     devices = []
     for index in range(num):
