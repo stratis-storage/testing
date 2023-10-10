@@ -27,6 +27,24 @@ _LOSETUP_BIN = "/usr/sbin/losetup"
 _SIZE_OF_DEVICE = 1024**4  # 1 TiB
 
 
+class _LogBlockdev:  # pylint: disable=too-few-public-methods
+    """
+    Allows only running blockdev commands if the result will be logged.
+    """
+
+    def __init__(self, option, device):
+        self.cmd = ["blockdev", option, device]
+
+    def __str__(self):
+        try:
+            with subprocess.Popen(self.cmd, stdout=subprocess.PIPE) as proc:
+                output = proc.stdout.readline().strip().decode("utf-8")
+        except:  # pylint: disable=bare-except
+            return f"could not gather output of {self.cmd}"
+
+        return f"output of {self.cmd}: {output}"
+
+
 def _make_loopbacked_devices(num):
     """
     Make the requisite number of loopbacked devices.
@@ -52,6 +70,9 @@ def _make_loopbacked_devices(num):
 
         devices.append(device)
 
+        for option in ["--getss", "--getpbsz", "--getiomin", "--getioopt"]:
+            logging.debug("%s", _LogBlockdev(option, device))
+
     return devices
 
 
@@ -63,12 +84,6 @@ def _run_command(num_devices, command):
     :param list command: the command to be run
     """
     devices = _make_loopbacked_devices(num_devices)
-    for device in devices:
-        for option in ["--getss", "--getpbsz", "--getiomin", "--getioopt"]:
-            diagcmd = ["blockdev", option, device]
-            with subprocess.Popen(diagcmd, stdout=subprocess.PIPE) as proc:
-                blockdevoutput = proc.stdout.readline().strip().decode("utf-8")
-            logging.debug("output of %s: %s", diagcmd, blockdevoutput)
 
     command = command + list(itertools.chain(*[["--disk", dev] for dev in devices]))
     subprocess.run(command, check=True)
