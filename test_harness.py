@@ -36,8 +36,12 @@ class _LogBlockdev:  # pylint: disable=too-few-public-methods
         self.cmd = ["blockdev", option, device]
 
     def __str__(self):
-        with subprocess.Popen(self.cmd, stdout=subprocess.PIPE) as proc:
-            output = proc.stdout.readline().strip().decode("utf-8")
+        try:
+            with subprocess.Popen(self.cmd, stdout=subprocess.PIPE) as proc:
+                output = proc.stdout.readline().strip().decode("utf-8")
+        except:  # pylint: disable=bare-except
+            return f"could not gather output of {self.cmd}"
+
         return f"output of {self.cmd}: {output}"
 
 
