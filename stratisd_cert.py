@@ -816,6 +816,40 @@ class StratisdCertify(
         )
 
     @skip(_skip_condition(1))
+    def test_filesystem_create_specified_size_limit(self):
+        """
+        Test creating a filesystem with a specified size limit.
+        """
+        pool_name = p_n()
+        pool_path, _ = make_test_pool(pool_name, StratisCertify.DISKS[0:1])
+
+        fs_name = fs_n()
+
+        self._unittest_command(
+            StratisDbus.fs_create(
+                pool_path, fs_name, fs_size="549755813888", fs_sizelimit="1099511627776"
+            ),
+            dbus.UInt16(0),
+        )
+
+    @skip(_skip_condition(1))
+    def test_filesystem_create_specified_size_limit_toosmall(self):
+        """
+        Test creating a filesystem with a specified size limit that is too small.
+        """
+        pool_name = p_n()
+        pool_path, _ = make_test_pool(pool_name, StratisCertify.DISKS[0:1])
+
+        fs_name = fs_n()
+
+        self._unittest_command(
+            StratisDbus.fs_create(
+                pool_path, fs_name, fs_size="549755813888", fs_sizelimit="536866816"
+            ),
+            dbus.UInt16(1),
+        )
+
+    @skip(_skip_condition(1))
     def test_filesystem_create_permissions(self):
         """
         Test that creating a filesystem fails when root permissions are dropped.
