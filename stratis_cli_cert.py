@@ -742,6 +742,48 @@ class StratisCliCertify(
         )
 
     @skip(_skip_condition(1))
+    def test_filesystem_set_size_limit(self):
+        """
+        Test setting a size limit on an existing filesystem.
+        """
+        pool_name = make_test_pool(StratisCliCertify.DISKS[0:1])
+        filesystem_name = make_test_filesystem(pool_name)
+        self._unittest_command(
+            [
+                _STRATIS_CLI,
+                "filesystem",
+                "set-size-limit",
+                pool_name,
+                filesystem_name,
+                "2TiB",
+            ],
+            0,
+            True,
+            True,
+        )
+
+    @skip(_skip_condition(1))
+    def test_filesystem_set_size_limit_toosmall(self):
+        """
+        Test setting a size limit on an existing filesystem that is too small.
+        """
+        pool_name = make_test_pool(StratisCliCertify.DISKS[0:1])
+        filesystem_name = make_test_filesystem(pool_name)
+        self._unittest_command(
+            [
+                _STRATIS_CLI,
+                "filesystem",
+                "set-size-limit",
+                pool_name,
+                filesystem_name,
+                "1048572MiB",
+            ],
+            1,
+            False,
+            True,
+        )
+
+    @skip(_skip_condition(1))
     def test_filesystem_create_permissions(self):
         """
         Test creating a filesystem fails with dropped permissions.
