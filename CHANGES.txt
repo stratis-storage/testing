@@ -1,3 +1,40 @@
+testing 3.6.0
+=============
+Required stratisd version: 3.6.0
+Required stratis-cli version: 3.6.0
+
+Recommended release for development: Fedora 38
+
+- Add tests for filesystem limits functionality:
+  https://github.com/stratis-storage/testing/issues/225
+  https://github.com/stratis-storage/testing/pull/226
+  https://github.com/stratis-storage/testing/pull/224
+
+- Fix a few minor bugs in previously unused testing support code:
+  https://github.com/stratis-storage/testing/pull/211
+  https://github.com/stratis-storage/testing/pull/210
+
+- Add logging about the test system to test_harness.py:
+  https://github.com/stratis-storage/testing/issues/216
+  https://github.com/stratis-storage/testing/pull/223
+  https://github.com/stratis-storage/testing/pull/222
+  https://github.com/stratis-storage/testing/pull/218
+
+- Pass extra args as unittest args:
+  https://github.com/stratis-storage/testing/issues/217
+  https://github.com/stratis-storage/testing/pull/221
+
+- Reduce size of filesystem created in one test:
+  https://github.com/stratis-storage/testing/pull/214
+
+- Re-add reverted commits:
+  https://github.com/stratis-storage/testing/pull/209
+
+- Tidies and Maintenance:
+  https://github.com/stratis-storage/testing/pull/219
+  https://github.com/stratis-storage/testing/pull/215
+
+
 testing 3.5.3
 =============
 Required stratisd version: 3.5.8
