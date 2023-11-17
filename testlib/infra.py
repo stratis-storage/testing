@@ -169,6 +169,42 @@ class StratisdSystemdStart(unittest.TestCase):
         exec_command(["udevadm", "settle"])
 
 
+class SysfsMonitor(unittest.TestCase):
+    """
+    Manage verification of sysfs files for devices.
+    """
+
+    def tearDown(self):
+        if SysfsMonitor.verify_sysfs:  # pylint: disable=no-member
+            dev_mapper = "/dev/mapper"
+            dm_devices = {
+                os.path.basename(
+                    os.path.realpath(os.path.join(dev_mapper, dmdev))
+                ): dmdev
+                for dmdev in os.listdir(dev_mapper)
+            }
+
+            try:
+                misaligned_devices = []
+                for dev in os.listdir("/sys/class/block"):
+                    if fnmatch.fnmatch(dev, "dm-*"):
+                        dev_sysfspath = os.path.join(
+                            "/sys/class/block", dev, "alignment_offset"
+                        )
+                        with open(dev_sysfspath, "r", encoding="utf-8") as dev_sysfs:
+                            dev_align = dev_sysfs.read().rstrip()
+                            if int(dev_align) != 0:
+                                misaligned_devices.append(
+                                    f"Stratis Name: {dm_devices[dev]}, "
+                                    f" DM name: {dev}, "
+                                    f" Alignment offset: {dev_align}"
+                                )
+
+                self.assertEqual(misaligned_devices, [])
+            except FileNotFoundError:
+                pass
+
+
 class SymlinkMonitor(unittest.TestCase):
     """
     Manage verification of device symlinks.

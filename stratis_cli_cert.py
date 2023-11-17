@@ -24,7 +24,13 @@ import unittest
 
 # isort: LOCAL
 from testlib.dbus import StratisDbus, fs_n, p_n
-from testlib.infra import DbusMonitor, KernelKey, StratisdSystemdStart, SymlinkMonitor
+from testlib.infra import (
+    DbusMonitor,
+    KernelKey,
+    StratisdSystemdStart,
+    SymlinkMonitor,
+    SysfsMonitor,
+)
 from testlib.utils import (
     RandomKeyTmpFile,
     create_relative_device_path,
@@ -182,6 +188,8 @@ class StratisCliCertify(
 
         :return: None
         """
+        SysfsMonitor.tearDown(self)
+
         SymlinkMonitor.tearDown(self)
 
         DbusMonitor.tearDown(self)
@@ -554,6 +562,54 @@ class StratisCliCertify(
                 _STRATIS_CLI,
                 "pool",
                 "add-data",
+                pool_name,
+                StratisCliCertify.DISKS[2],
+            ],
+            0,
+            True,
+            True,
+        )
+
+    @skip(_skip_condition(3))
+    def test_pool_add_data_init_cache(self):
+        """
+        Test adding data for a pool, then initializing the cache.
+        """
+
+        pool_name = make_test_pool(StratisCliCertify.DISKS[0:1])
+        filesystem_name = fs_n()
+
+        self._unittest_command(
+            [
+                _STRATIS_CLI,
+                "filesystem",
+                "create",
+                pool_name,
+                filesystem_name,
+            ],
+            0,
+            True,
+            True,
+        )
+
+        self._unittest_command(
+            [
+                _STRATIS_CLI,
+                "pool",
+                "add-data",
+                pool_name,
+                StratisCliCertify.DISKS[1],
+            ],
+            0,
+            True,
+            True,
+        )
+
+        self._unittest_command(
+            [
+                _STRATIS_CLI,
+                "pool",
+                "init-cache",
                 pool_name,
                 StratisCliCertify.DISKS[2],
             ],
@@ -1104,6 +1160,10 @@ def main():
     )
 
     argument_parser.add_argument(
+        "--verify-sysfs", help="Verify /sys/class/block files", action="store_true"
+    )
+
+    argument_parser.add_argument(
         "--monitor-dbus", help="Monitor D-Bus", action="store_true"
     )
 
@@ -1125,6 +1185,7 @@ def main():
 
     parsed_args, unittest_args = argument_parser.parse_known_args()
     StratisCliCertify.DISKS = parsed_args.DISKS
+    SysfsMonitor.verify_sysfs = parsed_args.verify_sysfs
     DbusMonitor.monitor_dbus = parsed_args.monitor_dbus
     SymlinkMonitor.verify_devices = parsed_args.verify_devices
     StratisCertify.maxDiff = None
