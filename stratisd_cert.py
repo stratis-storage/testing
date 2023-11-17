@@ -29,7 +29,13 @@ import dbus
 
 # isort: LOCAL
 from testlib.dbus import StratisDbus, fs_n, p_n
-from testlib.infra import DbusMonitor, KernelKey, StratisdSystemdStart, SymlinkMonitor
+from testlib.infra import (
+    DbusMonitor,
+    KernelKey,
+    StratisdSystemdStart,
+    SymlinkMonitor,
+    SysfsMonitor,
+)
 from testlib.utils import (
     create_relative_device_path,
     exec_command,
@@ -213,6 +219,8 @@ class StratisdCertify(
 
         :return: None
         """
+        SysfsMonitor.tearDown(self)
+
         SymlinkMonitor.tearDown(self)
 
         DbusMonitor.tearDown(self)
@@ -620,6 +628,29 @@ class StratisdCertify(
         )
         self._unittest_command(
             StratisDbus.pool_add_data(pool_path, StratisCertify.DISKS[2:3]),
+            dbus.UInt16(0),
+        )
+
+    @skip(_skip_condition(3))
+    def test_pool_add_data_init_cache(self):
+        """
+        Test adding data for a pool, then initializing the cache.
+        """
+        pool_name = p_n()
+        pool_path, _ = make_test_pool(pool_name, StratisCertify.DISKS[0:1])
+        fs_name = fs_n()
+
+        self._unittest_command(
+            StratisDbus.fs_create(pool_path, fs_name), dbus.UInt16(0)
+        )
+
+        self._unittest_command(
+            StratisDbus.pool_add_data(pool_path, StratisCertify.DISKS[1:2]),
+            dbus.UInt16(0),
+        )
+
+        self._unittest_command(
+            StratisDbus.pool_init_cache(pool_path, StratisCertify.DISKS[2:3]),
             dbus.UInt16(0),
         )
 
@@ -1259,9 +1290,15 @@ def main():
         default=[],
         help="disks to use, a minimum of 3 in order to run every test",
     )
+
+    argument_parser.add_argument(
+        "--verify-sysfs", help="Verify /sys/class/block files", action="store_true"
+    )
+
     argument_parser.add_argument(
         "--monitor-dbus", help="Monitor D-Bus", action="store_true"
     )
+
     argument_parser.add_argument(
         "--verify-devices", help="Verify /dev/disk/by-id devices", action="store_true"
     )
@@ -1280,6 +1317,7 @@ def main():
 
     parsed_args, unittest_args = argument_parser.parse_known_args()
     StratisCertify.DISKS = parsed_args.DISKS
+    SysfsMonitor.verify_sysfs = parsed_args.verify_sysfs
     DbusMonitor.monitor_dbus = parsed_args.monitor_dbus
     SymlinkMonitor.verify_devices = parsed_args.verify_devices
     StratisCertify.maxDiff = None
