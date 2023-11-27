@@ -31,16 +31,16 @@ jobs:
               python3-dbus-python-client-gen
               python3-gobject
               python3-psutil
-            image: fedora:38  # CURRENT DEVELOPMENT ENVIRONMENT
+            image: fedora:39  # CURRENT DEVELOPMENT ENVIRONMENT
             task: PYTHONPATH=./src make -f Makefile lint
           - dependencies: >
               black
               python3-isort
-            image: fedora:38  # CURRENT DEVELOPMENT ENVIRONMENT
+            image: fedora:39  # CURRENT DEVELOPMENT ENVIRONMENT
             task: make -f Makefile fmt-travis
           # VERIFICATION OF TEST INFRASTRUCTURE
           - dependencies: yamllint
-            image: fedora:38  # CURRENT DEVELOPMENT ENVIRONMENT
+            image: fedora:39  # CURRENT DEVELOPMENT ENVIRONMENT
             task: make -f Makefile yamllint
     runs-on: ubuntu-latest
     container: ${{ matrix.image }}
