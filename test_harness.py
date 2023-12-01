@@ -166,7 +166,7 @@ def _gen_parser():
     )
 
     stratisd_cert_parser.add_argument(
-        "--verify-sysfs", help="Verify /sys/class/block files", actions="store_true"
+        "--verify-sysfs", help="Verify /sys/class/block files", action="store_true"
     )
 
     stratis_cli_cert_parser = subparsers.add_parser(
