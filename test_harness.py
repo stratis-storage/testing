@@ -94,6 +94,7 @@ def _run_stratisd_cert(namespace, unittest_args):
         ["python3", "stratisd_cert.py"]
         + (["--monitor-dbus"] if namespace.monitor_dbus else [])
         + (["--verify-devices"] if namespace.verify_devices else [])
+        + (["--verify-sysfs"] if namespace.verify_sysfs else [])
         + (
             []
             if namespace.highest_revision_number is None
@@ -162,6 +163,10 @@ def _gen_parser():
             "option. Not passed to stratisd_cert.py if set to default value of "
             "None."
         ),
+    )
+
+    stratisd_cert_parser.add_argument(
+        "--verify-sysfs", help="Verify /sys/class/block files", actions="store_true"
     )
 
     stratis_cli_cert_parser = subparsers.add_parser(
