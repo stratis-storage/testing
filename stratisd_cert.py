@@ -1055,6 +1055,27 @@ class StratisdCertify(
         )
 
     @skip(_skip_condition(1))
+    def test_filesystem_snapshot_destroy_filesystem(self):
+        """
+        Test snapshotting a filesystem, then destroying the original filesystem.
+        """
+        pool_name = p_n()
+        pool_path, _ = make_test_pool(pool_name, StratisCertify.DISKS[0:1])
+
+        fs_name = fs_n()
+        fs_path = make_test_filesystem(pool_path, fs_name)
+
+        snapshot_name = fs_n()
+
+        self._unittest_command(
+            StratisDbus.fs_snapshot(pool_path, fs_path, snapshot_name), dbus.UInt16(0)
+        )
+
+        self._unittest_command(
+            StratisDbus.fs_destroy(pool_name, fs_name), dbus.UInt16(0)
+        )
+
+    @skip(_skip_condition(1))
     def test_filesystem_snapshot_permissions(self):
         """
         Test snapshotting a filesystem fails when root permissions are dropped.
