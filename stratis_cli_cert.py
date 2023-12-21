@@ -1069,6 +1069,40 @@ class StratisCliCertify(
         )
 
     @skip(_skip_condition(1))
+    def test_filesystem_snapshot_destroy_filesystem(self):
+        """
+        Test snapshotting a filesystem, then destroying the original filesystem.
+        """
+        pool_name = make_test_pool(StratisCliCertify.DISKS[0:1])
+        filesystem_name = make_test_filesystem(pool_name)
+        snapshot_name = fs_n()
+        self._unittest_command(
+            [
+                _STRATIS_CLI,
+                "filesystem",
+                "snapshot",
+                pool_name,
+                filesystem_name,
+                snapshot_name,
+            ],
+            0,
+            True,
+            True,
+        )
+        self._unittest_command(
+            [
+                _STRATIS_CLI,
+                "filesystem",
+                "destroy",
+                pool_name,
+                filesystem_name,
+            ],
+            0,
+            True,
+            True,
+        )
+
+    @skip(_skip_condition(1))
     def test_filesystem_snapshot_permissions(self):
         """
         Test snapshotting a filesystem fails with dropped permissions.
