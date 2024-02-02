@@ -264,11 +264,11 @@ class DbusMonitor(unittest.TestCase):
         """
         trace = getattr(self, "trace", None)
         if trace is not None:
-            # An eleven second sleep will make it virtually certain that
+            # A sixteen second sleep will make it virtually certain that
             # stratisd has a chance to do one of its 10 second timer passes on
             # pools and filesystems _and_ that the D-Bus task has at least one
             # second to send out any resulting signals.
-            time.sleep(11)
+            time.sleep(16)
             self.trace.send_signal(signal.SIGINT)
             (stdoutdata, stderrdata) = self.trace.communicate()
             msg = stdoutdata.decode("utf-8")
