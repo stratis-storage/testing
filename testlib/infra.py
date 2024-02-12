@@ -275,10 +275,15 @@ class DbusMonitor(unittest.TestCase):
             self.assertEqual(
                 self.trace.returncode,
                 0,
-                stderrdata.decode("utf-8")
-                if len(msg) == 0
-                else (
-                    "Error from monitor_dbus_signals: " + os.linesep + os.linesep + msg
+                (
+                    stderrdata.decode("utf-8")
+                    if len(msg) == 0
+                    else (
+                        "Error from monitor_dbus_signals: "
+                        + os.linesep
+                        + os.linesep
+                        + msg
+                    )
                 ),
             )
 
