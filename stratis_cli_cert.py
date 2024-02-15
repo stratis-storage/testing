@@ -27,6 +27,7 @@ import unittest
 from testlib.dbus import StratisDbus, fs_n, p_n
 from testlib.infra import (
     DbusMonitor,
+    FilesystemSymlinkMonitor,
     KernelKey,
     PostTestCheck,
     StratisdSystemdStart,
@@ -197,6 +198,8 @@ class StratisCliCertify(
         SymlinkMonitor.run_check(self)
 
         DbusMonitor.run_check(self, stop_time)
+
+        FilesystemSymlinkMonitor.run_check(self, stop_time)
 
     def _test_permissions(self, command_line, permissions, exp_stdout_empty):
         """
@@ -1242,6 +1245,9 @@ def main():
     SymlinkMonitor.verify_devices = (
         PostTestCheck.PRIVATE_SYMLINKS in parsed_args.post_test_check
         or parsed_args.verify_devices
+    )
+    FilesystemSymlinkMonitor.verify_devices = (
+        PostTestCheck.FILESYSTEM_SYMLINKS in parsed_args.post_test_check
     )
     StratisCertify.maxDiff = None
     DbusMonitor.highest_revision_number = parsed_args.highest_revision_number

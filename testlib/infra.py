@@ -245,6 +245,81 @@ class SymlinkMonitor(unittest.TestCase):
                 pass
 
 
+class FilesystemSymlinkMonitor(unittest.TestCase):
+    """
+    Verify that devicmapper devices for filesystems have corresponding symlinks.
+    """
+
+    _DECODE_DM = "stratis-decode-dm"
+
+    def run_check(self, stop_time):
+        """
+        Check that the filesystem links on the D-Bus and the filesystem links
+        expected from looking at filesystem devicemapper paths match exactly.
+
+        :param int stop_time: the time the test completed
+        """
+
+        if not FilesystemSymlinkMonitor.verify_devices:  # pylint: disable=no-member
+            pass
+
+        time.sleep(sleep_time(stop_time, 16))
+
+        managed_objects = StratisDbus.get_managed_objects()
+
+        filesystems = frozenset(
+            [
+                obj_data[StratisDbus.FS_IFACE]["Devnode"]
+                for obj_data in managed_objects.values()
+                if StratisDbus.FS_IFACE in obj_data
+            ]
+        )
+
+        found = 0
+
+        try:
+            for dev in os.listdir("/dev/mapper"):
+                if fnmatch.fnmatch(dev, "stratis-1-*-thin-fs-*"):
+                    found += 1
+                    command = [
+                        FilesystemSymlinkMonitor._DECODE_DM,
+                        os.path.join("/dev/mapper", dev),
+                        "--output=symlink",
+                    ]
+                    try:
+                        with subprocess.Popen(
+                            command,
+                            stdout=subprocess.PIPE,
+                            stderr=subprocess.PIPE,
+                        ) as proc:
+                            (stdoutdata, stderrdata) = proc.communicate()
+                            if proc.returncode == 0:
+                                symlink = stdoutdata.decode("utf-8").strip()
+                                self.assertTrue(os.path.exists(symlink))
+                                self.assertIn(symlink, filesystems)
+                            else:
+                                raise RuntimeError(
+                                    f"{FilesystemSymlinkMonitor._DECODE_DM} "
+                                    f"invocation failed: {stderrdata.decode('utf-8')}"
+                                )
+                    except FileNotFoundError as err:
+                        raise RuntimeError(
+                            f"Script '{FilesystemSymlinkMonitor._DECODE_DM}' "
+                            "missing, test could not be run"
+                        ) from err
+
+            if found != len(filesystems):
+                raise RuntimeError(
+                    f"{len(filesystems)} Stratis filesystems were created by "
+                    f"this test but {found} '/dev/mapper' links were found."
+                )
+
+        except FileNotFoundError as err:
+            raise RuntimeError(
+                "Missing directory '/dev/mapper', test could not be run"
+            ) from err
+
+
 class DbusMonitor(unittest.TestCase):
     """
     Manage starting and stopping the D-Bus monitor script.
@@ -372,6 +447,7 @@ class PostTestCheck(Enum):
     DBUS_MONITOR = "monitor-dbus"
     SYSFS = "verify-sysfs"
     PRIVATE_SYMLINKS = "verify-private-symlinks"
+    FILESYSTEM_SYMLINKS = "verify-filesystem-symlinks"
 
     def __str__(self):
         return self.value
