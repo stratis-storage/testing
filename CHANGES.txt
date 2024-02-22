@@ -1,3 +1,33 @@
+testing 3.6.1 (UNRELEASED)
+==========================
+Required stratisd version: 3.6.0
+Required stratis-cli version: 3.6.0
+
+Recommended release for development: Fedora 39
+
+- Add SysfsMonitor class and --verify-sysfs argument:
+  https://github.com/stratis-storage/testing/issues/229
+  https://github.com/stratis-storage/testing/pull/233
+  https://github.com/stratis-storage/testing/pull/232
+  https://github.com/stratis-storage/testing/pull/230
+
+- Add tests for deleting an origin filesystem:
+  https://github.com/stratis-storage/testing/pull/234
+
+- Update to use revision number 7:
+  https://github.com/stratis-storage/testing/pull/228
+
+- Changes to dbus monitor test:
+  https://github.com/stratis-storage/testing/pull/240
+  https://github.com/stratis-storage/testing/pull/237
+  https://github.com/stratis-storage/testing/pull/235
+
+- Tidies and Maintenance:
+  https://github.com/stratis-storage/testing/pull/238
+  https://github.com/stratis-storage/testing/pull/236
+  https://github.com/stratis-storage/testing/pull/231
+
+
 testing 3.6.0
 =============
 Required stratisd version: 3.6.0
