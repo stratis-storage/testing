@@ -169,12 +169,29 @@ class StratisdSystemdStart(unittest.TestCase):
         exec_command(["udevadm", "settle"])
 
 
+def sleep_time(stop_time, wait_time):
+    """
+    Calculate the time to sleep required so that the check commences
+    only after wait_time seconds have passed since the test ended.
+
+    :param int stop_time: time test was completed in nanoseconds
+    :param int wait_time: time to wait after test ends in seconds
+    :returns: time to sleep so that check does not commence early, seconds
+    """
+    time_since_test_sec = (time.monotonic_ns() - stop_time) // 10**9
+
+    return (wait_time - time_since_test_sec) if (wait_time > time_since_test_sec) else 0
+
+
 class SysfsMonitor(unittest.TestCase):
     """
     Manage verification of sysfs files for devices.
     """
 
-    def tearDown(self):
+    def run_check(self):
+        """
+        Run the check.
+        """
         if SysfsMonitor.verify_sysfs:  # pylint: disable=no-member
             dev_mapper = "/dev/mapper"
             dm_devices = {
@@ -210,7 +227,10 @@ class SymlinkMonitor(unittest.TestCase):
     Manage verification of device symlinks.
     """
 
-    def tearDown(self):
+    def run_check(self):
+        """
+        Run the check.
+        """
         if SymlinkMonitor.verify_devices:  # pylint: disable=no-member
             try:
                 disallowed_symlinks = []
@@ -258,17 +278,19 @@ class DbusMonitor(unittest.TestCase):
             except FileNotFoundError as err:
                 raise RuntimeError("monitor_dbus_signals script not found.") from err
 
-    def tearDown(self):
+    def run_check(self, stop_time):
         """
         Stop the D-Bus monitor script and check the results.
+
+        :param int stop_time: the time the test completed
         """
         trace = getattr(self, "trace", None)
         if trace is not None:
-            # A sixteen second sleep will make it virtually certain that
+            # A sixteen second wait will make it virtually certain that
             # stratisd has a chance to do one of its 10 second timer passes on
             # pools and filesystems _and_ that the D-Bus task has at least one
             # second to send out any resulting signals.
-            time.sleep(16)
+            time.sleep(sleep_time(stop_time, 16))
             self.trace.send_signal(signal.SIGINT)
             (stdoutdata, stderrdata) = self.trace.communicate()
             msg = stdoutdata.decode("utf-8")
