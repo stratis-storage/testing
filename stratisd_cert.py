@@ -21,6 +21,7 @@ import argparse
 import json
 import os
 import sys
+import time
 import unittest
 from tempfile import NamedTemporaryFile
 
@@ -219,11 +220,13 @@ class StratisdCertify(
 
         :return: None
         """
-        SysfsMonitor.tearDown(self)
+        stop_time = time.monotonic_ns()
 
-        SymlinkMonitor.tearDown(self)
+        SysfsMonitor.run_check(self)
 
-        DbusMonitor.tearDown(self)
+        SymlinkMonitor.run_check(self)
+
+        DbusMonitor.run_check(self, stop_time)
 
     def _unittest_set_property(
         self, object_path, param_iface, dbus_param, dbus_value, exception_name
