@@ -33,6 +33,7 @@ from testlib.dbus import StratisDbus, fs_n, p_n
 from testlib.infra import (
     DbusMonitor,
     KernelKey,
+    PostTestCheck,
     StratisdSystemdStart,
     SymlinkMonitor,
     SysfsMonitor,
@@ -1316,6 +1317,15 @@ def main():
     )
 
     argument_parser.add_argument(
+        "--post-test-check",
+        action="extend",
+        choices=list(PostTestCheck),
+        default=[],
+        nargs="*",
+        type=PostTestCheck,
+    )
+
+    argument_parser.add_argument(
         "--verify-sysfs", help="Verify /sys/class/block files", action="store_true"
     )
 
@@ -1341,9 +1351,17 @@ def main():
 
     parsed_args, unittest_args = argument_parser.parse_known_args()
     StratisCertify.DISKS = parsed_args.DISKS
-    SysfsMonitor.verify_sysfs = parsed_args.verify_sysfs
-    DbusMonitor.monitor_dbus = parsed_args.monitor_dbus
-    SymlinkMonitor.verify_devices = parsed_args.verify_devices
+    SysfsMonitor.verify_sysfs = (
+        PostTestCheck.SYSFS in parsed_args.post_test_check or parsed_args.verify_sysfs
+    )
+    DbusMonitor.monitor_dbus = (
+        PostTestCheck.DBUS_MONITOR in parsed_args.post_test_check
+        or parsed_args.monitor_dbus
+    )
+    SymlinkMonitor.verify_devices = (
+        PostTestCheck.PRIVATE_SYMLINKS in parsed_args.post_test_check
+        or parsed_args.verify_devices
+    )
     StratisCertify.maxDiff = None
     DbusMonitor.highest_revision_number = parsed_args.highest_revision_number
     print(f"Using block device(s) for tests: {StratisCertify.DISKS}")
