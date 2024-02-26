@@ -22,6 +22,7 @@ import signal
 import subprocess
 import time
 import unittest
+from enum import Enum
 from tempfile import NamedTemporaryFile
 
 # isort: THIRDPARTY
@@ -361,3 +362,16 @@ class KernelKey:  # pylint: disable=attribute-defined-outside-init
             if exception_value is None:
                 raise rexc
             raise rexc from exception_value
+
+
+class PostTestCheck(Enum):
+    """
+    What PostTestChecks to run.
+    """
+
+    DBUS_MONITOR = "monitor-dbus"
+    SYSFS = "verify-sysfs"
+    PRIVATE_SYMLINKS = "verify-private-symlinks"
+
+    def __str__(self):
+        return self.value
