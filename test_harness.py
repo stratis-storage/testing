@@ -106,22 +106,6 @@ def _run_stratisd_cert(namespace, unittest_args):
     _run_command(3, command)
 
 
-def _run_stratis_cli_cert(namespace, unittest_args):
-    command = (
-        ["python3", "stratis_cli_cert.py"]
-        + (["--monitor-dbus"] if namespace.monitor_dbus else [])
-        + (["--verify-devices"] if namespace.verify_devices else [])
-        + (
-            []
-            if namespace.highest_revision_number is None
-            else [f"--highest-revision-number={namespace.highest_revision_number}"]
-        )
-        + ["-v"]
-        + unittest_args
-    )
-    _run_command(3, command)
-
-
 def _gen_parser():
     """
     Generate the parser.
@@ -168,11 +152,6 @@ def _gen_parser():
     stratisd_cert_parser.add_argument(
         "--verify-sysfs", help="Verify /sys/class/block files", action="store_true"
     )
-
-    stratis_cli_cert_parser = subparsers.add_parser(
-        "stratis_cli_cert", help="Run stratis_cli_cert.py"
-    )
-    stratis_cli_cert_parser.set_defaults(func=_run_stratis_cli_cert)
 
     return parser
 
