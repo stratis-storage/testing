@@ -188,11 +188,13 @@ class StratisCliCertify(
 
         :return: None
         """
-        SysfsMonitor.tearDown(self)
+        stop_time = time.monotonic_ns()
 
-        SymlinkMonitor.tearDown(self)
+        SysfsMonitor.run_check(self)
 
-        DbusMonitor.tearDown(self)
+        SymlinkMonitor.run_check(self)
+
+        DbusMonitor.run_check(self, stop_time)
 
     def _test_permissions(self, command_line, permissions, exp_stdout_empty):
         """
