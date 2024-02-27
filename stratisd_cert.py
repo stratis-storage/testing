@@ -32,6 +32,7 @@ import dbus
 from testlib.dbus import StratisDbus, fs_n, p_n
 from testlib.infra import (
     DbusMonitor,
+    FilesystemSymlinkMonitor,
     KernelKey,
     PostTestCheck,
     StratisdSystemdStart,
@@ -42,7 +43,6 @@ from testlib.utils import (
     create_relative_device_path,
     exec_command,
     exec_test_command,
-    resolve_symlink,
     revision_number_type,
     skip,
 )
@@ -125,40 +125,6 @@ def make_test_filesystem(pool_path, fs_name):
     return array_of_tuples_with_obj_paths_and_names[0][0]
 
 
-def acquire_filesystem_symlink_targets(
-    pool_name, filesystem_name, pool_path, filesystem_path
-):
-    """
-    Acquire the symlink targets of the "/dev/stratis" symlink,
-    and the equivalent device-mapper "/dev/mapper" link, generated
-    via the info from get_managed_objects().
-    NOTE: This may require a preceding "udevadm settle" call, to
-    ensure that up-to-date pool and filesystem information is being
-    collected.
-    :param str pool_name: pool name
-    :param str filesystem_name: filesystem name
-    :param str pool_path: pool path
-    :param str filesystem_path: filesystem path
-    :return: str fsdevdest, str fsdevmapperlinkdest
-    """
-    objects = StratisDbus.get_managed_objects()
-
-    pool_gmodata = objects[pool_path]
-    pool_uuid = pool_gmodata[StratisDbus.POOL_IFACE]["Uuid"]
-    filesystem_gmodata = objects[filesystem_path]
-    filesystem_uuid = filesystem_gmodata[StratisDbus.FS_IFACE]["Uuid"]
-
-    filesystem_devnode = "/dev/stratis/" + pool_name + "/" + filesystem_name
-
-    fs_devmapperlinkstr = (
-        "/dev/mapper/stratis-1-" + pool_uuid + "-thin-fs-" + filesystem_uuid
-    )
-
-    fsdevdest = resolve_symlink(filesystem_devnode)
-    fsdevmapperlinkdest = resolve_symlink(fs_devmapperlinkstr)
-    return fsdevdest, fsdevmapperlinkdest
-
-
 class StratisCertify(unittest.TestCase):
     """
     Unit tests for the stratisd package.
@@ -228,6 +194,8 @@ class StratisdCertify(
         SymlinkMonitor.run_check(self)
 
         DbusMonitor.run_check(self, stop_time)
+
+        FilesystemSymlinkMonitor.run_check(self, stop_time)
 
     def _unittest_set_property(
         self, object_path, param_iface, dbus_param, dbus_value, exception_name
@@ -897,102 +865,6 @@ class StratisdCertify(
         self._test_permissions(StratisDbus.fs_create, [pool_path, fs_name], True)
 
     @skip(_skip_condition(1))
-    def test_filesystem_udev_symlink_create(self):
-        """
-        Test the udev symlink creation for filesystem devices.
-        """
-        pool_name = p_n()
-        pool_path, _ = make_test_pool(pool_name, StratisCertify.DISKS[0:1])
-
-        fs_name = fs_n()
-        filesystem_path = make_test_filesystem(pool_path, fs_name)
-
-        fsdevdest, fsdevmapperlinkdest = acquire_filesystem_symlink_targets(
-            pool_name, fs_name, pool_path, filesystem_path
-        )
-        self.assertEqual(fsdevdest, fsdevmapperlinkdest)
-
-    @skip(_skip_condition(1))
-    def test_filesystem_udev_symlink_fsrename(self):
-        """
-        Test the udev symlink creation for filesystem devices after fs rename.
-        """
-        pool_name = p_n()
-        pool_path, _ = make_test_pool(pool_name, StratisCertify.DISKS[0:1])
-
-        fs_name = fs_n()
-        filesystem_path = make_test_filesystem(pool_path, fs_name)
-
-        fs_name_rename = fs_n()
-
-        self._unittest_command(
-            StratisDbus.fs_rename(pool_name, fs_name, fs_name_rename), dbus.UInt16(0)
-        )
-        # Settle after rename, to allow udev to recognize the fs rename
-        exec_command(["udevadm", "settle"])
-
-        fsdevdest, fsdevmapperlinkdest = acquire_filesystem_symlink_targets(
-            pool_name, fs_name_rename, pool_path, filesystem_path
-        )
-        self.assertEqual(fsdevdest, fsdevmapperlinkdest)
-
-    @skip(_skip_condition(1))
-    def test_filesystem_udev_symlink_poolrename(self):
-        """
-        Test the udev symlink creation for filesystem devices after pool rename.
-        """
-        pool_name = p_n()
-        pool_path, _ = make_test_pool(pool_name, StratisCertify.DISKS[0:1])
-
-        fs_name = fs_n()
-        filesystem_path = make_test_filesystem(pool_path, fs_name)
-
-        pool_name_rename = p_n()
-
-        self._unittest_command(
-            StratisDbus.pool_rename(pool_name, pool_name_rename), dbus.UInt16(0)
-        )
-        # Settle after rename, to allow udev to recognize the fs rename
-        exec_command(["udevadm", "settle"])
-
-        fsdevdest, fsdevmapperlinkdest = acquire_filesystem_symlink_targets(
-            pool_name_rename, fs_name, pool_path, filesystem_path
-        )
-        self.assertEqual(fsdevdest, fsdevmapperlinkdest)
-
-    @skip(_skip_condition(1))
-    def test_filesystem_udev_symlink_fsrename_poolrename(self):
-        """
-        Test the udev symlink creation for filesystem devices after fs and pool rename.
-        """
-        pool_name = p_n()
-        pool_path, _ = make_test_pool(pool_name, StratisCertify.DISKS[0:1])
-
-        fs_name = fs_n()
-        filesystem_path = make_test_filesystem(pool_path, fs_name)
-
-        fs_name_rename = fs_n()
-
-        self._unittest_command(
-            StratisDbus.fs_rename(pool_name, fs_name, fs_name_rename), dbus.UInt16(0)
-        )
-        # Settle after rename, to allow udev to recognize the filesystem rename
-        exec_command(["udevadm", "settle"])
-
-        pool_name_rename = p_n()
-
-        self._unittest_command(
-            StratisDbus.pool_rename(pool_name, pool_name_rename), dbus.UInt16(0)
-        )
-        # Settle after rename, to allow udev to recognize the pool rename
-        exec_command(["udevadm", "settle"])
-
-        fsdevdest, fsdevmapperlinkdest = acquire_filesystem_symlink_targets(
-            pool_name_rename, fs_name_rename, pool_path, filesystem_path
-        )
-        self.assertEqual(fsdevdest, fsdevmapperlinkdest)
-
-    @skip(_skip_condition(1))
     def test_filesystem_rename(self):
         """
         Test renaming a filesystem.
@@ -1361,6 +1233,9 @@ def main():
     SymlinkMonitor.verify_devices = (
         PostTestCheck.PRIVATE_SYMLINKS in parsed_args.post_test_check
         or parsed_args.verify_devices
+    )
+    FilesystemSymlinkMonitor.verify_devices = (
+        PostTestCheck.FILESYSTEM_SYMLINKS in parsed_args.post_test_check
     )
     StratisCertify.maxDiff = None
     DbusMonitor.highest_revision_number = parsed_args.highest_revision_number

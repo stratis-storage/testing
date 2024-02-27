@@ -35,15 +35,6 @@ def random_string(length=4):
     return "".join(random.choice(string.ascii_uppercase) for _ in range(length))
 
 
-def resolve_symlink(link):
-    """
-    Resolves the destination of a symlink
-    :param link: filename of the link
-    :return: String
-    """
-    return os.path.abspath(os.path.join(os.path.dirname(link), os.readlink(link)))
-
-
 def revision_number_type(revision_number):
     """
     Raise value error if revision number is not valid.
