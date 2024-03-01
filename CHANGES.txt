@@ -1,3 +1,28 @@
+testing 3.6.1
+=============
+Required stratisd version: 3.6.2
+Required stratis-cli version: 3.6.0
+
+Recommended release for development: Fedora 39
+
+* Cherry-picked commits:
+  * Add SysfsMonitor class and --verify-sysfs argument
+  * Advance current development environment to Fedora 39
+  * test_harness.py: add verify-sysfs option
+  * test_harness.py: fix typo in keyword
+  * stratis_cli_cert: Add test for deleting origin filesystem
+  * stratisd_cert: Add test for deleting origin filesystem
+  * Sort output of dbus monitor script
+  * Use checkout@v4
+  * Increase sleep time before stopping dbus-monitor
+  * Reformat for black 24.1.1
+  * terminate_traces: Do not fail if cmdline is None
+  * Pass time when test ended to DbusMonitor test
+  * Remove stratis-cli support in test_harness.py
+  * Use run_check method in stratis_cli_cert.py
+  * Add new way of specifying post-test-checks
+
+
 testing 3.6.0
 =============
 Required stratisd version: 3.6.0
