@@ -5,13 +5,13 @@ name: testing CI
 on:
   push:
     branches:
-      - master
+      - patch-3.6.0
     paths-ignore:
       - 'CHANGES.txt'
       - 'README.md'
   pull_request:
     branches:
-      - master
+      - patch-3.6.0
     paths-ignore:
       - 'CHANGES.txt'
       - 'README.md'
