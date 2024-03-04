@@ -20,11 +20,19 @@ Tests of the stratis CLI.
 import argparse
 import os
 import sys
+import time
 import unittest
 
 # isort: LOCAL
 from testlib.dbus import StratisDbus, fs_n, p_n
-from testlib.infra import DbusMonitor, KernelKey, StratisdSystemdStart, SymlinkMonitor
+from testlib.infra import (
+    DbusMonitor,
+    KernelKey,
+    PostTestCheck,
+    StratisdSystemdStart,
+    SymlinkMonitor,
+    SysfsMonitor,
+)
 from testlib.utils import (
     RandomKeyTmpFile,
     create_relative_device_path,
@@ -182,9 +190,13 @@ class StratisCliCertify(
 
         :return: None
         """
-        SymlinkMonitor.tearDown(self)
+        stop_time = time.monotonic_ns()
 
-        DbusMonitor.tearDown(self)
+        SysfsMonitor.run_check(self)
+
+        SymlinkMonitor.run_check(self)
+
+        DbusMonitor.run_check(self, stop_time)
 
     def _test_permissions(self, command_line, permissions, exp_stdout_empty):
         """
@@ -554,6 +566,54 @@ class StratisCliCertify(
                 _STRATIS_CLI,
                 "pool",
                 "add-data",
+                pool_name,
+                StratisCliCertify.DISKS[2],
+            ],
+            0,
+            True,
+            True,
+        )
+
+    @skip(_skip_condition(3))
+    def test_pool_add_data_init_cache(self):
+        """
+        Test adding data for a pool, then initializing the cache.
+        """
+
+        pool_name = make_test_pool(StratisCliCertify.DISKS[0:1])
+        filesystem_name = fs_n()
+
+        self._unittest_command(
+            [
+                _STRATIS_CLI,
+                "filesystem",
+                "create",
+                pool_name,
+                filesystem_name,
+            ],
+            0,
+            True,
+            True,
+        )
+
+        self._unittest_command(
+            [
+                _STRATIS_CLI,
+                "pool",
+                "add-data",
+                pool_name,
+                StratisCliCertify.DISKS[1],
+            ],
+            0,
+            True,
+            True,
+        )
+
+        self._unittest_command(
+            [
+                _STRATIS_CLI,
+                "pool",
+                "init-cache",
                 pool_name,
                 StratisCliCertify.DISKS[2],
             ],
@@ -1013,6 +1073,40 @@ class StratisCliCertify(
         )
 
     @skip(_skip_condition(1))
+    def test_filesystem_snapshot_destroy_filesystem(self):
+        """
+        Test snapshotting a filesystem, then destroying the original filesystem.
+        """
+        pool_name = make_test_pool(StratisCliCertify.DISKS[0:1])
+        filesystem_name = make_test_filesystem(pool_name)
+        snapshot_name = fs_n()
+        self._unittest_command(
+            [
+                _STRATIS_CLI,
+                "filesystem",
+                "snapshot",
+                pool_name,
+                filesystem_name,
+                snapshot_name,
+            ],
+            0,
+            True,
+            True,
+        )
+        self._unittest_command(
+            [
+                _STRATIS_CLI,
+                "filesystem",
+                "destroy",
+                pool_name,
+                filesystem_name,
+            ],
+            0,
+            True,
+            True,
+        )
+
+    @skip(_skip_condition(1))
     def test_filesystem_snapshot_permissions(self):
         """
         Test snapshotting a filesystem fails with dropped permissions.
@@ -1104,6 +1198,19 @@ def main():
     )
 
     argument_parser.add_argument(
+        "--post-test-check",
+        action="extend",
+        choices=list(PostTestCheck),
+        default=[],
+        nargs="*",
+        type=PostTestCheck,
+    )
+
+    argument_parser.add_argument(
+        "--verify-sysfs", help="Verify /sys/class/block files", action="store_true"
+    )
+
+    argument_parser.add_argument(
         "--monitor-dbus", help="Monitor D-Bus", action="store_true"
     )
 
@@ -1125,8 +1232,17 @@ def main():
 
     parsed_args, unittest_args = argument_parser.parse_known_args()
     StratisCliCertify.DISKS = parsed_args.DISKS
-    DbusMonitor.monitor_dbus = parsed_args.monitor_dbus
-    SymlinkMonitor.verify_devices = parsed_args.verify_devices
+    SysfsMonitor.verify_sysfs = (
+        PostTestCheck.SYSFS in parsed_args.post_test_check or parsed_args.verify_sysfs
+    )
+    DbusMonitor.monitor_dbus = (
+        PostTestCheck.DBUS_MONITOR in parsed_args.post_test_check
+        or parsed_args.monitor_dbus
+    )
+    SymlinkMonitor.verify_devices = (
+        PostTestCheck.PRIVATE_SYMLINKS in parsed_args.post_test_check
+        or parsed_args.verify_devices
+    )
     StratisCertify.maxDiff = None
     DbusMonitor.highest_revision_number = parsed_args.highest_revision_number
 

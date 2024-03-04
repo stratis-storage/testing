@@ -23,6 +23,9 @@ import os
 import subprocess
 import tempfile
 
+# isort: LOCAL
+from testlib.infra import PostTestCheck
+
 _LOSETUP_BIN = "/usr/sbin/losetup"
 _SIZE_OF_DEVICE = 1024**4  # 1 TiB
 
@@ -92,24 +95,7 @@ def _run_command(num_devices, command):
 def _run_stratisd_cert(namespace, unittest_args):
     command = (
         ["python3", "stratisd_cert.py"]
-        + (["--monitor-dbus"] if namespace.monitor_dbus else [])
-        + (["--verify-devices"] if namespace.verify_devices else [])
-        + (
-            []
-            if namespace.highest_revision_number is None
-            else [f"--highest-revision-number={namespace.highest_revision_number}"]
-        )
-        + ["-v"]
-        + unittest_args
-    )
-    _run_command(3, command)
-
-
-def _run_stratis_cli_cert(namespace, unittest_args):
-    command = (
-        ["python3", "stratis_cli_cert.py"]
-        + (["--monitor-dbus"] if namespace.monitor_dbus else [])
-        + (["--verify-devices"] if namespace.verify_devices else [])
+        + [f"--post-test-check={val}" for val in namespace.post_test_check]
         + (
             []
             if namespace.highest_revision_number is None
@@ -146,6 +132,16 @@ def _gen_parser():
         "stratisd_cert", help="Run stratisd_cert.py"
     )
     stratisd_cert_parser.set_defaults(func=_run_stratisd_cert)
+
+    stratisd_cert_parser.add_argument(
+        "--post-test-check",
+        action="extend",
+        choices=list(PostTestCheck),
+        default=[],
+        nargs="*",
+        type=PostTestCheck,
+    )
+
     stratisd_cert_parser.add_argument(
         "--monitor-dbus", help="Monitor D-Bus", action="store_true"
     )
@@ -164,10 +160,9 @@ def _gen_parser():
         ),
     )
 
-    stratis_cli_cert_parser = subparsers.add_parser(
-        "stratis_cli_cert", help="Run stratis_cli_cert.py"
+    stratisd_cert_parser.add_argument(
+        "--verify-sysfs", help="Verify /sys/class/block files", action="store_true"
     )
-    stratis_cli_cert_parser.set_defaults(func=_run_stratis_cli_cert)
 
     return parser
 

@@ -5,13 +5,13 @@ name: testing CI
 on:
   push:
     branches:
-      - master
+      - patch-3.6.0
     paths-ignore:
       - 'CHANGES.txt'
       - 'README.md'
   pull_request:
     branches:
-      - master
+      - patch-3.6.0
     paths-ignore:
       - 'CHANGES.txt'
       - 'README.md'
@@ -31,21 +31,21 @@ jobs:
               python3-dbus-python-client-gen
               python3-gobject
               python3-psutil
-            image: fedora:38  # CURRENT DEVELOPMENT ENVIRONMENT
+            image: fedora:39  # CURRENT DEVELOPMENT ENVIRONMENT
             task: PYTHONPATH=./src make -f Makefile lint
           - dependencies: >
               black
               python3-isort
-            image: fedora:38  # CURRENT DEVELOPMENT ENVIRONMENT
+            image: fedora:39  # CURRENT DEVELOPMENT ENVIRONMENT
             task: make -f Makefile fmt-travis
           # VERIFICATION OF TEST INFRASTRUCTURE
           - dependencies: yamllint
-            image: fedora:38  # CURRENT DEVELOPMENT ENVIRONMENT
+            image: fedora:39  # CURRENT DEVELOPMENT ENVIRONMENT
             task: make -f Makefile yamllint
     runs-on: ubuntu-latest
     container: ${{ matrix.image }}
     steps:
-      - uses: actions/checkout@v3
+      - uses: actions/checkout@v4
       - name: Install dependencies
         run: >
           dnf install -y

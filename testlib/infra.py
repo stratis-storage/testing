@@ -22,6 +22,7 @@ import signal
 import subprocess
 import time
 import unittest
+from enum import Enum
 from tempfile import NamedTemporaryFile
 
 # isort: THIRDPARTY
@@ -169,12 +170,68 @@ class StratisdSystemdStart(unittest.TestCase):
         exec_command(["udevadm", "settle"])
 
 
+def sleep_time(stop_time, wait_time):
+    """
+    Calculate the time to sleep required so that the check commences
+    only after wait_time seconds have passed since the test ended.
+
+    :param int stop_time: time test was completed in nanoseconds
+    :param int wait_time: time to wait after test ends in seconds
+    :returns: time to sleep so that check does not commence early, seconds
+    """
+    time_since_test_sec = (time.monotonic_ns() - stop_time) // 10**9
+
+    return (wait_time - time_since_test_sec) if (wait_time > time_since_test_sec) else 0
+
+
+class SysfsMonitor(unittest.TestCase):
+    """
+    Manage verification of sysfs files for devices.
+    """
+
+    def run_check(self):
+        """
+        Run the check.
+        """
+        if SysfsMonitor.verify_sysfs:  # pylint: disable=no-member
+            dev_mapper = "/dev/mapper"
+            dm_devices = {
+                os.path.basename(
+                    os.path.realpath(os.path.join(dev_mapper, dmdev))
+                ): dmdev
+                for dmdev in os.listdir(dev_mapper)
+            }
+
+            try:
+                misaligned_devices = []
+                for dev in os.listdir("/sys/class/block"):
+                    if fnmatch.fnmatch(dev, "dm-*"):
+                        dev_sysfspath = os.path.join(
+                            "/sys/class/block", dev, "alignment_offset"
+                        )
+                        with open(dev_sysfspath, "r", encoding="utf-8") as dev_sysfs:
+                            dev_align = dev_sysfs.read().rstrip()
+                            if int(dev_align) != 0:
+                                misaligned_devices.append(
+                                    f"Stratis Name: {dm_devices[dev]}, "
+                                    f" DM name: {dev}, "
+                                    f" Alignment offset: {dev_align}"
+                                )
+
+                self.assertEqual(misaligned_devices, [])
+            except FileNotFoundError:
+                pass
+
+
 class SymlinkMonitor(unittest.TestCase):
     """
     Manage verification of device symlinks.
     """
 
-    def tearDown(self):
+    def run_check(self):
+        """
+        Run the check.
+        """
         if SymlinkMonitor.verify_devices:  # pylint: disable=no-member
             try:
                 disallowed_symlinks = []
@@ -222,27 +279,34 @@ class DbusMonitor(unittest.TestCase):
             except FileNotFoundError as err:
                 raise RuntimeError("monitor_dbus_signals script not found.") from err
 
-    def tearDown(self):
+    def run_check(self, stop_time):
         """
         Stop the D-Bus monitor script and check the results.
+
+        :param int stop_time: the time the test completed
         """
         trace = getattr(self, "trace", None)
         if trace is not None:
-            # An eleven second sleep will make it virtually certain that
+            # A sixteen second wait will make it virtually certain that
             # stratisd has a chance to do one of its 10 second timer passes on
             # pools and filesystems _and_ that the D-Bus task has at least one
             # second to send out any resulting signals.
-            time.sleep(11)
+            time.sleep(sleep_time(stop_time, 16))
             self.trace.send_signal(signal.SIGINT)
             (stdoutdata, stderrdata) = self.trace.communicate()
             msg = stdoutdata.decode("utf-8")
             self.assertEqual(
                 self.trace.returncode,
                 0,
-                stderrdata.decode("utf-8")
-                if len(msg) == 0
-                else (
-                    "Error from monitor_dbus_signals: " + os.linesep + os.linesep + msg
+                (
+                    stderrdata.decode("utf-8")
+                    if len(msg) == 0
+                    else (
+                        "Error from monitor_dbus_signals: "
+                        + os.linesep
+                        + os.linesep
+                        + msg
+                    )
                 ),
             )
 
@@ -298,3 +362,16 @@ class KernelKey:  # pylint: disable=attribute-defined-outside-init
             if exception_value is None:
                 raise rexc
             raise rexc from exception_value
+
+
+class PostTestCheck(Enum):
+    """
+    What PostTestChecks to run.
+    """
+
+    DBUS_MONITOR = "monitor-dbus"
+    SYSFS = "verify-sysfs"
+    PRIVATE_SYMLINKS = "verify-private-symlinks"
+
+    def __str__(self):
+        return self.value
