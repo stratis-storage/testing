@@ -156,7 +156,9 @@ try:
         mos = _OBJECT_MANAGER.Methods.GetManagedObjects(_TOP_OBJECT, {})
 
         mos = {
-            o: {k: v for k, v in d.items() if re.fullmatch(_INTERFACE_RE, k)}
+            o: {
+                k: v for k, v in d.items() if re.fullmatch(_INTERFACE_RE, k) is not None
+            }
             for o, d in mos.items()
         }
 
@@ -180,7 +182,9 @@ try:
         :param dict interfaces_added: map of interfaces to D-Bus properties
         """
         interfaces_added = {
-            k: v for k, v in interfaces_added.items() if re.fullmatch(_INTERFACE_RE, k)
+            k: v
+            for k, v in interfaces_added.items()
+            if re.fullmatch(_INTERFACE_RE, k) is not None
         }
 
         if object_path == _TOP_OBJECT_PATH:
@@ -257,9 +261,6 @@ try:
                 return
 
             interface_name = props_changed[0]
-            if not re.fullmatch(_INTERFACE_RE, interface_name):
-                return
-
             properties_changed = props_changed[1]
             properties_invalidated = props_changed[2]
 
@@ -295,8 +296,9 @@ try:
                 if (
                     object_path == _TOP_OBJECT_PATH
                     and interface_name not in _TOP_OBJECT_INTERFACES
-                ):
+                ) or re.fullmatch(_INTERFACE_RE, interface_name) is None:
                     return
+
                 data[interface_name] = MISSING_INTERFACE
 
             if data[interface_name] is MISSING_INTERFACE:
