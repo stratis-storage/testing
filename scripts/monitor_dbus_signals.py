@@ -170,6 +170,11 @@ try:
         :param str object_path: D-Bus object path
         :param dict interfaces_added: map of interfaces to D-Bus properties
         """
+        if object_path == _TOP_OBJECT_PATH:
+            interfaces_added = {
+                k: v for k, v in interfaces_added.items() if k in _TOP_OBJECT_INTERFACES
+            }
+
         try:
             print(
                 "Interfaces added:",
@@ -197,6 +202,11 @@ try:
         :param str object_path: D-Bus object path
         :param list interfaces: list of interfaces removed
         """
+        if object_path == _TOP_OBJECT_PATH:
+            interfaces = {
+                k: v for k, v in interfaces.items() if k in _TOP_OBJECT_INTERFACES
+            }
+
         try:
             print(
                 "Interfaces removed:",
@@ -270,6 +280,11 @@ try:
                 ) from err
 
             if interface_name not in data:
+                if (
+                    object_path == _TOP_OBJECT_PATH
+                    and interface_name not in _TOP_OBJECT_INTERFACES
+                ):
+                    return
                 data[interface_name] = MISSING_INTERFACE
 
             if data[interface_name] is MISSING_INTERFACE:
