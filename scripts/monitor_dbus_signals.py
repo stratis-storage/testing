@@ -18,6 +18,7 @@ Monitor D-Bus properties and signals and verify that the signals are correct
 with respect to their properties.
 """
 
+_INTERFACE_RE = None
 _MO = None
 _SERVICE = None
 _TOP_OBJECT = None
@@ -41,6 +42,7 @@ try:
     # isort: STDLIB
     import argparse
     import os
+    import re
     import sys
     import time
     import xml.etree.ElementTree as ET
@@ -150,7 +152,16 @@ try:
         the result of calling Properties.GetAll on the top object for
         selected interfaces.
         """
+
         mos = _OBJECT_MANAGER.Methods.GetManagedObjects(_TOP_OBJECT, {})
+
+        mos = {
+            o: {
+                k: v for k, v in d.items() if re.fullmatch(_INTERFACE_RE, k) is not None
+            }
+            for o, d in mos.items()
+        }
+
         mos[_TOP_OBJECT_PATH] = {}
 
         for interface in _TOP_OBJECT_INTERFACES:
@@ -170,6 +181,17 @@ try:
         :param str object_path: D-Bus object path
         :param dict interfaces_added: map of interfaces to D-Bus properties
         """
+        interfaces_added = {
+            k: v
+            for k, v in interfaces_added.items()
+            if re.fullmatch(_INTERFACE_RE, k) is not None
+        }
+
+        if object_path == _TOP_OBJECT_PATH:
+            interfaces_added = {
+                k: v for k, v in interfaces_added.items() if k in _TOP_OBJECT_INTERFACES
+            }
+
         try:
             print(
                 "Interfaces added:",
@@ -210,7 +232,8 @@ try:
 
             if object_path in _MO.keys():
                 for interface in interfaces:
-                    del _MO[object_path][interface]
+                    if interface in _MO[object_path]:
+                        del _MO[object_path][interface]
 
                 # The InterfacesRemoved signal is sent when an object is
                 # removed as well as when a single interface is removed.
@@ -270,6 +293,12 @@ try:
                 ) from err
 
             if interface_name not in data:
+                if (
+                    object_path == _TOP_OBJECT_PATH
+                    and interface_name not in _TOP_OBJECT_INTERFACES
+                ) or re.fullmatch(_INTERFACE_RE, interface_name) is None:
+                    return
+
                 data[interface_name] = MISSING_INTERFACE
 
             if data[interface_name] is MISSING_INTERFACE:
@@ -282,7 +311,7 @@ try:
         except Exception as exc:  # pylint: disable=broad-except
             _CALLBACK_ERRORS.append(exc)
 
-    def _monitor(service, manager, manager_interfaces):
+    def _monitor(service, manager, manager_interfaces, interface_re):
         """
         Monitor the signals and properties of the manager object.
 
@@ -290,15 +319,18 @@ try:
         :param str manager: object path that of the ObjectManager implementor
         :param manager_interfaces: list of manager interfaces
         :type manager_interfaces: list of str
+        :param interface_re: regular expression to match interfaces to check
+        :type interface_re: re.Pattern
         """
 
-        global _TOP_OBJECT, _TOP_OBJECT_PATH, _TOP_OBJECT_INTERFACES, _SERVICE, _MO  # pylint: disable=global-statement
+        global _TOP_OBJECT, _TOP_OBJECT_PATH, _TOP_OBJECT_INTERFACES, _SERVICE, _MO, _INTERFACE_RE  # pylint: disable=global-statement
 
         dbus.mainloop.glib.DBusGMainLoop(set_as_default=True)
         bus = dbus.SystemBus()
         _SERVICE = service
         _TOP_OBJECT_PATH = manager
         _TOP_OBJECT_INTERFACES = manager_interfaces
+        _INTERFACE_RE = interface_re
 
         while True:
             try:
@@ -372,6 +404,13 @@ try:
             help="interface belonging to the top object",
         )
 
+        parser.add_argument(
+            "--only-check",
+            default=".*",
+            type=re.compile,
+            help="regular expression that restricts interfaces to check",
+        )
+
         return parser
 
     def main():
@@ -383,7 +422,7 @@ try:
 
         args = parser.parse_args()
 
-        _monitor(args.service, args.manager, args.top_interface)
+        _monitor(args.service, args.manager, args.top_interface, args.only_check)
 
     if __name__ == "__main__":
         main()

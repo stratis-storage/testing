@@ -1,3 +1,15 @@
+testing 3.6.2
+=============
+Required stratisd version: 3.6.2
+Required stratis-cli version: 3.6.0
+
+Recommended release for development: Fedora 39
+
+* Cherry-picked commits:
+  * Omit interfaces not in specified top interfaces
+  * Use regular expression to specify interfaces to check
+
+
 testing 3.6.1
 =============
 Required stratisd version: 3.6.2
