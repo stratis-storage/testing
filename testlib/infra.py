@@ -343,6 +343,16 @@ class DbusMonitor(unittest.TestCase):
                     + 1
                 )
             )
+
+            only_check = (
+                StratisDbus.BUS_NAME.replace(".", r"\.")
+                + r"\."
+                + ".*"
+                + r"\."
+                + f"r[0-{StratisDbus.REVISION_NUMBER}]"
+            )
+            command.append(f'--only-check="{only_check}"')
+
             # pylint: disable=consider-using-with
             try:
                 self.trace = subprocess.Popen(
