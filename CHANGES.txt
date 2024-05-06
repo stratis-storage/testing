@@ -18,7 +18,16 @@ Recommended release for development: Fedora 39
   https://github.com/stratis-storage/testing/pull/228
 
 - Changes to dbus monitor test:
+  https://github.com/stratis-storage/testing/issues/247
+  https://github.com/stratis-storage/testing/issues/241
+  https://github.com/stratis-storage/testing/pull/251
+  https://github.com/stratis-storage/testing/pull/248
+  https://github.com/stratis-storage/testing/pull/246
+  https://github.com/stratis-storage/testing/pull/244
+  https://github.com/stratis-storage/testing/pull/243
+  https://github.com/stratis-storage/testing/pull/242
   https://github.com/stratis-storage/testing/pull/240
+  https://github.com/stratis-storage/testing/pull/239
   https://github.com/stratis-storage/testing/pull/237
   https://github.com/stratis-storage/testing/pull/235
 
