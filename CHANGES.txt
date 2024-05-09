@@ -1,7 +1,7 @@
-testing 3.6.1 (UNRELEASED)
+testing 3.7.0 (UNRELEASED)
 ==========================
-Required stratisd version: 3.6.0
-Required stratis-cli version: 3.6.0
+Required stratisd version: 3.7.0
+Required stratis-cli version: 3.7.0
 
 Recommended release for development: Fedora 39
 
@@ -32,6 +32,8 @@ Recommended release for development: Fedora 39
   https://github.com/stratis-storage/testing/pull/235
 
 - Tidies and Maintenance:
+  https://github.com/stratis-storage/testing/pull/254
+  https://github.com/stratis-storage/testing/pull/253
   https://github.com/stratis-storage/testing/pull/238
   https://github.com/stratis-storage/testing/pull/236
   https://github.com/stratis-storage/testing/pull/231
