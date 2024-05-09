@@ -74,7 +74,7 @@ def clean_up():
         )
 
     # Remove Pools
-    for name in StratisDbus.pool_list():
+    for _, name in StratisDbus.pool_list():
         check_result(StratisDbus.pool_destroy(name), "failed to destroy pool %s", name)
 
     # Unset all Stratis keys
@@ -98,7 +98,9 @@ def clean_up():
 
     remnant_pools = StratisDbus.pool_list()
     if remnant_pools != []:
-        error_strings.append(f'remnant pools: {", ".join(remnant_pools)}')
+        error_strings.append(
+            f'remnant pools: {", ".join(name for name in remnant_pools)}'
+        )
 
     (remnant_keys, return_code, message) = StratisDbus.get_keys()
     if return_code != _OK:
