@@ -744,6 +744,18 @@ class StratisdCertify(
         self._unittest_command(StratisDbus.pool_get_metadata(pool_path), dbus.UInt16(0))
 
     @skip(_skip_condition(1))
+    def test_pool_get_metadata_written(self):
+        """
+        Test getting most recently written pool metadata info.
+        """
+        pool_name = p_n()
+        pool_path, _ = make_test_pool(pool_name, StratisCertify.DISKS[0:1])
+
+        self._unittest_command(
+            StratisDbus.pool_get_metadata(pool_path, current=False), dbus.UInt16(0)
+        )
+
+    @skip(_skip_condition(1))
     def test_pool_destroy_permissions(self):
         """
         Test that destroying a pool fails when root permissions are dropped.
