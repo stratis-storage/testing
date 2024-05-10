@@ -492,6 +492,26 @@ class StratisCliCertify(
             False,
         )
 
+    @skip(_skip_condition(1))
+    def test_pool_debug_get_metadata_written(self):
+        """
+        Test running "stratis pool debug get-metadata" on a pool.
+        """
+        pool_name = make_test_pool(StratisCliCertify.DISKS[0:1])
+        self._unittest_command(
+            [
+                _STRATIS_CLI,
+                "pool",
+                "debug",
+                "get-metadata",
+                "--written",
+                f"--name={pool_name}",
+            ],
+            0,
+            True,
+            False,
+        )
+
     def test_blockdev_list(self):
         """
         Test listing a blockdev.
