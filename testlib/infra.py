@@ -17,6 +17,7 @@ Methods and classes that do infrastructure tasks.
 # isort: STDLIB
 import base64
 import fnmatch
+import json
 import os
 import signal
 import subprocess
@@ -184,6 +185,48 @@ def sleep_time(stop_time, wait_time):
     time_since_test_sec = (time.monotonic_ns() - stop_time) // 10**9
 
     return (wait_time - time_since_test_sec) if (wait_time > time_since_test_sec) else 0
+
+
+class PoolMetadataMonitor(unittest.TestCase):
+    """
+    Manage verification of consistency of pool-level metadata.
+    """
+
+    def run_check(self):
+        """
+        Run the check.
+        """
+        if PoolMetadataMonitor.verify:  # pylint: disable=no-member
+            for object_path, _ in StratisDbus.pool_list():
+                (current, current_return_code, current_message) = (
+                    StratisDbus.pool_get_metadata(object_path)
+                )
+                (written, written_return_code, written_message) = (
+                    StratisDbus.pool_get_metadata(object_path, current=False)
+                )
+
+                if current_return_code == _OK and written_return_code == _OK:
+                    current = json.loads(current)
+                    written = json.loads(written)
+                    self.assertEqual(
+                        written,
+                        current,
+                        msg="previously written metadata and current metadata are not the same",
+                    )
+                else:
+                    current_message = (
+                        "" if current_return_code == _OK else current_message
+                    )
+                    written_message = (
+                        "" if written_return_code == _OK else written_message
+                    )
+                    message = ", ".join(
+                        x for x in [current_message, written_message] if x != ""
+                    )
+                    raise RuntimeError(
+                        "One or both versions of metadata could not be "
+                        f"obtained for comparison: {message}"
+                    )
 
 
 class SysfsMonitor(unittest.TestCase):
@@ -460,6 +503,7 @@ class PostTestCheck(Enum):
     SYSFS = "verify-sysfs"
     PRIVATE_SYMLINKS = "verify-private-symlinks"
     FILESYSTEM_SYMLINKS = "verify-filesystem-symlinks"
+    POOL_METADATA = "verify-pool-metadata"
 
     def __str__(self):
         return self.value

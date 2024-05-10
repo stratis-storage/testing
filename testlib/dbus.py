@@ -476,7 +476,7 @@ class StratisDbus:
         :param str pool_path: The object path of the pool
         :param bool current: Current or most recently written metadata
         :return: JSON-format pool-level metadata
-        :rtype: json
+        :rtype: The D-Bus types s, q, and s
         :raises dbus.exceptions.DBusException:
         """
         iface = dbus.Interface(

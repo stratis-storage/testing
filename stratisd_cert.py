@@ -34,6 +34,7 @@ from testlib.infra import (
     DbusMonitor,
     FilesystemSymlinkMonitor,
     KernelKey,
+    PoolMetadataMonitor,
     PostTestCheck,
     StratisdSystemdStart,
     SymlinkMonitor,
@@ -1236,6 +1237,9 @@ def main():
     )
     FilesystemSymlinkMonitor.verify_devices = (
         PostTestCheck.FILESYSTEM_SYMLINKS in parsed_args.post_test_check
+    )
+    PoolMetadataMonitor.verify = (
+        PostTestCheck.POOL_METADATA in parsed_args.post_test_check
     )
     StratisCertify.maxDiff = None
     DbusMonitor.highest_revision_number = parsed_args.highest_revision_number
