@@ -213,6 +213,22 @@ class PoolMetadataMonitor(unittest.TestCase):
                         current,
                         msg="previously written metadata and current metadata are not the same",
                     )
+
+                    (thin_meta_size, thin_meta_spare_size) = [
+                        sum(x[1] - x[0] for x in entries)
+                        for entries in [
+                            written["flex_devs"]["thin_meta_dev"],
+                            written["flex_devs"]["thin_meta_dev_spare"],
+                        ]
+                    ]
+
+                    self.assertEqual(
+                        thin_meta_size,
+                        thin_meta_spare_size,
+                        "Total size of thin meta device is not equal to "
+                        "total size of thin meta spare device.",
+                    )
+
                 else:
                     current_message = (
                         "" if current_return_code == _OK else current_message
