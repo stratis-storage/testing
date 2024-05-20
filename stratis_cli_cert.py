@@ -20,17 +20,15 @@ Tests of the stratis CLI.
 import argparse
 import os
 import sys
-import time
 import unittest
 
 # isort: LOCAL
 from testlib.dbus import StratisDbus, fs_n, p_n
 from testlib.infra import (
     DbusMonitor,
-    FilesystemSymlinkMonitor,
     KernelKey,
-    PoolMetadataMonitor,
     PostTestCheck,
+    RunPostTestChecks,
     StratisdSystemdStart,
     SymlinkMonitor,
     SysfsMonitor,
@@ -170,7 +168,7 @@ class StratisCliManPageCertify(StratisCertify):
 
 
 class StratisCliCertify(
-    StratisdSystemdStart, StratisCertify, DbusMonitor
+    StratisdSystemdStart, StratisCertify
 ):  # pylint: disable=too-many-public-methods
     """
     Unit tests for the stratis-cli package.
@@ -184,7 +182,7 @@ class StratisCliCertify(
         """
         super().setUp()
 
-        DbusMonitor.setUp(self)
+        RunPostTestChecks.setUp(self)
 
     def tearDown(self):
         """
@@ -192,17 +190,9 @@ class StratisCliCertify(
 
         :return: None
         """
-        stop_time = time.monotonic_ns()
+        super().setUp()
 
-        SysfsMonitor.run_check(self)
-
-        SymlinkMonitor.run_check(self)
-
-        DbusMonitor.run_check(self, stop_time)
-
-        FilesystemSymlinkMonitor.run_check(self, stop_time)
-
-        PoolMetadataMonitor.run_check(self)
+        RunPostTestChecks.tearDown(self)
 
     def _test_permissions(self, command_line, permissions, exp_stdout_empty):
         """
@@ -1271,23 +1261,13 @@ def main():
 
     parsed_args, unittest_args = argument_parser.parse_known_args()
     StratisCliCertify.DISKS = parsed_args.DISKS
-    SysfsMonitor.verify_sysfs = (
-        PostTestCheck.SYSFS in parsed_args.post_test_check or parsed_args.verify_sysfs
-    )
-    DbusMonitor.monitor_dbus = (
-        PostTestCheck.DBUS_MONITOR in parsed_args.post_test_check
-        or parsed_args.monitor_dbus
-    )
+    RunPostTestChecks.set_from_post_test_check_option(parsed_args.post_test_check)
+    SysfsMonitor.verify_sysfs = SysfsMonitor.verify_sysfs or parsed_args.verify_sysfs
+    DbusMonitor.monitor_dbus = DbusMonitor.monitor_dbus or parsed_args.monitor_dbus
     SymlinkMonitor.verify_devices = (
-        PostTestCheck.PRIVATE_SYMLINKS in parsed_args.post_test_check
-        or parsed_args.verify_devices
+        SymlinkMonitor.verify_devices or parsed_args.verify_devices
     )
-    FilesystemSymlinkMonitor.verify_devices = (
-        PostTestCheck.FILESYSTEM_SYMLINKS in parsed_args.post_test_check
-    )
-    PoolMetadataMonitor.verify = (
-        PostTestCheck.POOL_METADATA in parsed_args.post_test_check
-    )
+
     StratisCertify.maxDiff = None
     DbusMonitor.highest_revision_number = parsed_args.highest_revision_number
 
