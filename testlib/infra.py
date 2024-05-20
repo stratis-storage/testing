@@ -213,6 +213,22 @@ class PoolMetadataMonitor(unittest.TestCase):
                         current,
                         msg="previously written metadata and current metadata are not the same",
                     )
+
+                    (thin_meta_size, thin_meta_spare_size) = [
+                        sum(x[1] - x[0] for x in entries)
+                        for entries in [
+                            written["flex_devs"]["thin_meta_dev"],
+                            written["flex_devs"]["thin_meta_dev_spare"],
+                        ]
+                    ]
+
+                    self.assertEqual(
+                        thin_meta_size,
+                        thin_meta_spare_size,
+                        "Total size of thin meta device is not equal to "
+                        "total size of thin meta spare device.",
+                    )
+
                 else:
                     current_message = (
                         "" if current_return_code == _OK else current_message
@@ -507,3 +523,40 @@ class PostTestCheck(Enum):
 
     def __str__(self):
         return self.value
+
+
+class RunPostTestChecks(unittest.TestCase):
+    """
+    Manage running post test checks
+    """
+
+    def setUp(self):
+        DbusMonitor.setUp(self)
+
+    def tearDown(self):
+        stop_time = time.monotonic_ns()
+
+        SysfsMonitor.run_check(self)
+
+        SymlinkMonitor.run_check(self)
+
+        DbusMonitor.run_check(self, stop_time)
+
+        FilesystemSymlinkMonitor.run_check(self, stop_time)
+
+        PoolMetadataMonitor.run_check(self)
+
+    @staticmethod
+    def set_from_post_test_check_option(post_test_check):
+        """
+        Set run flags from post_test_check option in parser args.
+        """
+        SysfsMonitor.verify_sysfs = PostTestCheck.SYSFS in post_test_check
+        DbusMonitor.monitor_dbus = PostTestCheck.DBUS_MONITOR in post_test_check
+        SymlinkMonitor.verify_devices = (
+            PostTestCheck.PRIVATE_SYMLINKS in post_test_check
+        )
+        FilesystemSymlinkMonitor.verify_devices = (
+            PostTestCheck.FILESYSTEM_SYMLINKS in post_test_check
+        )
+        PoolMetadataMonitor.verify = PostTestCheck.POOL_METADATA in post_test_check
