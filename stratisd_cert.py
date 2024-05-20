@@ -178,7 +178,7 @@ class StratisdCertify(
         """
         super().setUp()
 
-        RunPostTestChecks.setUp(self)
+        DbusMonitor.setUp(self)
 
     def tearDown(self):
         """

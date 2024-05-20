@@ -182,7 +182,7 @@ class StratisCliCertify(
         """
         super().setUp()
 
-        RunPostTestChecks.setUp(self)
+        DbusMonitor.setUp(self)
 
     def tearDown(self):
         """

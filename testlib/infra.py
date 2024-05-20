@@ -530,9 +530,6 @@ class RunPostTestChecks(unittest.TestCase):
     Manage running post test checks
     """
 
-    def setUp(self):
-        DbusMonitor.setUp(self)
-
     def tearDown(self):
         stop_time = time.monotonic_ns()
 
