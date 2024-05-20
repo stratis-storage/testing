@@ -202,6 +202,8 @@ class StratisCliCertify(
 
         FilesystemSymlinkMonitor.run_check(self, stop_time)
 
+        PoolMetadataMonitor.run_check(self)
+
     def _test_permissions(self, command_line, permissions, exp_stdout_empty):
         """
         Test running CLI commands with and without root permissions.

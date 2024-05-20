@@ -198,6 +198,8 @@ class StratisdCertify(
 
         FilesystemSymlinkMonitor.run_check(self, stop_time)
 
+        PoolMetadataMonitor.run_check(self)
+
     def _unittest_set_property(
         self, object_path, param_iface, dbus_param, dbus_value, exception_name
     ):  # pylint: disable=too-many-arguments
