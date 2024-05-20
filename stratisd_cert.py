@@ -164,7 +164,7 @@ class StratisCertify(unittest.TestCase):
 
 
 class StratisdCertify(
-    StratisdSystemdStart, StratisCertify
+    StratisdSystemdStart, StratisCertify, DbusMonitor
 ):  # pylint: disable=too-many-public-methods
     """
     Tests on stratisd, the principal daemon.

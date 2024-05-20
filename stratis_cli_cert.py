@@ -168,7 +168,7 @@ class StratisCliManPageCertify(StratisCertify):
 
 
 class StratisCliCertify(
-    StratisdSystemdStart, StratisCertify
+    StratisdSystemdStart, StratisCertify, DbusMonitor
 ):  # pylint: disable=too-many-public-methods
     """
     Unit tests for the stratis-cli package.
