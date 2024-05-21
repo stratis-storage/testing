@@ -186,7 +186,7 @@ class StratisdCertify(
 
         :return: None
         """
-        super().setUp()
+        super().tearDown()
 
         RunPostTestChecks.tearDown(self)
 
