@@ -19,8 +19,10 @@ import base64
 import fnmatch
 import json
 import os
+import shutil
 import signal
 import subprocess
+import tempfile
 import time
 import unittest
 from enum import Enum
@@ -38,9 +40,13 @@ MONITOR_DBUS_SIGNALS = "./scripts/monitor_dbus_signals.py"
 DBUS_NAME_HAS_NO_OWNER_ERROR = "org.freedesktop.DBus.Error.NameHasNoOwner"
 SYS_CLASS_BLOCK = "/sys/class/block"
 DEV_MAPPER = "/dev/mapper"
+VAR_TMP = "/var/tmp"
+MOUNT_POINT_SUFFIX = "_stratisd_mounts"
+UMOUNT = "umount"
+MOUNT = "mount"
 
 
-def clean_up():
+def clean_up():  # pylint: disable=too-many-branches
     """
     Try to clean up after a test failure.
 
@@ -67,6 +73,19 @@ def clean_up():
     # Start any stopped pools
     for uuid in StratisDbus.stopped_pools():
         StratisDbus.pool_start(uuid, "uuid")
+
+    # Unmount FS
+    for mountpoint_dir in fnmatch.filter(os.listdir(VAR_TMP), f"*{MOUNT_POINT_SUFFIX}"):
+        for name, _ in StratisDbus.fs_list().items():
+            try:
+                subprocess.check_call(
+                    [UMOUNT, os.path.join(VAR_TMP, mountpoint_dir, name)]
+                )
+            except subprocess.CalledProcessError as err:
+                error_strings.append(
+                    "Failed to umount filesystem at "
+                    f"{os.path.join(VAR_TMP, mountpoint_dir, name)}: {err}"
+                )
 
     # Remove FS
     for name, pool_name in StratisDbus.fs_list().items():
@@ -113,6 +132,14 @@ def clean_up():
     else:
         if remnant_keys != []:
             error_strings.append(f'remnant keys: {", ".join(remnant_keys)}')
+
+    for mountpoint_dir in fnmatch.filter(os.listdir(VAR_TMP), f"*{MOUNT_POINT_SUFFIX}"):
+        try:
+            shutil.rmtree(os.path.join(VAR_TMP, mountpoint_dir))
+        except Exception as err:  # pylint: disable=broad-exception-caught
+            error_strings.append(
+                f"failed to clean up temporary mountpoint dir {mountpoint_dir}: {err}"
+            )
 
     assert isinstance(error_strings, list)
     if error_strings:
@@ -557,3 +584,36 @@ class RunPostTestChecks(unittest.TestCase):
             PostTestCheck.FILESYSTEM_SYMLINKS in post_test_check
         )
         PoolMetadataMonitor.verify = PostTestCheck.POOL_METADATA in post_test_check
+
+
+class MountPointManager:  # pylint: disable=too-few-public-methods
+    """
+    Handle mounting Stratis filesystems in a temp directory.
+    """
+
+    def __init__(self):
+        """
+        Initalizer.
+
+        :rtype: None
+        """
+        self.mount_root = tempfile.mkdtemp(suffix=MOUNT_POINT_SUFFIX, dir=VAR_TMP)
+
+    def mount(self, fs_paths):
+        """
+        Generate canonical mountpoints from filesystem paths and mount each
+        filesystem.
+        :param str fs_paths: the absolute paths to mount
+        :rtype: list of str
+        """
+        mountpoints = []
+        for fs_path in fs_paths:
+            mountpoint = os.path.join(self.mount_root, os.path.basename(fs_path))
+            try:
+                os.mkdir(mountpoint)
+            except FileExistsError:
+                pass
+            subprocess.check_call([MOUNT, fs_path, mountpoint])
+            mountpoints.append(mountpoint)
+
+        return mountpoints
