@@ -37,6 +37,7 @@ _OK = 0
 MONITOR_DBUS_SIGNALS = "./scripts/monitor_dbus_signals.py"
 DBUS_NAME_HAS_NO_OWNER_ERROR = "org.freedesktop.DBus.Error.NameHasNoOwner"
 SYS_CLASS_BLOCK = "/sys/class/block"
+DEV_MAPPER = "/dev/mapper"
 
 
 def clean_up():
@@ -256,12 +257,11 @@ class SysfsMonitor(unittest.TestCase):
         Run the check.
         """
         if SysfsMonitor.verify_sysfs:  # pylint: disable=no-member
-            dev_mapper = "/dev/mapper"
             dm_devices = {
                 os.path.basename(
-                    os.path.realpath(os.path.join(dev_mapper, dmdev))
+                    os.path.realpath(os.path.join(DEV_MAPPER, dmdev))
                 ): dmdev
-                for dmdev in os.listdir(dev_mapper)
+                for dmdev in os.listdir(DEV_MAPPER)
             }
 
             try:
@@ -338,13 +338,11 @@ class FilesystemSymlinkMonitor(unittest.TestCase):
 
         try:
             found = 0
-            for dev in fnmatch.filter(
-                os.listdir("/dev/mapper"), "stratis-1-*-thin-fs-*"
-            ):
+            for dev in fnmatch.filter(os.listdir(DEV_MAPPER), "stratis-1-*-thin-fs-*"):
                 found += 1
                 command = [
                     FilesystemSymlinkMonitor._DECODE_DM,
-                    os.path.join("/dev/mapper", dev),
+                    os.path.join(DEV_MAPPER, dev),
                     "--output=symlink",
                 ]
                 try:
@@ -372,12 +370,12 @@ class FilesystemSymlinkMonitor(unittest.TestCase):
             if found != len(filesystems):
                 raise RuntimeError(
                     f"{len(filesystems)} Stratis filesystems were created by "
-                    f"this test but {found} '/dev/mapper' links were found."
+                    f'this test but {found} "{DEV_MAPPER}" links were found.'
                 )
 
         except FileNotFoundError as err:
             raise RuntimeError(
-                "Missing directory '/dev/mapper', test could not be run"
+                f'Missing directory "{DEV_MAPPER}", test could not be run'
             ) from err
 
 
