@@ -36,6 +36,7 @@ _OK = 0
 
 MONITOR_DBUS_SIGNALS = "./scripts/monitor_dbus_signals.py"
 DBUS_NAME_HAS_NO_OWNER_ERROR = "org.freedesktop.DBus.Error.NameHasNoOwner"
+SYS_CLASS_BLOCK = "/sys/class/block"
 
 
 def clean_up():
@@ -265,19 +266,18 @@ class SysfsMonitor(unittest.TestCase):
 
             try:
                 misaligned_devices = []
-                for dev in os.listdir("/sys/class/block"):
-                    if fnmatch.fnmatch(dev, "dm-*"):
-                        dev_sysfspath = os.path.join(
-                            "/sys/class/block", dev, "alignment_offset"
-                        )
-                        with open(dev_sysfspath, "r", encoding="utf-8") as dev_sysfs:
-                            dev_align = dev_sysfs.read().rstrip()
-                            if int(dev_align) != 0:
-                                misaligned_devices.append(
-                                    f"Stratis Name: {dm_devices[dev]}, "
-                                    f" DM name: {dev}, "
-                                    f" Alignment offset: {dev_align}"
-                                )
+                for dev in fnmatch.filter(os.listdir(SYS_CLASS_BLOCK), "dm-*"):
+                    dev_sysfspath = os.path.join(
+                        SYS_CLASS_BLOCK, dev, "alignment_offset"
+                    )
+                    with open(dev_sysfspath, "r", encoding="utf-8") as dev_sysfs:
+                        dev_align = dev_sysfs.read().rstrip()
+                        if int(dev_align) != 0:
+                            misaligned_devices.append(
+                                f"Stratis Name: {dm_devices[dev]}, "
+                                f" DM name: {dev}, "
+                                f" Alignment offset: {dev_align}"
+                            )
 
                 self.assertEqual(misaligned_devices, [])
             except FileNotFoundError:
@@ -336,38 +336,38 @@ class FilesystemSymlinkMonitor(unittest.TestCase):
             ]
         )
 
-        found = 0
-
         try:
-            for dev in os.listdir("/dev/mapper"):
-                if fnmatch.fnmatch(dev, "stratis-1-*-thin-fs-*"):
-                    found += 1
-                    command = [
-                        FilesystemSymlinkMonitor._DECODE_DM,
-                        os.path.join("/dev/mapper", dev),
-                        "--output=symlink",
-                    ]
-                    try:
-                        with subprocess.Popen(
-                            command,
-                            stdout=subprocess.PIPE,
-                            stderr=subprocess.PIPE,
-                        ) as proc:
-                            (stdoutdata, stderrdata) = proc.communicate()
-                            if proc.returncode == 0:
-                                symlink = stdoutdata.decode("utf-8").strip()
-                                self.assertTrue(os.path.exists(symlink))
-                                self.assertIn(symlink, filesystems)
-                            else:
-                                raise RuntimeError(
-                                    f"{FilesystemSymlinkMonitor._DECODE_DM} "
-                                    f"invocation failed: {stderrdata.decode('utf-8')}"
-                                )
-                    except FileNotFoundError as err:
-                        raise RuntimeError(
-                            f"Script '{FilesystemSymlinkMonitor._DECODE_DM}' "
-                            "missing, test could not be run"
-                        ) from err
+            found = 0
+            for dev in fnmatch.filter(
+                os.listdir("/dev/mapper"), "stratis-1-*-thin-fs-*"
+            ):
+                found += 1
+                command = [
+                    FilesystemSymlinkMonitor._DECODE_DM,
+                    os.path.join("/dev/mapper", dev),
+                    "--output=symlink",
+                ]
+                try:
+                    with subprocess.Popen(
+                        command,
+                        stdout=subprocess.PIPE,
+                        stderr=subprocess.PIPE,
+                    ) as proc:
+                        (stdoutdata, stderrdata) = proc.communicate()
+                        if proc.returncode == 0:
+                            symlink = stdoutdata.decode("utf-8").strip()
+                            self.assertTrue(os.path.exists(symlink))
+                            self.assertIn(symlink, filesystems)
+                        else:
+                            raise RuntimeError(
+                                f"{FilesystemSymlinkMonitor._DECODE_DM} "
+                                f"invocation failed: {stderrdata.decode('utf-8')}"
+                            )
+                except FileNotFoundError as err:
+                    raise RuntimeError(
+                        f"Script '{FilesystemSymlinkMonitor._DECODE_DM}' "
+                        "missing, test could not be run"
+                    ) from err
 
             if found != len(filesystems):
                 raise RuntimeError(
