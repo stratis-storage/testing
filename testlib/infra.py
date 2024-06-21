@@ -322,7 +322,7 @@ class FilesystemSymlinkMonitor(unittest.TestCase):
         """
 
         if not FilesystemSymlinkMonitor.verify_devices:  # pylint: disable=no-member
-            pass
+            return
 
         time.sleep(sleep_time(stop_time, 16))
 
