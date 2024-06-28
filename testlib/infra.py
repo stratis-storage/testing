@@ -409,7 +409,7 @@ class DbusMonitor(unittest.TestCase):
                 + r"\."
                 + f"r[0-{StratisDbus.REVISION_NUMBER}]"
             )
-            command.append(f'--only-check="{only_check}"')
+            command.append(f"--only-check={only_check}")
 
             # pylint: disable=consider-using-with
             try:
