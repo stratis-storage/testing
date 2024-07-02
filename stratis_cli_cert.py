@@ -190,7 +190,7 @@ class StratisCliCertify(
 
         :return: None
         """
-        super().setUp()
+        super().tearDown()
 
         RunPostTestChecks.tearDown(self)
 
