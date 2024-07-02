@@ -731,7 +731,11 @@ except KeyboardInterrupt:
         print(os.linesep.join(_CALLBACK_ERRORS))
         sys.exit(3)
 
-    result = _check()
+    try:
+        result = _check()
+    except Exception as exco:  # pylint: disable=broad-except
+        print(f"{exco}")
+        sys.exit(4)
 
     assert isinstance(result, list)
     if not result:

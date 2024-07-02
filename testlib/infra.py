@@ -472,6 +472,13 @@ class DbusMonitor(unittest.TestCase):
                     f'stdout: {stdoutdata.decode("utf-8")}'
                 )
 
+            if self.trace.returncode == 4:
+                raise RuntimeError(
+                    "Failure while comparing D-Bus states: "
+                    f'stderr: {stderrdata.decode("utf-8")}, '
+                    f'stdout: {stdoutdata.decode("utf-8")}'
+                )
+
             msg = stdoutdata.decode("utf-8")
             self.assertEqual(
                 self.trace.returncode,
