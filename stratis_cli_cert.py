@@ -19,6 +19,7 @@ Tests of the stratis CLI.
 # isort: STDLIB
 import argparse
 import os
+import subprocess
 import sys
 import unittest
 
@@ -27,6 +28,7 @@ from testlib.dbus import StratisDbus, fs_n, p_n
 from testlib.infra import (
     DbusMonitor,
     KernelKey,
+    MountPointManager,
     PostTestCheck,
     RunPostTestChecks,
     StratisdSystemdStart,
@@ -1181,6 +1183,29 @@ class StratisCliCertify(
             [_STRATIS_CLI, "filesystem", "destroy", pool_name, filesystem_name],
             True,
             True,
+        )
+
+    @skip(_skip_condition(1))
+    def test_filesystem_mount_and_write(self):
+        """
+        Test mount and write to filesystem.
+        """
+        pool_name = make_test_pool(StratisCliCertify.DISKS[0:1])
+        filesystem_name = make_test_filesystem(pool_name)
+
+        mountpoints = MountPointManager().mount(
+            [os.path.join("/", "dev", "stratis", pool_name, filesystem_name)]
+        )
+
+        subprocess.check_call(
+            [
+                "dd",
+                "if=/dev/urandom",
+                f'of={os.path.join(mountpoints[0], "file1")}',
+                "bs=4096",
+                "count=256",
+                "conv=fsync",
+            ]
         )
 
     @skip(_skip_condition(1))
