@@ -685,10 +685,6 @@ except KeyboardInterrupt:
         if _PROPERTIES is None:
             return []
 
-        assert isinstance(_CALLBACK_ERRORS, list)
-        if _CALLBACK_ERRORS:
-            return _CALLBACK_ERRORS
-
         if _MO is None:
             return []
 
@@ -729,6 +725,11 @@ except KeyboardInterrupt:
                 diffs.extend(prop_diffs)
 
         return diffs
+
+    assert isinstance(_CALLBACK_ERRORS, list)
+    if _CALLBACK_ERRORS:
+        print(os.linesep.join(_CALLBACK_ERRORS))
+        sys.exit(3)
 
     result = _check()
 
