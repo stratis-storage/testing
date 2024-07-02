@@ -685,10 +685,6 @@ except KeyboardInterrupt:
         if _PROPERTIES is None:
             return []
 
-        assert isinstance(_CALLBACK_ERRORS, list)
-        if _CALLBACK_ERRORS:
-            return _CALLBACK_ERRORS
-
         if _MO is None:
             return []
 
@@ -730,7 +726,16 @@ except KeyboardInterrupt:
 
         return diffs
 
-    result = _check()
+    assert isinstance(_CALLBACK_ERRORS, list)
+    if _CALLBACK_ERRORS:
+        print(os.linesep.join(_CALLBACK_ERRORS))
+        sys.exit(3)
+
+    try:
+        result = _check()
+    except Exception as exco:  # pylint: disable=broad-except
+        print(f"{exco}")
+        sys.exit(4)
 
     assert isinstance(result, list)
     if not result:
