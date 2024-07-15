@@ -221,6 +221,25 @@ class PoolMetadataMonitor(unittest.TestCase):
     Manage verification of consistency of pool-level metadata.
     """
 
+    def _check_thin_meta_allocations(self, metadata):
+        """
+        Check whether sizes of thin meta and thin meta spare match.
+        """
+        (thin_meta_size, thin_meta_spare_size) = [
+            sum(x[1] for x in entries)
+            for entries in [
+                metadata["flex_devs"]["thin_meta_dev"],
+                metadata["flex_devs"]["thin_meta_dev_spare"],
+            ]
+        ]
+
+        self.assertEqual(
+            thin_meta_size,
+            thin_meta_spare_size,
+            "Total size of thin meta device is not equal to "
+            "total size of thin meta spare device.",
+        )
+
     def run_check(self):
         """
         Run the check.
@@ -243,20 +262,7 @@ class PoolMetadataMonitor(unittest.TestCase):
                         msg="previously written metadata and current metadata are not the same",
                     )
 
-                    (thin_meta_size, thin_meta_spare_size) = [
-                        sum(x[1] for x in entries)
-                        for entries in [
-                            written["flex_devs"]["thin_meta_dev"],
-                            written["flex_devs"]["thin_meta_dev_spare"],
-                        ]
-                    ]
-
-                    self.assertEqual(
-                        thin_meta_size,
-                        thin_meta_spare_size,
-                        "Total size of thin meta device is not equal to "
-                        "total size of thin meta spare device.",
-                    )
+                    self._check_thin_meta_allocations(written)
 
                 else:
                     current_message = (
