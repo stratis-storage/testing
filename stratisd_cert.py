@@ -180,7 +180,8 @@ class StratisdCertify(
         """
         super().setUp()
 
-        RunPostTestChecks.setUp(self)
+        self._post_test_checks = RunPostTestChecks()
+        self._post_test_checks.setUp()
 
     def tearDown(self):
         """
@@ -190,7 +191,7 @@ class StratisdCertify(
         """
         super().tearDown()
 
-        RunPostTestChecks.tearDown(self)
+        self._post_test_checks.tearDown()
 
     def _unittest_set_property(
         self, object_path, param_iface, dbus_param, dbus_value, exception_name

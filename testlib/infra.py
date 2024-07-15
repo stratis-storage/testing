@@ -570,20 +570,17 @@ class RunPostTestChecks(unittest.TestCase):
     """
 
     def setUp(self):
-        DbusMonitor.setUp(self)
+        self.dbus_monitor = DbusMonitor()
+        self.dbus_monitor.setUp()
 
     def tearDown(self):
         stop_time = time.monotonic_ns()
+        self.dbus_monitor.run_check(stop_time)
 
-        SysfsMonitor.run_check(self)
-
-        SymlinkMonitor.run_check(self)
-
-        DbusMonitor.run_check(self, stop_time)
-
-        FilesystemSymlinkMonitor.run_check(self, stop_time)
-
-        PoolMetadataMonitor.run_check(self)
+        SysfsMonitor().run_check()
+        SymlinkMonitor().run_check()
+        FilesystemSymlinkMonitor().run_check(stop_time)
+        PoolMetadataMonitor().run_check()
 
     @staticmethod
     def set_from_post_test_check_option(post_test_check):
