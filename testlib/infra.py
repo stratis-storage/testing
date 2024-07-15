@@ -240,11 +240,17 @@ class PoolMetadataMonitor(unittest.TestCase):
             "total size of thin meta spare device.",
         )
 
-    def run_check(self):
+    def run_check(self, stop_time):
         """
         Run the check.
+
+        :param int stop_time: the time the test completed
         """
         if PoolMetadataMonitor.verify:  # pylint: disable=no-member
+
+            # Wait for D-Bus to settle, so D-Bus and metadata can be compared
+            time.sleep(sleep_time(stop_time, 16))
+
             for object_path, _ in StratisDbus.pool_list():
                 (current, current_return_code, current_message) = (
                     StratisDbus.pool_get_metadata(object_path)
@@ -586,7 +592,7 @@ class RunPostTestChecks(unittest.TestCase):
         SysfsMonitor().run_check()
         SymlinkMonitor().run_check()
         FilesystemSymlinkMonitor().run_check(stop_time)
-        PoolMetadataMonitor().run_check()
+        PoolMetadataMonitor().run_check(stop_time)
 
     @staticmethod
     def set_from_post_test_check_option(post_test_check):
