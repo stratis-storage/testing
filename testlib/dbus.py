@@ -256,7 +256,7 @@ class StratisDbus:
             StratisDbus._MNGR_IFACE,
         )
 
-        return manager_iface.StartPool(id_string, id_type, (False, ""))
+        return manager_iface.StartPool(id_string, id_type, (False, ""), (False, 0))
 
     @staticmethod
     def pool_stop(id_string, id_type):
