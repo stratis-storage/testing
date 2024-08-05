@@ -500,6 +500,30 @@ class StratisDbus:
         return iface.Metadata(current, timeout=StratisDbus._TIMEOUT)
 
     @staticmethod
+    def fs_get_metadata(pool_path, *, fs_name=None, current=True):
+        """
+        Get filesystem-level metadata
+        :param str pool_path: The object path of the pool
+        :param str fs_name: The name of the filesystem
+        :param bool current: Current or most recently written metadata
+        :return: JSON-format pool-level metadata
+        :rtype: The D-Bus types s, q, and s
+        :raises dbus.exceptions.DBusException:
+        """
+        iface = dbus.Interface(
+            StratisDbus._BUS.get_object(StratisDbus._BUS_NAME, pool_path),
+            StratisDbus._POOL_IFACE,
+        )
+
+        fs_name = (False, "") if fs_name is None else (True, fs_name)
+
+        return iface.FilesystemMetadata(
+            (False, "") if fs_name is None else (True, fs_name),
+            current,
+            timeout=StratisDbus._TIMEOUT,
+        )
+
+    @staticmethod
     def fs_create(pool_path, fs_name, *, fs_size=None, fs_sizelimit=None):
         """
         Create a filesystem

@@ -1210,6 +1210,27 @@ class StratisCliCertify(
         )
 
     @skip(_skip_condition(1))
+    def test_filesystem_debug_get_metadata(self):
+        """
+        Test running "stratis filesystem debug get-metadata" on a pool.
+        """
+        pool_name = make_test_pool(StratisCliCertify.DISKS[0:1])
+        filesystem_name = make_test_filesystem(pool_name)
+        self._unittest_command(
+            [
+                _STRATIS_CLI,
+                "filesystem",
+                "debug",
+                "get-metadata",
+                pool_name,
+                f"--fs-name={filesystem_name}",
+            ],
+            0,
+            True,
+            False,
+        )
+
+    @skip(_skip_condition(1))
     def test_pool_stop_stopped(self):
         """
         Test stopping a stopped pool fails.
