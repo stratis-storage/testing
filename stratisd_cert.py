@@ -1057,6 +1057,21 @@ class StratisdCertify(
             ]
         )
 
+    @skip(_skip_condition(1))
+    def test_filesystem_get_metadata(self):
+        """
+        Test getting filesystem metadata info.
+        """
+        pool_name = p_n()
+        pool_path, _ = make_test_pool(pool_name, StratisCertify.DISKS[0:1])
+
+        fs_name = fs_n()
+        make_test_filesystem(pool_path, fs_name)
+
+        self._unittest_command(
+            StratisDbus.fs_get_metadata(pool_path, fs_name=fs_name), dbus.UInt16(0)
+        )
+
     def test_get_report(self):
         """
         Test getting a valid and invalid report.
