@@ -515,8 +515,6 @@ class StratisDbus:
             StratisDbus._POOL_IFACE,
         )
 
-        fs_name = (False, "") if fs_name is None else (True, fs_name)
-
         return iface.FilesystemMetadata(
             (False, "") if fs_name is None else (True, fs_name),
             current,
