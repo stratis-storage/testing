@@ -96,7 +96,7 @@ def clean_up():  # pylint: disable=too-many-branches
         )
 
     # Remove Pools
-    for _, name in StratisDbus.pool_list():
+    for _, name, _ in StratisDbus.pool_list():
         check_result(StratisDbus.pool_destroy(name), "failed to destroy pool %s", name)
 
     # Unset all Stratis keys
@@ -312,7 +312,7 @@ class PoolMetadataMonitor(unittest.TestCase):
             # Wait for D-Bus to settle, so D-Bus and metadata can be compared
             time.sleep(sleep_time(stop_time, 16))
 
-            for object_path, _ in StratisDbus.pool_list():
+            for object_path, _, _ in StratisDbus.pool_list():
                 (current, current_return_code, current_message) = (
                     StratisDbus.pool_get_metadata(object_path)
                 )
