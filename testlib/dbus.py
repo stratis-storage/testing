@@ -174,8 +174,8 @@ class StratisDbus:
     def pool_list():
         """
         Query the pools
-        :return: A list of object paths and names
-        :rtype: List of str * str
+        :return: A list of object paths, names, and UUIDs
+        :rtype: List of str * str * str
         """
         pool_objects = [
             (obj_path, obj_data[StratisDbus._POOL_IFACE])
@@ -184,7 +184,10 @@ class StratisDbus:
             and obj_data[StratisDbus._POOL_IFACE]["Name"].startswith(_TEST_PREF)
         ]
 
-        return [(obj_path, pool_obj["Name"]) for obj_path, pool_obj in pool_objects]
+        return [
+            (obj_path, pool_obj["Name"], pool_obj["Uuid"])
+            for obj_path, pool_obj in pool_objects
+        ]
 
     @staticmethod
     def blockdev_list():
