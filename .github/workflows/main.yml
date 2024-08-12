@@ -29,6 +29,7 @@ jobs:
               pylint
               python3-dbus
               python3-dbus-python-client-gen
+              python3-justbytes
               python3-gobject
               python3-psutil
             image: fedora:40  # CURRENT DEVELOPMENT ENVIRONMENT
