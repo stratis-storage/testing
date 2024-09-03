@@ -24,6 +24,7 @@ Recommended release for development: Fedora 39
   https://github.com/stratis-storage/testing/pull/256
 
 - Change StratisDbus.pool_list so that it returns a tuple that includes UUID: 
+  https://github.com/stratis-storage/testing/pull/282
   https://github.com/stratis-storage/testing/pull/277
 
 - Run a mount and also write filesystem test:
