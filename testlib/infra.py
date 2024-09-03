@@ -123,7 +123,7 @@ def clean_up():  # pylint: disable=too-many-branches
     remnant_pools = StratisDbus.pool_list()
     if remnant_pools != []:
         error_strings.append(
-            f'remnant pools: {", ".join(name for name in remnant_pools)}'
+            f'remnant pools: {", ".join(name for _, name, _ in remnant_pools)}'
         )
 
     (remnant_keys, return_code, message) = StratisDbus.get_keys()
