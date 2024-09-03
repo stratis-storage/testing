@@ -5,9 +5,31 @@ Required stratis-cli version: 3.7.0
 
 Recommended release for development: Fedora 39
 
+- Change StartPool invocation for new revision:
+  https://github.com/stratis-storage/testing/pull/263
+
+- Verify intergrity meta-allocation is rounded:
+  https://github.com/stratis-storage/testing/pull/279
+
+- Make RAID metadata tests more interesting:
+  https://github.com/stratis-storage/testing/pull/278
+  
 - Add tests for new filesystem get-metadata command:
   https://github.com/stratis-storage/testing/issues/274
+  https://github.com/stratis-storage/testing/pull/276
+  https://github.com/stratis-storage/testing/pull/275
+
+- Add tests for new pool get-metadata command:
+  https://github.com/stratis-storage/testing/issues/255
   https://github.com/stratis-storage/testing/pull/256
+
+- Change StratisDbus.pool_list so that it returns a tuple that includes UUID: 
+  https://github.com/stratis-storage/testing/pull/277
+
+- Run a mount and also write filesystem test:
+  https://github.com/stratis-storage/testing/issues/213
+  https://github.com/stratis-storage/testing/pull/269
+  https://github.com/stratis-storage/testing/pull/265
 
 - Add SysfsMonitor class and --verify-sysfs argument:
   https://github.com/stratis-storage/testing/issues/229
@@ -24,6 +46,8 @@ Recommended release for development: Fedora 39
 - Changes to dbus monitor test:
   https://github.com/stratis-storage/testing/issues/247
   https://github.com/stratis-storage/testing/issues/241
+  https://github.com/stratis-storage/testing/pull/271
+  https://github.com/stratis-storage/testing/pull/266
   https://github.com/stratis-storage/testing/pull/251
   https://github.com/stratis-storage/testing/pull/248
   https://github.com/stratis-storage/testing/pull/246
@@ -35,11 +59,25 @@ Recommended release for development: Fedora 39
   https://github.com/stratis-storage/testing/pull/237
   https://github.com/stratis-storage/testing/pull/235
 
+- Do not pass quotation marks around only-check value:
+  https://github.com/stratis-storage/testing/pull/268
+
+- Require stratis-decode-dm only if running check:
+  https://github.com/stratis-storage/testing/pull/267
+
+- Use fnmatch.filter where possible:
+  https://github.com/stratis-storage/testing/pull/264
+
+- bug fix: calculate total size of metadata from extents:
+  https://github.com/stratis-storage/testing/pull/262
+
 - stratisd_cert.py: setUp -> tearDown:
+  https://github.com/stratis-storage/testing/pull/270
   https://github.com/stratis-storage/testing/pull/261
 
 - Add post-test checks around pool-level metadata:
   https://github.com/stratis-storage/testing/issues/252
+  https://github.com/stratis-storage/testing/pull/273
   https://github.com/stratis-storage/testing/pull/259
   https://github.com/stratis-storage/testing/pull/258
   https://github.com/stratis-storage/testing/pull/257
