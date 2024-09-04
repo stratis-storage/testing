@@ -46,7 +46,7 @@ UMOUNT = "umount"
 MOUNT = "mount"
 
 
-def clean_up():  # pylint: disable=too-many-branches
+def clean_up():  # pylint: disable=too-many-branches,too-many-locals
     """
     Try to clean up after a test failure.
 
@@ -76,7 +76,7 @@ def clean_up():  # pylint: disable=too-many-branches
 
     # Unmount FS
     for mountpoint_dir in fnmatch.filter(os.listdir(VAR_TMP), f"*{MOUNT_POINT_SUFFIX}"):
-        for name, _ in StratisDbus.fs_list().items():
+        for (_, name, _), _ in StratisDbus.fs_list().items():
             try:
                 subprocess.check_call(
                     [UMOUNT, os.path.join(VAR_TMP, mountpoint_dir, name)]
@@ -87,8 +87,22 @@ def clean_up():  # pylint: disable=too-many-branches
                     f"{os.path.join(VAR_TMP, mountpoint_dir, name)}: {err}"
                 )
 
+    # Unset MergeScheduled
+    for (fs_path, name, (origin_set, _)), pool_name in StratisDbus.fs_list().items():
+        if origin_set:
+            check_result(
+                StratisDbus.set_property(
+                    fs_path,
+                    StratisDbus.FS_IFACE,
+                    "MergeScheduled",
+                    dbus.Boolean(False),
+                ),
+                "failed to set MergeScheduled to False",
+                (name, pool_name),
+            )
+
     # Remove FS
-    for name, pool_name in StratisDbus.fs_list().items():
+    for (_, name, _), pool_name in StratisDbus.fs_list().items():
         check_result(
             StratisDbus.fs_destroy(pool_name, name),
             "failed to destroy filesystem %s in pool %s",
