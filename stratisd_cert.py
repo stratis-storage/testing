@@ -947,6 +947,61 @@ class StratisdCertify(
         )
 
     @skip(_skip_condition(1))
+    def test_filesystem_snapshot_schedule_revert(self):
+        """
+        Test scheduling a revert of a filesystem snapshot.
+        """
+        pool_name = p_n()
+        pool_path, _ = make_test_pool(pool_name, StratisCertify.DISKS[0:1])
+
+        fs_name = fs_n()
+        fs_path = make_test_filesystem(pool_path, fs_name)
+
+        snapshot_name = fs_n()
+
+        ((_, snapshot_path), _, _) = StratisDbus.fs_snapshot(
+            pool_path, fs_path, snapshot_name
+        )
+
+        StratisDbus.set_property(
+            snapshot_path,
+            StratisDbus.FS_IFACE,
+            "MergeScheduled",
+            dbus.Boolean(True),
+        )
+
+    @skip(_skip_condition(1))
+    def test_filesystem_snapshot_cancel_revert(self):
+        """
+        Test canceling a revert of a filesystem snapshot.
+        """
+        pool_name = p_n()
+        pool_path, _ = make_test_pool(pool_name, StratisCertify.DISKS[0:1])
+
+        fs_name = fs_n()
+        fs_path = make_test_filesystem(pool_path, fs_name)
+
+        snapshot_name = fs_n()
+
+        ((_, snapshot_path), _, _) = StratisDbus.fs_snapshot(
+            pool_path, fs_path, snapshot_name
+        )
+
+        StratisDbus.set_property(
+            snapshot_path,
+            StratisDbus.FS_IFACE,
+            "MergeScheduled",
+            dbus.Boolean(True),
+        )
+
+        StratisDbus.set_property(
+            snapshot_path,
+            StratisDbus.FS_IFACE,
+            "MergeScheduled",
+            dbus.Boolean(False),
+        )
+
+    @skip(_skip_condition(1))
     def test_filesystem_snapshot_destroy_filesystem(self):
         """
         Test snapshotting a filesystem, then destroying the original filesystem.
