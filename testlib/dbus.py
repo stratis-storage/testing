@@ -286,20 +286,6 @@ class StratisDbus:
         return iface.Get(StratisDbus._POOL_IFACE, "Uuid", timeout=StratisDbus._TIMEOUT)
 
     @staticmethod
-    def pool_encrypted(pool_path):
-        """
-        Find a pool Encrypted value given an object path.
-        """
-        iface = dbus.Interface(
-            StratisDbus._BUS.get_object(StratisDbus._BUS_NAME, pool_path),
-            dbus.PROPERTIES_IFACE,
-        )
-
-        return iface.Get(
-            StratisDbus._POOL_IFACE, "Encrypted", timeout=StratisDbus._TIMEOUT
-        )
-
-    @staticmethod
     def pool_create(
         pool_name,
         devices,
