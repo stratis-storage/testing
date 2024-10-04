@@ -305,8 +305,9 @@ class PoolMetadataMonitor(unittest.TestCase):
             self.assertGreater(len(integrity_meta_allocs), 0)
 
             for alloc in integrity_meta_allocs:
-                self.assertGreater(alloc[0], 0)
-                self.assertGreater(alloc[1], 0)
+                start, length = Range(alloc[0], 512), Range(alloc[1], 512)
+                self.assertGreater(start, Range(0))
+                self.assertEqual(length % Range(8, 512), Range(0))
 
     def run_check(self, stop_time):
         """
