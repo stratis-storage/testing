@@ -30,6 +30,7 @@ from tempfile import NamedTemporaryFile
 
 # isort: THIRDPARTY
 import dbus
+from justbytes import Range
 
 from .dbus import StratisDbus, manager_interfaces
 from .utils import exec_command, process_exists, terminate_traces
@@ -44,6 +45,7 @@ VAR_TMP = "/var/tmp"
 MOUNT_POINT_SUFFIX = "_stratisd_mounts"
 UMOUNT = "umount"
 MOUNT = "mount"
+STRATIS_METADATA_LEN = Range(8192, 512)
 
 
 def clean_up():  # pylint: disable=too-many-branches
@@ -270,6 +272,8 @@ class PoolMetadataMonitor(unittest.TestCase):
     def _check_raid_meta_allocs(self, metadata):
         """
         Check that all raid_meta_allocs exist and have non-zero length.
+
+        RAID meta_allocs should start immediately after Stratis metadata ends.
         """
         for raid_meta_allocs in [
             a["raid_meta_allocs"]
@@ -277,12 +281,16 @@ class PoolMetadataMonitor(unittest.TestCase):
         ]:
             self.assertIsNotNone(raid_meta_allocs)
             self.assertIsInstance(raid_meta_allocs, list)
-            self.assertGreater(len(raid_meta_allocs), 0)
+            self.assertEqual(len(raid_meta_allocs), 1)
 
             raid_meta_allocs = raid_meta_allocs[0]
             self.assertIsInstance(raid_meta_allocs, list)
-            self.assertGreater(raid_meta_allocs[0], 0)
-            self.assertGreater(raid_meta_allocs[1], 0)
+
+            raid_meta_alloc_start = Range(raid_meta_allocs[0], 512)
+            raid_meta_alloc_len = Range(raid_meta_allocs[1], 512)
+
+            self.assertEqual(raid_meta_alloc_start, STRATIS_METADATA_LEN)
+            self.assertGreater(raid_meta_alloc_len, Range(0))
 
     def _check_integrity_meta_allocs(self, metadata):
         """
@@ -296,10 +304,9 @@ class PoolMetadataMonitor(unittest.TestCase):
             self.assertIsInstance(integrity_meta_allocs, list)
             self.assertGreater(len(integrity_meta_allocs), 0)
 
-            integrity_meta_allocs = integrity_meta_allocs[0]
-            self.assertIsInstance(integrity_meta_allocs, list)
-            self.assertGreater(integrity_meta_allocs[0], 0)
-            self.assertGreater(integrity_meta_allocs[1], 0)
+            for alloc in integrity_meta_allocs:
+                self.assertGreater(alloc[0], 0)
+                self.assertGreater(alloc[1], 0)
 
     def run_check(self, stop_time):
         """

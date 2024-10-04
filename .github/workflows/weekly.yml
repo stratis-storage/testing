@@ -20,6 +20,7 @@ jobs:
               python3-dbus
               python3-dbus-python-client-gen
               python3-gobject
+              python3-justbytes
               python3-psutil
             task: PYTHONPATH=./src make -f Makefile lint
           - dependencies: black python3-isort
