@@ -30,6 +30,7 @@ from tempfile import NamedTemporaryFile
 
 # isort: THIRDPARTY
 import dbus
+from justbytes import Range
 
 from .dbus import StratisDbus, manager_interfaces
 from .utils import exec_command, process_exists, terminate_traces
@@ -44,6 +45,7 @@ VAR_TMP = "/var/tmp"
 MOUNT_POINT_SUFFIX = "_stratisd_mounts"
 UMOUNT = "umount"
 MOUNT = "mount"
+STRATIS_METADATA_LEN = Range(8192, 512)
 
 
 def clean_up():  # pylint: disable=too-many-branches
@@ -240,6 +242,73 @@ class PoolMetadataMonitor(unittest.TestCase):
             "total size of thin meta spare device.",
         )
 
+    def _check_encryption_information_consistency(self, pool_object_path, metadata):
+        """
+        Check whether D-Bus and metadata agree about encryption state of pool.
+        """
+        encrypted = bool(StratisDbus.pool_encrypted(pool_object_path))
+        features = metadata.get("features")
+
+        if encrypted:
+            self.assertIsNotNone(features)
+            self.assertIn("Encryption", metadata["features"])
+        elif features is not None:
+            self.assertNotIn("Encryption", metadata["features"])
+
+    def _check_crypt_meta_allocs(self, metadata):
+        """
+        Check that all crypt metadata allocs exist and have non-zero length.
+        """
+        crypt_meta_allocs = metadata["backstore"]["cap"].get("crypt_meta_allocs")
+        self.assertIsNotNone(crypt_meta_allocs)
+        self.assertIsInstance(crypt_meta_allocs, list)
+        self.assertGreater(len(crypt_meta_allocs), 0)
+
+        crypt_meta_allocs = crypt_meta_allocs[0]
+        self.assertIsInstance(crypt_meta_allocs, list)
+        self.assertEqual(crypt_meta_allocs[0], 0)
+        self.assertGreater(crypt_meta_allocs[1], 0)
+
+    def _check_raid_meta_allocs(self, metadata):
+        """
+        Check that all raid_meta_allocs exist and have non-zero length.
+
+        RAID meta_allocs should start immediately after Stratis metadata ends.
+        """
+        for raid_meta_allocs in [
+            a["raid_meta_allocs"]
+            for a in metadata["backstore"]["data_tier"]["blockdev"]["devs"]
+        ]:
+            self.assertIsNotNone(raid_meta_allocs)
+            self.assertIsInstance(raid_meta_allocs, list)
+            self.assertEqual(len(raid_meta_allocs), 1)
+
+            raid_meta_allocs = raid_meta_allocs[0]
+            self.assertIsInstance(raid_meta_allocs, list)
+
+            raid_meta_alloc_start = Range(raid_meta_allocs[0], 512)
+            raid_meta_alloc_len = Range(raid_meta_allocs[1], 512)
+
+            self.assertEqual(raid_meta_alloc_start, STRATIS_METADATA_LEN)
+            self.assertGreater(raid_meta_alloc_len, Range(0))
+
+    def _check_integrity_meta_allocs(self, metadata):
+        """
+        Check that all integrity_meta_allocs exist and have non-zero length.
+        """
+        for integrity_meta_allocs in [
+            a["integrity_meta_allocs"]
+            for a in metadata["backstore"]["data_tier"]["blockdev"]["devs"]
+        ]:
+            self.assertIsNotNone(integrity_meta_allocs)
+            self.assertIsInstance(integrity_meta_allocs, list)
+            self.assertGreater(len(integrity_meta_allocs), 0)
+
+            for alloc in integrity_meta_allocs:
+                start, length = Range(alloc[0], 512), Range(alloc[1], 512)
+                self.assertGreater(start, Range(0))
+                self.assertEqual(length % Range(8, 512), Range(0))
+
     def run_check(self, stop_time):
         """
         Run the check.
@@ -269,6 +338,13 @@ class PoolMetadataMonitor(unittest.TestCase):
                     )
 
                     self._check_thin_meta_allocations(written)
+
+                    self._check_encryption_information_consistency(object_path, written)
+                    self._check_crypt_meta_allocs(written)
+
+                    self._check_raid_meta_allocs(written)
+
+                    self._check_integrity_meta_allocs(written)
 
                 else:
                     current_message = (

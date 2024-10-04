@@ -259,7 +259,7 @@ class StratisDbus:
             StratisDbus._MNGR_IFACE,
         )
 
-        return manager_iface.StartPool(id_string, id_type, (False, ""))
+        return manager_iface.StartPool(id_string, id_type, (False, ""), (False, 0))
 
     @staticmethod
     def pool_stop(id_string, id_type):
@@ -284,6 +284,20 @@ class StratisDbus:
         )
 
         return iface.Get(StratisDbus._POOL_IFACE, "Uuid", timeout=StratisDbus._TIMEOUT)
+
+    @staticmethod
+    def pool_encrypted(pool_path):
+        """
+        Find a pool Encrypted value given an object path.
+        """
+        iface = dbus.Interface(
+            StratisDbus._BUS.get_object(StratisDbus._BUS_NAME, pool_path),
+            dbus.PROPERTIES_IFACE,
+        )
+
+        return iface.Get(
+            StratisDbus._POOL_IFACE, "Encrypted", timeout=StratisDbus._TIMEOUT
+        )
 
     @staticmethod
     def pool_create(
