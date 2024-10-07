@@ -1,3 +1,15 @@
+testing 3.7.1
+=============
+Required stratisd version: 3.7.0
+Required stratis-cli version: 3.7.0
+
+Recommended release for development: Fedora 40
+
+- Add StratisCertify tests for snapshot revert:
+  https://github.com/stratis-storage/testing/issues/281
+  https://github.com/stratis-storage/testing/pull/286
+
+
 testing 3.7.0
 =============
 Required stratisd version: 3.7.0
