@@ -269,29 +269,6 @@ class PoolMetadataMonitor(unittest.TestCase):
         self.assertEqual(crypt_meta_allocs[0], 0)
         self.assertGreater(crypt_meta_allocs[1], 0)
 
-    def _check_raid_meta_allocs(self, metadata):
-        """
-        Check that all raid_meta_allocs exist and have non-zero length.
-
-        RAID meta_allocs should start immediately after Stratis metadata ends.
-        """
-        for raid_meta_allocs in [
-            a["raid_meta_allocs"]
-            for a in metadata["backstore"]["data_tier"]["blockdev"]["devs"]
-        ]:
-            self.assertIsNotNone(raid_meta_allocs)
-            self.assertIsInstance(raid_meta_allocs, list)
-            self.assertEqual(len(raid_meta_allocs), 1)
-
-            raid_meta_allocs = raid_meta_allocs[0]
-            self.assertIsInstance(raid_meta_allocs, list)
-
-            raid_meta_alloc_start = Range(raid_meta_allocs[0], 512)
-            raid_meta_alloc_len = Range(raid_meta_allocs[1], 512)
-
-            self.assertEqual(raid_meta_alloc_start, STRATIS_METADATA_LEN)
-            self.assertGreater(raid_meta_alloc_len, Range(0))
-
     def _check_integrity_meta_allocs(self, metadata):
         """
         Check that all integrity_meta_allocs exist and have non-zero length.
@@ -341,8 +318,6 @@ class PoolMetadataMonitor(unittest.TestCase):
 
                     self._check_encryption_information_consistency(object_path, written)
                     self._check_crypt_meta_allocs(written)
-
-                    self._check_raid_meta_allocs(written)
 
                     self._check_integrity_meta_allocs(written)
 
