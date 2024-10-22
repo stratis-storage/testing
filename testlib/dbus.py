@@ -363,14 +363,15 @@ class StratisDbus:
     def fs_list():
         """
         Query the file systems
-        :return: A dict,  Key being the fs name, the value being the pool name
-        :rtype: dict mapping str to str
+        :return: A dict; key being a tuple of the object path, the fs name,
+                 and the origin D-Bus; the value being the pool name
+        :rtype: A dict of str * str * tuple -> str
         """
         objects = StratisDbus.get_managed_objects().items()
 
         fs_objects = [
-            obj_data[StratisDbus._FS_IFACE]
-            for _, obj_data in objects
+            (obj_path, obj_data[StratisDbus._FS_IFACE])
+            for obj_path, obj_data in objects
             if StratisDbus._FS_IFACE in obj_data
             and obj_data[StratisDbus._FS_IFACE]["Name"].startswith(_TEST_PREF)
         ]
@@ -383,8 +384,10 @@ class StratisDbus:
         }
 
         return {
-            fs_object["Name"]: pool_path_to_name[fs_object["Pool"]]
-            for fs_object in fs_objects
+            (obj_path, fs_object["Name"], fs_object["Origin"]): pool_path_to_name[
+                fs_object["Pool"]
+            ]
+            for obj_path, fs_object in fs_objects
         }
 
     @staticmethod
@@ -465,17 +468,17 @@ class StratisDbus:
         return iface.SetName(pool_name_rename, timeout=StratisDbus._TIMEOUT)
 
     @staticmethod
-    def pool_set_property(pool_path, param_iface, dbus_param, dbus_value):
+    def set_property(object_path, param_iface, dbus_param, dbus_value):
         """
         Set D-Bus parameter on a pool
-        :param str pool_path: The object path of the pool
+        :param str object_path: The path of the object
         :param str dbus_param: The parameter to be set
         :param str dbus_value: The value
         :return: None
         :raises dbus.exceptions.DBusException:
         """
         iface = dbus.Interface(
-            StratisDbus._BUS.get_object(StratisDbus._BUS_NAME, pool_path),
+            StratisDbus._BUS.get_object(StratisDbus._BUS_NAME, object_path),
             dbus.PROPERTIES_IFACE,
         )
 
