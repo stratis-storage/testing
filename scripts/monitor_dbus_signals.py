@@ -51,6 +51,7 @@ try:
     # isort: THIRDPARTY
     import dbus
     import dbus.mainloop.glib
+    from deepdiff.diff import DeepDiff
     from gi.repository import GLib
 
     # isort: FIRSTPARTY
@@ -451,6 +452,13 @@ except KeyboardInterrupt:
                 f"{self.key!r}, {self.new_value!r})"
             )
 
+        def __str__(self):
+            return (
+                f"Added Property:{os.linesep}  {self.object_path}{os.linesep}"
+                f"  {self.interface_name}{os.linesep}  {self.key}{os.linesep}"
+                f"  {self.new_value}"
+            )
+
     class RemovedProperty(Diff):  # pylint: disable=too-few-public-methods
         """
         Property appears in recorded result but not in new result.
@@ -466,6 +474,13 @@ except KeyboardInterrupt:
             return (
                 f"RemovedProperty({self.object_path!r}, {self.interface_name!r}, "
                 f"{self.key!r}, {self.old_value!r})"
+            )
+
+        def __str__(self):
+            return (
+                f"Removed Property:{os.linesep}  {self.object_path}{os.linesep}"
+                f"  {self.interface_name}{os.linesep}  {self.key}{os.linesep}"
+                f"  {self.old_value}"
             )
 
     class DifferentProperty(Diff):  # pylint: disable=too-few-public-methods
@@ -486,6 +501,18 @@ except KeyboardInterrupt:
             return (
                 f"DifferentProperty({self.object_path!r}, {self.interface_name!r}, "
                 f"{self.key!r}, {self.old_value!r}, {self.new_value!r})"
+            )
+
+        def __str__(self):
+            diffs = os.linesep.join(
+                f"    {line}"
+                for line in DeepDiff(self.old_value, self.new_value).pretty()
+            )
+            return (
+                f"Different Property:{os.linesep}"
+                f"  {self.object_path}{os.linesep}  {self.key}{os.linesep}"
+                f"  {self.old_value!r}{os.linesep}"
+                f"  {self.new_value!r}{os.linesep}{diffs}"
             )
 
     class NotInvalidatedProperty(Diff):  # pylint: disable=too-few-public-methods
@@ -510,6 +537,14 @@ except KeyboardInterrupt:
                 f"{self.new_value!r})"
             )
 
+        def __str__(self):
+            return (
+                f"Not Invalidated Property:{os.linesep}"
+                f"  {self.object_path}{os.linesep}"
+                f"  {self.interface_name}{os.linesep}  {self.key}{os.linesep}"
+                f"  {self.new_value}"
+            )
+
     class ChangedProperty(Diff):  # pylint: disable=too-few-public-methods
         """
         Represents a case where the property should have been constant but
@@ -532,6 +567,18 @@ except KeyboardInterrupt:
                 f"{self.new_value!r})"
             )
 
+        def __str__(self):
+            diffs = os.linesep.join(
+                f"    {line}"
+                for line in DeepDiff(self.old_value, self.new_value).pretty()
+            )
+            return (
+                f"Changed Property:{os.linesep}  {self.object_path}{os.linesep}"
+                f"  {self.interface_name}{os.linesep}  {self.key}{os.linesep}"
+                f"  {self.old_value}{os.linesep}  {self.new_value}{os.linesep}"
+                f"{diffs}"
+            )
+
     class RemovedObjectPath(Diff):  # pylint: disable=too-few-public-methods
         """
         Object path appears in recorded result but not in new result.
@@ -543,6 +590,12 @@ except KeyboardInterrupt:
 
         def __repr__(self):
             return f"RemovedObjectPath({self.object_path!r}, {self.old_value!r})"
+
+        def __str__(self):
+            return (
+                f"Removed Object Path:{os.linesep}"
+                f"{self.object_path}{os.linesep}  {self.old_value}"
+            )
 
     class AddedInterface(Diff):  # pylint: disable=too-few-public-methods
         """
@@ -560,6 +613,12 @@ except KeyboardInterrupt:
                 f"{self.new_value!r})"
             )
 
+        def __str__(self):
+            return (
+                f"Added Interface:{os.linesep}  {self.object_path}{os.linesep}"
+                f"  {self.interface_name}{os.linesep}  {self.new_value}"
+            )
+
     class AddedObjectPath(Diff):  # pylint: disable=too-few-public-methods
         """
         Object path appears in new result but not in recorded result.
@@ -571,6 +630,12 @@ except KeyboardInterrupt:
 
         def __repr__(self):
             return f"AddedObjectPath({self.object_path!r}, {self.new_value!r})"
+
+        def __str__(self):
+            return (
+                f"Added Object Path:{os.linesep}"
+                f"  {self.object_path}{os.linesep}  {self.new_value}"
+            )
 
     class RemovedInterface(Diff):  # pylint: disable=too-few-public-methods
         """
@@ -588,6 +653,13 @@ except KeyboardInterrupt:
                 f"{self.old_value!r})"
             )
 
+        def __str__(self):
+            return (
+                f"Removed Interface:{os.linesep}"
+                f"  {self.object_path}{os.linesep}"
+                f"  {self.interface_name}{os.linesep}  {self.old_value}"
+            )
+
     class MissingInterface(Diff):  # pylint: disable=too-few-public-methods
         """
         Attempted to update a property on this interface, but the interface
@@ -600,6 +672,12 @@ except KeyboardInterrupt:
 
         def __repr__(self):
             return f"MissingInterface({self.object_path!r}, {self.interface_name!r}"
+
+        def __str__(self):
+            return (
+                f"Missing Interface:{os.linesep}"
+                f"  {self.object_path}{os.linesep}  {self.interface_name}"
+            )
 
     def _check_props(object_path, ifn, old_props, new_props):
         """
