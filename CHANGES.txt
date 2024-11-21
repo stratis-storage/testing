@@ -1,3 +1,21 @@
+testing 3.8.0 (UNRELEASED)
+==========================
+Recommended release for development: Fedora 40
+
+- Update revision number to r8:
+  https://github.com/stratis-storage/testing/pull/289
+
+- Add tests for snapshot revert:
+  https://github.com/stratis-storage/testing/issues/280
+  https://github.com/stratis-storage/testing/pull/281
+
+- Reapply previously reverted commits:
+  https://github.com/stratis-storage/testing/pull/285
+
+- Drop raid_meta_allocs checks:
+  https://github.com/stratis-storage/testing/pull/288
+
+
 testing 3.7.0
 =============
 Required stratisd version: 3.7.0
