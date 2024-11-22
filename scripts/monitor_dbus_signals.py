@@ -819,5 +819,5 @@ except KeyboardInterrupt:
     if not result:
         sys.exit(0)
 
-    print(os.linesep.join(sorted(repr(diff) for diff in result)))
+    print(os.linesep.join(sorted(str(diff) for diff in result)))
     sys.exit(1)
