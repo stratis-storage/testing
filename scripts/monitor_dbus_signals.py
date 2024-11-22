@@ -504,15 +504,14 @@ except KeyboardInterrupt:
             )
 
         def __str__(self):
-            diffs = os.linesep.join(
-                f"    {line}"
-                for line in DeepDiff(self.old_value, self.new_value).pretty()
-            )
             return (
                 f"Different Property:{os.linesep}"
                 f"  {self.object_path}{os.linesep}  {self.key}{os.linesep}"
-                f"  {self.old_value!r}{os.linesep}"
-                f"  {self.new_value!r}{os.linesep}{diffs}"
+                f"  {self.old_value}{os.linesep}"
+                f"  {self.new_value}{os.linesep}"
+            ) + os.linesep.join(
+                f"    {line}"
+                for line in DeepDiff(self.old_value, self.new_value).pretty()
             )
 
     class NotInvalidatedProperty(Diff):  # pylint: disable=too-few-public-methods
@@ -568,15 +567,13 @@ except KeyboardInterrupt:
             )
 
         def __str__(self):
-            diffs = os.linesep.join(
-                f"    {line}"
-                for line in DeepDiff(self.old_value, self.new_value).pretty()
-            )
             return (
                 f"Changed Property:{os.linesep}  {self.object_path}{os.linesep}"
                 f"  {self.interface_name}{os.linesep}  {self.key}{os.linesep}"
                 f"  {self.old_value}{os.linesep}  {self.new_value}{os.linesep}"
-                f"{diffs}"
+            ) + os.linesep.join(
+                f"    {line}"
+                for line in DeepDiff(self.old_value, self.new_value).pretty()
             )
 
     class RemovedObjectPath(Diff):  # pylint: disable=too-few-public-methods
