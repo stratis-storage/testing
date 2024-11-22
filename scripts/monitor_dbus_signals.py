@@ -511,7 +511,9 @@ except KeyboardInterrupt:
                 f"  {self.new_value}{os.linesep}"
             ) + os.linesep.join(
                 f"    {line}"
-                for line in DeepDiff(self.old_value, self.new_value).pretty()
+                for line in DeepDiff(self.old_value, self.new_value)
+                .pretty()
+                .split(os.linesep)
             )
 
     class NotInvalidatedProperty(Diff):  # pylint: disable=too-few-public-methods
@@ -573,7 +575,9 @@ except KeyboardInterrupt:
                 f"  {self.old_value}{os.linesep}  {self.new_value}{os.linesep}"
             ) + os.linesep.join(
                 f"    {line}"
-                for line in DeepDiff(self.old_value, self.new_value).pretty()
+                for line in DeepDiff(self.old_value, self.new_value)
+                .pretty()
+                .split(os.linesep)
             )
 
     class RemovedObjectPath(Diff):  # pylint: disable=too-few-public-methods
