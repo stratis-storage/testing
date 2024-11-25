@@ -32,6 +32,7 @@ from tempfile import NamedTemporaryFile
 import dbus
 from justbytes import Range
 
+from .check_metadata import check
 from .dbus import StratisDbus, manager_interfaces
 from .utils import exec_command, process_exists, terminate_traces
 
@@ -237,25 +238,6 @@ class PoolMetadataMonitor(unittest.TestCase):
     Manage verification of consistency of pool-level metadata.
     """
 
-    def _check_thin_meta_allocations(self, metadata):
-        """
-        Check whether sizes of thin meta and thin meta spare match.
-        """
-        (thin_meta_size, thin_meta_spare_size) = [
-            sum(x[1] for x in entries)
-            for entries in [
-                metadata["flex_devs"]["thin_meta_dev"],
-                metadata["flex_devs"]["thin_meta_dev_spare"],
-            ]
-        ]
-
-        self.assertEqual(
-            thin_meta_size,
-            thin_meta_spare_size,
-            "Total size of thin meta device is not equal to "
-            "total size of thin meta spare device.",
-        )
-
     def _check_encryption_information_consistency(self, pool_object_path, metadata):
         """
         Check whether D-Bus and metadata agree about encryption state of pool.
@@ -268,37 +250,6 @@ class PoolMetadataMonitor(unittest.TestCase):
             self.assertIn("Encryption", metadata["features"])
         elif features is not None:
             self.assertNotIn("Encryption", metadata["features"])
-
-    def _check_crypt_meta_allocs(self, metadata):
-        """
-        Check that all crypt metadata allocs exist and have non-zero length.
-        """
-        crypt_meta_allocs = metadata["backstore"]["cap"].get("crypt_meta_allocs")
-        self.assertIsNotNone(crypt_meta_allocs)
-        self.assertIsInstance(crypt_meta_allocs, list)
-        self.assertGreater(len(crypt_meta_allocs), 0)
-
-        crypt_meta_allocs = crypt_meta_allocs[0]
-        self.assertIsInstance(crypt_meta_allocs, list)
-        self.assertEqual(crypt_meta_allocs[0], 0)
-        self.assertGreater(crypt_meta_allocs[1], 0)
-
-    def _check_integrity_meta_allocs(self, metadata):
-        """
-        Check that all integrity_meta_allocs exist and have non-zero length.
-        """
-        for integrity_meta_allocs in [
-            a["integrity_meta_allocs"]
-            for a in metadata["backstore"]["data_tier"]["blockdev"]["devs"]
-        ]:
-            self.assertIsNotNone(integrity_meta_allocs)
-            self.assertIsInstance(integrity_meta_allocs, list)
-            self.assertGreater(len(integrity_meta_allocs), 0)
-
-            for alloc in integrity_meta_allocs:
-                start, length = Range(alloc[0], 512), Range(alloc[1], 512)
-                self.assertGreater(start, Range(0))
-                self.assertEqual(length % Range(8, 512), Range(0))
 
     def run_check(self, stop_time):
         """
@@ -328,13 +279,8 @@ class PoolMetadataMonitor(unittest.TestCase):
                         msg="previously written metadata and current metadata are not the same",
                     )
 
-                    self._check_thin_meta_allocations(written)
-
                     self._check_encryption_information_consistency(object_path, written)
-                    self._check_crypt_meta_allocs(written)
-
-                    self._check_integrity_meta_allocs(written)
-
+                    self.assertEqual(check(written), [])
                 else:
                     current_message = (
                         "" if current_return_code == _OK else current_message
