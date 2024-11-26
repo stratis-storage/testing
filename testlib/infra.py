@@ -238,6 +238,8 @@ class PoolMetadataMonitor(unittest.TestCase):
     Manage verification of consistency of pool-level metadata.
     """
 
+    maxDiff = None
+
     def _check_encryption_information_consistency(self, pool_object_path, metadata):
         """
         Check whether D-Bus and metadata agree about encryption state of pool.
@@ -302,6 +304,8 @@ class SysfsMonitor(unittest.TestCase):
     Manage verification of sysfs files for devices.
     """
 
+    maxDiff = None
+
     def run_check(self):
         """
         Run the check.
@@ -339,6 +343,8 @@ class SymlinkMonitor(unittest.TestCase):
     Manage verification of device symlinks.
     """
 
+    maxDiff = None
+
     def run_check(self):
         """
         Run the check.
@@ -360,6 +366,8 @@ class FilesystemSymlinkMonitor(unittest.TestCase):
     """
     Verify that devicmapper devices for filesystems have corresponding symlinks.
     """
+
+    maxDiff = None
 
     def run_check(self, stop_time):
         """
@@ -432,6 +440,8 @@ class DbusMonitor(unittest.TestCase):
     """
     Manage starting and stopping the D-Bus monitor script.
     """
+
+    maxDiff = None
 
     def setUp(self):
         """
@@ -587,16 +597,22 @@ class PostTestCheck(Enum):
         return self.value
 
 
-class RunPostTestChecks(unittest.TestCase):
+class RunPostTestChecks:
     """
     Manage running post test checks
     """
 
-    def setUp(self):
+    def __init__(self):
+        """
+        Set up checks that need to be started before test is run.
+        """
         self.dbus_monitor = DbusMonitor()
         self.dbus_monitor.setUp()
 
-    def tearDown(self):
+    def teardown(self):
+        """
+        Run post-test checks after test is completed.
+        """
         stop_time = time.monotonic_ns()
         self.dbus_monitor.run_check(stop_time)
 
