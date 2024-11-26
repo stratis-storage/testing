@@ -38,6 +38,7 @@ class Json:  # pylint: disable=too-few-public-methods
     ALLOCS = "allocs"
     BACKSTORE = "backstore"
     BLOCKDEV = "blockdev"
+    CACHE_TIER = "cache_tier"
     CAP = "cap"
     CRYPT_META_ALLOCS = "crypt_meta_allocs"
     DATA_TIER = "data_tier"
@@ -63,14 +64,28 @@ class Feature:  # pylint: disable=too-few-public-methods
     ENCRYPTION = "Encryption"
 
 
-class BlockDeviceUse(Enum):
+class DataDeviceUse(Enum):
     """
-    Used for block device allocations
+    Uses for block device allocations
     """
 
     STRATIS_METADATA = "stratis_metadata"
     INTEGRITY_METADATA = "integrity_metadata"
     ALLOCATED = "allocated"
+    UNUSED = "unused"
+
+    def __str__(self):
+        return self.value
+
+
+class CacheDeviceUse(Enum):
+    """
+    Uses for block device allocations
+    """
+
+    STRATIS_METADATA = "stratis_metadata"
+    METADATA = "cache_metadata"
+    DATA = "cache_data"
     UNUSED = "unused"
 
     def __str__(self):
@@ -212,14 +227,14 @@ class CapDevice:
         return check_overlap(self)
 
 
-class BlockDevice:
+class DataDevice:
     """
     Layout on a block device.
     """
 
     def __init__(self):
         self.extents = {
-            0: (BlockDeviceUse.STRATIS_METADATA, SIZE_OF_STRATIS_METADATA_SECTORS)
+            0: (DataDeviceUse.STRATIS_METADATA, SIZE_OF_STRATIS_METADATA_SECTORS)
         }
 
     def add(self, *, integrity_meta_allocs=None, allocs=None):
@@ -234,11 +249,11 @@ class BlockDevice:
 
         for start, length in integrity_meta_allocs:
             assert start not in self.extents
-            self.extents[start] = (BlockDeviceUse.INTEGRITY_METADATA, length)
+            self.extents[start] = (DataDeviceUse.INTEGRITY_METADATA, length)
 
         for start, length in allocs:
             assert start not in self.extents
-            self.extents[start] = (BlockDeviceUse.ALLOCATED, length)
+            self.extents[start] = (DataDeviceUse.ALLOCATED, length)
 
         return self
 
@@ -246,7 +261,7 @@ class BlockDevice:
         """
         Returns a copy of self with spaces filled with the unused value.
         """
-        return _filled(self.extents.items(), BlockDeviceUse.UNUSED, 0)
+        return _filled(self.extents.items(), DataDeviceUse.UNUSED, 0)
 
     def __str__(self):
         return _table(self.filled().items())
@@ -265,7 +280,7 @@ class BlockDevice:
             for length in (
                 length
                 for (_, (use, length)) in self.extents.items()
-                if use is BlockDeviceUse.INTEGRITY_METADATA
+                if use is DataDeviceUse.INTEGRITY_METADATA
             ):
                 if length % 8 != 0:
                     errors.append(
@@ -280,10 +295,64 @@ class BlockDevice:
             Returns an error if allocations overlap
             """
             return [
-                f"Block Device: {x}" for x in _check_overlap(self.extents.items(), 0)
+                f"Data Block Device: {x}"
+                for x in _check_overlap(self.extents.items(), 0)
             ]
 
         return check_overlap(self) + check_integrity_meta_round(self)
+
+
+class CacheDevice:
+    """
+    Layout on a block device used for cache.
+    """
+
+    def __init__(self):
+        self.extents = {
+            0: (CacheDeviceUse.STRATIS_METADATA, SIZE_OF_STRATIS_METADATA_SECTORS)
+        }
+
+    def add(self, *, metadata_allocs=None, data_allocs=None):
+        """
+        Add more layout on the device.
+        """
+        metadata_allocs = [] if metadata_allocs is None else metadata_allocs
+        data_allocs = [] if data_allocs is None else data_allocs
+
+        for start, length in metadata_allocs:
+            assert start not in self.extents
+            self.extents[start] = (CacheDeviceUse.METADATA, length)
+
+        for start, length in data_allocs:
+            assert start not in self.extents
+            self.extents[start] = (CacheDeviceUse.DATA, length)
+
+        return self
+
+    def filled(self):
+        """
+        Returns a copy of self with spaces filled with the unused value.
+        """
+        return _filled(self.extents.items(), CacheDeviceUse.UNUSED, 0)
+
+    def __str__(self):
+        return _table(self.filled().items())
+
+    def check(self):
+        """
+        Run well-formedness checks on this metadata.
+        """
+
+        def check_overlap(self):
+            """
+            Returns an error if allocations overlap
+            """
+            return [
+                f"Cache Block Device: {x}"
+                for x in _check_overlap(self.extents.items(), 0)
+            ]
+
+        return check_overlap(self)
 
 
 class CryptAllocs:
@@ -355,8 +424,9 @@ class FlexDevice:
     Layout on flex device.
     """
 
-    def __init__(self):
+    def __init__(self, encrypted):
         self.extents = {}
+        self.encrypted = encrypted
 
     def add(
         self,
@@ -392,11 +462,14 @@ class FlexDevice:
 
         return self
 
+    def _offset(self):
+        return 0 if self.encrypted else SIZE_OF_CRYPT_METADATA_SECTORS
+
     def filled(self):
         """
         Returns a copy of self with spaces filled with the unused value.
         """
-        return _filled(self.extents.items(), FlexDeviceUse.UNUSED, 0)
+        return _filled(self.extents.items(), FlexDeviceUse.UNUSED, self._offset())
 
     def __str__(self):
         return _table(self.filled().items())
@@ -411,7 +484,8 @@ class FlexDevice:
             Check if any of the allocations overlap.
             """
             return [
-                f"Flex Device: {x}" for x in _check_overlap(self.extents.items(), 0)
+                f"Flex Device: {x}"
+                for x in _check_overlap(self.extents.items(), self._offset())
             ]
 
         def check_spare_and_in_use(self):
@@ -445,18 +519,18 @@ class FlexDevice:
         return check_spare_and_in_use(self) + check_overlap(self)
 
 
-def _block_devices(metadata):
+def _data_devices(metadata):
     """
-    Returns a map of BlockDevice objects with key = UUID
+    Returns a map of DataDevice objects with key = UUID
     """
     data_tier_devs = metadata[Json.BACKSTORE][Json.DATA_TIER][Json.BLOCKDEV][Json.DEVS]
 
     bds = defaultdict(
-        BlockDevice,
+        DataDevice,
         (
             (
                 UUID(dev[Json.UUID]),
-                BlockDevice().add(
+                DataDevice().add(
                     integrity_meta_allocs=(dev.get(Json.INTEGRITY_META_ALLOCS) or [])
                 ),
             )
@@ -472,6 +546,39 @@ def _block_devices(metadata):
 
     for item in data_tier_allocs:
         bds[UUID(item[Json.PARENT])].add(allocs=[[item[Json.START], item[Json.LENGTH]]])
+
+    return bds
+
+
+def _cache_devices(metadata):
+    """
+    Returns a map of CacheDevice objects with key = UUID
+    """
+    cache_tier_entries = metadata[Json.BACKSTORE].get(Json.CACHE_TIER)
+
+    if cache_tier_entries is None:
+        return {}
+
+    cache_tier_devs = cache_tier_entries[Json.BLOCKDEV][Json.DEVS]
+
+    bds = defaultdict(
+        CacheDevice,
+        ((UUID(dev[Json.UUID]), CacheDevice()) for dev in cache_tier_devs),
+    )
+
+    assert len(bds) == len(cache_tier_devs), "UUID collision found"
+
+    cache_tier_allocs = cache_tier_entries[Json.BLOCKDEV][Json.ALLOCS]
+
+    for item in cache_tier_allocs[0]:
+        bds[UUID(item[Json.PARENT])].add(
+            metadata_allocs=[[item[Json.START], item[Json.LENGTH]]]
+        )
+
+    for item in cache_tier_allocs[1]:
+        bds[UUID(item[Json.PARENT])].add(
+            data_allocs=[[item[Json.START], item[Json.LENGTH]]]
+        )
 
     return bds
 
@@ -494,12 +601,12 @@ def _crypt_allocs(metadata):
     return CryptAllocs().add(allocs=metadata["backstore"]["cap"]["crypt_meta_allocs"])
 
 
-def _flex_device(metadata):
+def _flex_device(metadata, encrypted):
     """
     Get flex device allocation.
     """
     flex_dev_allocs = metadata[Json.FLEX_DEVS]
-    return FlexDevice().add(
+    return FlexDevice(encrypted).add(
         thin_meta_dev=flex_dev_allocs[Json.THIN_META_DEV],
         thin_meta_dev_spare=flex_dev_allocs[Json.THIN_META_DEV_SPARE],
         meta_dev=flex_dev_allocs[Json.META_DEV],
@@ -518,9 +625,14 @@ def check(metadata):
 
     errors = []
 
-    block_devices = _block_devices(metadata)
+    data_devices = _data_devices(metadata)
 
-    for bd in block_devices.values():
+    for bd in data_devices.values():
+        errors.extend(bd.check())
+
+    cache_devices = _cache_devices(metadata)
+
+    for bd in cache_devices.values():
         errors.extend(bd.check())
 
     crypt_allocs = _crypt_allocs(metadata)
@@ -532,7 +644,9 @@ def check(metadata):
     )
     errors.extend(cap_device.check())
 
-    flex_device = _flex_device(metadata)
+    flex_device = _flex_device(
+        metadata, Feature.ENCRYPTION in (metadata.get(Json.FEATURES) or [])
+    )
     errors.extend(flex_device.check())
 
     return [str(x) for x in errors]
@@ -544,11 +658,21 @@ def _print(metadata):
     the stack.
     """
 
-    block_devices = _block_devices(metadata)
+    data_devices = _data_devices(metadata)
+    cache_devices = _cache_devices(metadata)
 
-    for uuid, dev in block_devices.items():
-        print(f"Device UUId: {uuid}")
-        print(dev)
+    print(
+        f"{2 * os.linesep}".join(
+            [
+                f"Data Device UUID: {uuid}{os.linesep}{dev}"
+                for uuid, dev in data_devices.items()
+            ]
+            + [
+                f"Cache Device UUID: {uuid}{os.linesep}{dev}"
+                for uuid, dev in cache_devices.items()
+            ]
+        )
+    )
 
     crypt_allocs = _crypt_allocs(metadata)
     print("")
@@ -563,7 +687,9 @@ def _print(metadata):
     print("Cap Device:")
     print(f"{cap_device}")
 
-    flex_device = _flex_device(metadata)
+    flex_device = _flex_device(
+        metadata, Feature.ENCRYPTION in (metadata.get(Json.FEATURES) or [])
+    )
 
     print("")
     print("Flex Device:")
