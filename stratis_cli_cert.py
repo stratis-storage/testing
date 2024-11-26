@@ -185,7 +185,6 @@ class StratisCliCertify(
         super().setUp()
 
         self._post_test_checks = RunPostTestChecks()
-        self._post_test_checks.setUp()
 
     def tearDown(self):
         """
@@ -195,7 +194,7 @@ class StratisCliCertify(
         """
         super().tearDown()
 
-        self._post_test_checks.tearDown()
+        self._post_test_checks.teardown()
 
     def _test_permissions(self, command_line, permissions, exp_stdout_empty):
         """
