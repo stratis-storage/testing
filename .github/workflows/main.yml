@@ -27,6 +27,7 @@ jobs:
           # MANDATORY CHECKS USING CURRENT DEVELOPMENT INTERPRETER
           - dependencies: >
               pylint
+              python3-deepdiff
               python3-dbus
               python3-dbus-python-client-gen
               python3-justbytes
