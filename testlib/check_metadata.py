@@ -283,6 +283,13 @@ class CapDevice:
         """
         return _max(self.extents.items(), self._offset())
 
+    def sum(self, *, uses=None):
+        """
+        Return the sum of all sizes for a particular use or uses.
+        """
+        uses = [] if uses is None else uses
+        return sum((length for (start, (use, length)) in self.filled() if use in uses))
+
     def check(self):
         """
         Run all checks
@@ -344,6 +351,13 @@ class DataDevice:
         Returns the maximum derivable from extents.
         """
         return _max(self.extents.items(), 0)
+
+    def sum(self, *, uses=None):
+        """
+        Return the sum of all sizes for a particular use or uses.
+        """
+        uses = [] if uses is None else uses
+        return sum((length for (start, (use, length)) in self.filled() if use in uses))
 
     def check(self):
         """
@@ -422,6 +436,13 @@ class CacheDevice:
         Returns the maximum derivable from extents.
         """
         return _max(self.extents.items(), 0)
+
+    def sum(self, *, uses=None):
+        """
+        Return the sum of all sizes for a particular use or uses.
+        """
+        uses = [] if uses is None else uses
+        return sum((length for (start, (use, length)) in self.filled() if use in uses))
 
     def check(self):
         """
@@ -564,6 +585,13 @@ class FlexDevice:
         Returns the maximum derivable from extents.
         """
         return _max(self.extents.items(), self._offset())
+
+    def sum(self, *, uses=None):
+        """
+        Return the sum of all sizes for a particular use or uses.
+        """
+        uses = [] if uses is None else uses
+        return sum((length for (start, (use, length)) in self.filled() if use in uses))
 
     def check(self):
         """
