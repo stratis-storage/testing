@@ -26,6 +26,9 @@ from collections import defaultdict
 from enum import Enum
 from uuid import UUID
 
+# isort: THIRDPARTY
+from justbytes import Range
+
 SIZE_OF_STRATIS_METADATA_SECTORS = 8192
 SIZE_OF_CRYPT_METADATA_SECTORS = 32768
 
@@ -190,6 +193,40 @@ def _table(iterable):
             for (start, (use, length)) in sorted(iterable, key=lambda x: x[0])
         )
     )
+
+
+class IntegrityConfig:  # pylint: disable=too-few-public-methods
+    """
+    The data tier's integrity configuration.
+    """
+
+    def __init__(
+        self,
+        *,
+        integrity_block_size=None,
+        integrity_tag_size=None,
+        integrity_journal_size=None,
+    ):
+        self.block_size = (
+            None if integrity_block_size is None else Range(integrity_block_size)
+        )
+        self.tag_size = (
+            None if integrity_tag_size is None else Range(integrity_tag_size)
+        )
+        self.journal_size = (
+            None
+            if integrity_journal_size is None
+            else Range(integrity_journal_size, 512)
+        )
+
+    def __str__(self):
+        return os.linesep.join(
+            [
+                f"Block Size: {self.block_size}",
+                f"Tag Size: {self.tag_size}",
+                f"Journal Size: {self.journal_size}",
+            ]
+        )
 
 
 class CapDevice:
@@ -591,15 +628,17 @@ def _data_devices(metadata):
 
     return (
         bds,
-        {
-            x: data_tier[x]
-            for x in [
-                Json.INTEGRITY_BLOCK_SIZE,
-                Json.INTEGRITY_JOURNAL_SIZE,
-                Json.INTEGRITY_TAG_SIZE,
-            ]
-            if data_tier.get(x) is not None
-        },
+        IntegrityConfig(
+            **{
+                x: data_tier[x]
+                for x in [
+                    Json.INTEGRITY_BLOCK_SIZE,
+                    Json.INTEGRITY_JOURNAL_SIZE,
+                    Json.INTEGRITY_TAG_SIZE,
+                ]
+                if data_tier.get(x) is not None
+            }
+        ),
     )
 
 
@@ -714,9 +753,7 @@ def _print(metadata):
     data_devices, integrity_config = _data_devices(metadata)
     cache_devices = _cache_devices(metadata)
 
-    print("Integrity config for data devices:")
-    for key, value in integrity_config.items():
-        print(f"{key}: {value}")
+    print(f"Integrity config for data devices:{os.linesep}{integrity_config}")
 
     print()
 
