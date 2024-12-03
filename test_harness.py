@@ -27,7 +27,7 @@ import tempfile
 from testlib.infra import PostTestCheck
 
 _LOSETUP_BIN = "/usr/sbin/losetup"
-_SIZE_OF_DEVICE = 1024**4  # 1 TiB
+_SIZE_OF_DEVICE = 8 * (1024**3)  # 8 GiB
 
 
 class _LogBlockdev:  # pylint: disable=too-few-public-methods
