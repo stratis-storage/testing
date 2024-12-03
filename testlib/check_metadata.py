@@ -166,6 +166,20 @@ def _filled(iterable, filler, start_offset):
     return result
 
 
+def _max(iterable, start_offset):
+    """
+    Return the maximum allocated length
+
+    :param int start_offset: the offset from which to start
+    """
+    current_max = start_offset
+    _ = [
+        current_max := max(current_max, start + length)
+        for (start, (_, length)) in iterable
+    ]
+    return current_max
+
+
 def _table(iterable):
     """
     Return a string representing the table of uses for a device.
@@ -212,6 +226,12 @@ class CapDevice:
         return f"On crypt device: {self.encrypted}{os.linesep}" + _table(
             self.filled().items()
         )
+
+    def max(self):
+        """
+        Returns the maximum derivable from extents.
+        """
+        return _max(self.extents.items(), self._offset())
 
     def check(self):
         """
@@ -268,6 +288,12 @@ class DataDevice:
 
     def __str__(self):
         return _table(self.filled().items())
+
+    def max(self):
+        """
+        Returns the maximum derivable from extents.
+        """
+        return _max(self.extents.items(), 0)
 
     def check(self):
         """
@@ -340,6 +366,12 @@ class CacheDevice:
 
     def __str__(self):
         return _table(self.filled().items())
+
+    def max(self):
+        """
+        Returns the maximum derivable from extents.
+        """
+        return _max(self.extents.items(), 0)
 
     def check(self):
         """
@@ -476,6 +508,12 @@ class FlexDevice:
 
     def __str__(self):
         return _table(self.filled().items())
+
+    def max(self):
+        """
+        Returns the maximum derivable from extents.
+        """
+        return _max(self.extents.items(), self._offset())
 
     def check(self):
         """
