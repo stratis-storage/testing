@@ -673,8 +673,14 @@ def _print(metadata):
     the stack.
     """
 
-    data_devices, _ = _data_devices(metadata)
+    data_devices, integrity_config = _data_devices(metadata)
     cache_devices = _cache_devices(metadata)
+
+    print("Integrity config for data devices:")
+    for key, value in integrity_config.items():
+        print(f"{key}: {value}")
+
+    print()
 
     print(
         f"{2 * os.linesep}".join(
