@@ -172,7 +172,7 @@ def _table(iterable):
     """
     return os.linesep.join(
         (
-            f"({start}, {length})    {use}"
+            f"({start}, {length}, {start + length})    {use}"
             for (start, (use, length)) in sorted(iterable, key=lambda x: x[0])
         )
     )
