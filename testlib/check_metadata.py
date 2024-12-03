@@ -766,10 +766,21 @@ def check(metadata):
 
     errors = []
 
-    data_devices, _ = _data_devices(metadata)
+    data_devices, integrity_config = _data_devices(metadata)
 
     for bd in data_devices.values():
         errors.extend(bd.check())
+
+    for bd in data_devices.values():
+        integrity_size = integrity_config.size(Range(bd.max(), 512))
+        integrity_alloc_sum = Range(
+            bd.sum(uses=[DataDeviceUse.INTEGRITY_METADATA]), 512
+        )
+        if integrity_alloc_sum != integrity_size:
+            errors.append(
+                f"calculated value for integrity size {integrity_size} does "
+                f"not equal sum of integrity allocations {integrity_alloc_sum}"
+            )
 
     cache_devices = _cache_devices(metadata)
 
