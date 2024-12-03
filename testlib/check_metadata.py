@@ -45,7 +45,10 @@ class Json:  # pylint: disable=too-few-public-methods
     DEVS = "devs"
     FEATURES = "features"
     FLEX_DEVS = "flex_devs"
+    INTEGRITY_BLOCK_SIZE = "integrity_block_size"
+    INTEGRITY_JOURNAL_SIZE = "integrity_journal_size"
     INTEGRITY_META_ALLOCS = "integrity_meta_allocs"
+    INTEGRITY_TAG_SIZE = "integrity_tag_size"
     LENGTH = "length"
     META_DEV = "meta_dev"
     PARENT = "parent"
@@ -521,9 +524,12 @@ class FlexDevice:
 
 def _data_devices(metadata):
     """
-    Returns a map of DataDevice objects with key = UUID
+    Returns a tuple of a map of DataDevice objects with key = UUID and the
+    integrity parameters.
     """
-    data_tier_devs = metadata[Json.BACKSTORE][Json.DATA_TIER][Json.BLOCKDEV][Json.DEVS]
+    data_tier = metadata[Json.BACKSTORE][Json.DATA_TIER]
+
+    data_tier_devs = data_tier[Json.BLOCKDEV][Json.DEVS]
 
     bds = defaultdict(
         DataDevice,
@@ -540,14 +546,23 @@ def _data_devices(metadata):
 
     assert len(bds) == len(data_tier_devs), "UUID collision found"
 
-    data_tier_allocs = metadata[Json.BACKSTORE][Json.DATA_TIER][Json.BLOCKDEV][
-        Json.ALLOCS
-    ][0]
+    data_tier_allocs = data_tier[Json.BLOCKDEV][Json.ALLOCS][0]
 
     for item in data_tier_allocs:
         bds[UUID(item[Json.PARENT])].add(allocs=[[item[Json.START], item[Json.LENGTH]]])
 
-    return bds
+    return (
+        bds,
+        {
+            x: data_tier[x]
+            for x in [
+                Json.INTEGRITY_BLOCK_SIZE,
+                Json.INTEGRITY_JOURNAL_SIZE,
+                Json.INTEGRITY_TAG_SIZE,
+            ]
+            if data_tier.get(x) is not None
+        },
+    )
 
 
 def _cache_devices(metadata):
@@ -625,7 +640,7 @@ def check(metadata):
 
     errors = []
 
-    data_devices = _data_devices(metadata)
+    data_devices, _ = _data_devices(metadata)
 
     for bd in data_devices.values():
         errors.extend(bd.check())
@@ -658,7 +673,7 @@ def _print(metadata):
     the stack.
     """
 
-    data_devices = _data_devices(metadata)
+    data_devices, _ = _data_devices(metadata)
     cache_devices = _cache_devices(metadata)
 
     print(
