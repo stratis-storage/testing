@@ -207,24 +207,16 @@ class IntegrityConfig:
         integrity_tag_size=None,
         integrity_journal_size=None,
     ):
-        self.block_size = (
-            None if integrity_block_size is None else Range(integrity_block_size)
-        )
-        self.tag_size = (
-            None if integrity_tag_size is None else Range(integrity_tag_size)
-        )
-        self.journal_size = (
-            None
-            if integrity_journal_size is None
-            else Range(integrity_journal_size, 512)
-        )
+        self.block_size = integrity_block_size
+        self.tag_size = integrity_tag_size
+        self.journal_size = integrity_journal_size
 
     def __str__(self):
         return os.linesep.join(
             [
-                f"Block Size: {self.block_size}",
-                f"Tag Size: {self.tag_size}",
-                f"Journal Size: {self.journal_size}",
+                f"Block Size: {Range(self.block_size)} ({self.block_size})",
+                f"Tag Size: {Range(self.tag_size)} ({self.tag_size})",
+                f"Journal Size: {Range(self.journal_size, 512)} ({self.journal_size})",
             ]
         )
 
@@ -237,8 +229,10 @@ class IntegrityConfig:
         """
         return (
             Range(4096)
-            + self.journal_size
-            + (device_size / Range(4096) * self.tag_size).roundTo(Range(4096), ROUND_UP)
+            + Range(self.journal_size, 512)
+            + (device_size / Range(4096) * Range(self.tag_size)).roundTo(
+                Range(4096), ROUND_UP
+            )
         )
 
 
@@ -817,10 +811,19 @@ def _print(metadata):
 
     print()
 
+    def data_device_str(uuid, integrity_config_size, dev):
+        return (
+            f"Data Device UUID: {uuid}{os.linesep}"
+            "Expected size of integrity metadata allocation: "
+            f"{integrity_config_size} "
+            f"({integrity_config_size.magnitude.numerator // 512}){os.linesep}"
+            f"{dev}"
+        )
+
     print(
         f"{2 * os.linesep}".join(
             [
-                f"Data Device UUID: {uuid}{os.linesep}{dev}"
+                data_device_str(uuid, integrity_config.size(Range(dev.max(), 512)), dev)
                 for uuid, dev in data_devices.items()
             ]
             + [
