@@ -236,8 +236,10 @@ class IntegrityConfig:
         :return: the required size of the integrity metadata
         """
         return (
-            Range(4096) + self.journal_size + device_size / Range(4096) * self.tag_size
-        ).roundTo(Range(4096), ROUND_UP)
+            Range(4096)
+            + self.journal_size
+            + (device_size / Range(4096) * self.tag_size).roundTo(Range(4096), ROUND_UP)
+        )
 
 
 class CapDevice:
