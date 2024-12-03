@@ -27,7 +27,7 @@ from enum import Enum
 from uuid import UUID
 
 # isort: THIRDPARTY
-from justbytes import Range
+from justbytes import ROUND_UP, Range
 
 SIZE_OF_STRATIS_METADATA_SECTORS = 8192
 SIZE_OF_CRYPT_METADATA_SECTORS = 32768
@@ -195,7 +195,7 @@ def _table(iterable):
     )
 
 
-class IntegrityConfig:  # pylint: disable=too-few-public-methods
+class IntegrityConfig:
     """
     The data tier's integrity configuration.
     """
@@ -227,6 +227,17 @@ class IntegrityConfig:  # pylint: disable=too-few-public-methods
                 f"Journal Size: {self.journal_size}",
             ]
         )
+
+    def size(self, device_size):
+        """
+        The size required for the integrity metadata.
+
+        :param Range device_size: the total size of the device
+        :return: the required size of the integrity metadata
+        """
+        return (
+            Range(4096) + self.journal_size + device_size / Range(4096) * self.tag_size
+        ).roundTo(Range(4096), ROUND_UP)
 
 
 class CapDevice:
