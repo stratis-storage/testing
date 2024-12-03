@@ -288,7 +288,9 @@ class CapDevice:
         Return the sum of all sizes for a particular use or uses.
         """
         uses = [] if uses is None else uses
-        return sum((length for (start, (use, length)) in self.filled() if use in uses))
+        return sum(
+            (length for (start, (use, length)) in self.filled().items() if use in uses)
+        )
 
     def check(self):
         """
@@ -357,7 +359,9 @@ class DataDevice:
         Return the sum of all sizes for a particular use or uses.
         """
         uses = [] if uses is None else uses
-        return sum((length for (start, (use, length)) in self.filled() if use in uses))
+        return sum(
+            (length for (start, (use, length)) in self.filled().items() if use in uses)
+        )
 
     def check(self):
         """
@@ -442,7 +446,9 @@ class CacheDevice:
         Return the sum of all sizes for a particular use or uses.
         """
         uses = [] if uses is None else uses
-        return sum((length for (start, (use, length)) in self.filled() if use in uses))
+        return sum(
+            (length for (start, (use, length)) in self.filled().items() if use in uses)
+        )
 
     def check(self):
         """
@@ -591,7 +597,9 @@ class FlexDevice:
         Return the sum of all sizes for a particular use or uses.
         """
         uses = [] if uses is None else uses
-        return sum((length for (start, (use, length)) in self.filled() if use in uses))
+        return sum(
+            (length for (start, (use, length)) in self.filled().items() if use in uses)
+        )
 
     def check(self):
         """
