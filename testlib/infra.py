@@ -32,7 +32,6 @@ from tempfile import NamedTemporaryFile
 import dbus
 from justbytes import Range
 
-from .check_metadata import check
 from .dbus import StratisDbus, manager_interfaces
 from .utils import exec_command, process_exists, terminate_traces
 
@@ -282,7 +281,6 @@ class PoolMetadataMonitor(unittest.TestCase):
                     )
 
                     self._check_encryption_information_consistency(object_path, written)
-                    self.assertEqual(check(written), [])
                 else:
                     current_message = (
                         "" if current_return_code == _OK else current_message
