@@ -32,7 +32,6 @@ from tempfile import NamedTemporaryFile
 import dbus
 from justbytes import Range
 
-from .check_metadata import check
 from .dbus import StratisDbus, manager_interfaces
 from .utils import exec_command, process_exists, terminate_traces
 
@@ -259,6 +258,8 @@ class PoolMetadataMonitor(unittest.TestCase):
 
         :param int stop_time: the time the test completed
         """
+        stratisd_tools = "stratisd-tools"
+
         if PoolMetadataMonitor.verify:  # pylint: disable=no-member
 
             # Wait for D-Bus to settle, so D-Bus and metadata can be compared
@@ -282,7 +283,25 @@ class PoolMetadataMonitor(unittest.TestCase):
                     )
 
                     self._check_encryption_information_consistency(object_path, written)
-                    self.assertEqual(check(written), [])
+
+                    with NamedTemporaryFile(mode="w") as temp_file:
+                        temp_file.write(json.dumps(written))
+                        temp_file.flush()
+
+                        try:
+                            with subprocess.Popen(
+                                [
+                                    stratisd_tools,
+                                    "stratis-checkmetadata",
+                                    temp_file.name,
+                                ],
+                                stdout=subprocess.PIPE,
+                            ) as proc:
+                                (stdoutdata, _) = proc.communicate()
+                                self.assertEqual(proc.returncode, 0, stdoutdata)
+                        except FileNotFoundError as err:
+                            raise RuntimeError(f"{stratisd_tools} not found") from err
+
                 else:
                     current_message = (
                         "" if current_return_code == _OK else current_message
