@@ -531,19 +531,20 @@ class DbusMonitor(unittest.TestCase):
                     f'stdout: {stdoutdata.decode("utf-8")}'
                 )
 
-            msg = stdoutdata.decode("utf-8")
             self.assertEqual(
                 self.trace.returncode,
                 0,
                 (
-                    stderrdata.decode("utf-8")
-                    if len(msg) == 0
-                    else (
-                        "Error from monitor_dbus_signals: "
-                        + os.linesep
-                        + os.linesep
-                        + msg
-                    )
+                    "Log from monitor_dbus_signals: "
+                    + os.linesep
+                    + os.linesep
+                    + stderrdata.decode("utf-8")
+                    + os.linesep
+                    + os.linesep
+                    + "Error from monitor_dbus_signals: "
+                    + os.linesep
+                    + os.linesep
+                    + stdoutdata.decode("utf-8")
                 ),
             )
 
