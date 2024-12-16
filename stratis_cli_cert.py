@@ -184,7 +184,7 @@ class StratisCliCertify(
         """
         super().setUp()
 
-        self._post_test_checks = RunPostTestChecks()
+        self._post_test_checks = RunPostTestChecks(test_id=self.id())
 
     def tearDown(self):
         """
