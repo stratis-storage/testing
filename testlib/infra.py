@@ -621,12 +621,14 @@ class RunPostTestChecks:
     Manage running post test checks
     """
 
-    def __init__(self):
+    def __init__(self, *, test_id=None):
         """
         Set up checks that need to be started before test is run.
         """
         self.dbus_monitor = DbusMonitor()
-        self.dbus_monitor.setUp()
+        # See: https://github.com/stratis-storage/project/issues/741
+        if test_id is None or not test_id.endswith("test_pool_add_data_init_cache"):
+            self.dbus_monitor.setUp()
 
     def teardown(self):
         """
