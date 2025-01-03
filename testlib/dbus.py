@@ -327,6 +327,9 @@ class StratisDbus:
             devices,
             (True, key_desc) if key_desc is not None else (False, ""),
             (True, clevis_info) if clevis_info is not None else (False, ("", "")),
+            (False, 0),
+            (False, ""),
+            (False, 0),
             timeout=StratisDbus._TIMEOUT,
         )
 
