@@ -17,6 +17,7 @@ jobs:
           # PYTHON CHECKS ON NEXT FEDORA PYTHON AND PYTHON TOOLS VERSION
           - dependencies: >
               pylint
+              python3-deepdiff
               python3-dbus
               python3-dbus-python-client-gen
               python3-gobject
