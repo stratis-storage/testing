@@ -498,6 +498,26 @@ class StratisCliCertify(
         )
 
     @skip(_skip_condition(1))
+    def test_pool_create_integrity_no_preallocation(self):
+        """
+        Test creating a pool with no integrity pre-allocation.
+        """
+        pool_name = p_n()
+        self._unittest_command(
+            [
+                _STRATIS_CLI,
+                "pool",
+                "create",
+                pool_name,
+                "--integrity=no",
+                StratisCliCertify.DISKS[0],
+            ],
+            0,
+            True,
+            True,
+        )
+
+    @skip(_skip_condition(1))
     def test_pool_list_not_empty(self):
         """
         Test listing an existent pool.
