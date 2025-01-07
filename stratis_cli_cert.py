@@ -458,6 +458,26 @@ class StratisCliCertify(
         )
 
     @skip(_skip_condition(1))
+    def test_pool_create_integrity_journal_size(self):
+        """
+        Test creating a pool with an integrity journal size.
+        """
+        pool_name = p_n()
+        self._unittest_command(
+            [
+                _STRATIS_CLI,
+                "pool",
+                "create",
+                pool_name,
+                "--journal-size=64MiB",
+                StratisCliCertify.DISKS[0],
+            ],
+            0,
+            True,
+            True,
+        )
+
+    @skip(_skip_condition(1))
     def test_pool_list_not_empty(self):
         """
         Test listing an existent pool.
