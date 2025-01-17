@@ -259,7 +259,9 @@ class StratisDbus:
             StratisDbus._MNGR_IFACE,
         )
 
-        return manager_iface.StartPool(id_string, id_type, (False, ""), (False, 0))
+        return manager_iface.StartPool(
+            id_string, id_type, (False, (False, 0)), (False, 0)
+        )
 
     @staticmethod
     def pool_stop(id_string, id_type):
@@ -325,8 +327,8 @@ class StratisDbus:
         return iface.CreatePool(
             pool_name,
             devices,
-            (True, key_desc) if key_desc is not None else (False, ""),
-            (True, clevis_info) if clevis_info is not None else (False, ("", "")),
+            [] if key_desc is None else [((False, 0), key_desc)],
+            [] if clevis_info is None else [((False, 0), clevis_info)],
             (False, 0),
             (False, ""),
             (False, 0),
