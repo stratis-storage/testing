@@ -252,7 +252,7 @@ class PoolMetadataMonitor(unittest.TestCase):
         elif features is not None:
             self.assertNotIn("Encryption", metadata["features"])
 
-    def run_check(self, stop_time):
+    def run_check(self, stop_time):  # pylint: disable=too-many-locals
         """
         Run the check.
 
@@ -297,8 +297,16 @@ class PoolMetadataMonitor(unittest.TestCase):
                                 ],
                                 stdout=subprocess.PIPE,
                             ) as proc:
-                                (stdoutdata, _) = proc.communicate()
-                                self.assertEqual(proc.returncode, 0, stdoutdata)
+                                (stdoutdata, stderrdata) = proc.communicate()
+                                self.assertEqual(
+                                    proc.returncode,
+                                    0,
+                                    (
+                                        f'stdout: {stdoutdata.decode("utf-8")}'
+                                        "; "
+                                        f'stderr: {stderrdata.decode("utf-8")}'
+                                    ),
+                                )
                         except FileNotFoundError as err:
                             raise RuntimeError(f"{stratisd_tools} not found") from err
 
