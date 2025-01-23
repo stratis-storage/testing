@@ -296,6 +296,7 @@ class PoolMetadataMonitor(unittest.TestCase):
                                     temp_file.name,
                                 ],
                                 stdout=subprocess.PIPE,
+                                stderr=subprocess.PIPE,
                             ) as proc:
                                 (stdoutdata, stderrdata) = proc.communicate()
                                 self.assertEqual(
