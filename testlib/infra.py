@@ -279,7 +279,14 @@ class PoolMetadataMonitor(unittest.TestCase):
                     self.assertEqual(
                         written,
                         current,
-                        msg="previously written metadata and current metadata are not the same",
+                        msg=(
+                            "previously written metadata and current metadata "
+                            f"are not the same.{os.linesep}Previous:"
+                            f"{os.linesep}"
+                            f"{json.dumps(written, sort_keys=True, indent=4)}"
+                            f"{os.linesep}Current:{os.linesep}"
+                            f"{json.dumps(current, sort_keys=True, indent=4)}"
+                        ),
                     )
 
                     self._check_encryption_information_consistency(object_path, written)
