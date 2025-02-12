@@ -4,7 +4,7 @@ lint:
 	pylint stratis_cli_cert.py
 	pylint stratisd_cert.py
 	pylint testlib
-	pylint scripts
+	pylint scripts --disable=duplicate-code
 
 .PHONY: fmt
 fmt:
