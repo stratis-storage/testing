@@ -266,11 +266,11 @@ class PoolMetadataMonitor(unittest.TestCase):
             time.sleep(sleep_time(stop_time, 16))
 
             for object_path, _, _ in StratisDbus.pool_list():
-                (current, current_return_code, current_message) = (
-                    StratisDbus.pool_get_metadata(object_path)
-                )
                 (written, written_return_code, written_message) = (
                     StratisDbus.pool_get_metadata(object_path, current=False)
+                )
+                (current, current_return_code, current_message) = (
+                    StratisDbus.pool_get_metadata(object_path)
                 )
 
                 if current_return_code == _OK and written_return_code == _OK:
