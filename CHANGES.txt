@@ -1,5 +1,5 @@
-testing 3.8.0 (UNRELEASED)
-==========================
+testing 3.8.0
+=============
 Recommended release for development: Fedora 40
 
 - Update revision number to r8:
@@ -8,10 +8,15 @@ Recommended release for development: Fedora 40
 - Add test for integrity parameters:
   https://github.com/stratis-storage/testing/pull/304
 
-- Add additional arguments for pool creation:
+- Add additional arguments for pool creation and start:
+  https://github.com/stratis-storage/testing/pull/305
   https://github.com/stratis-storage/testing/pull/303
 
 - Improve post-test checks on metadata:
+  https://github.com/stratis-storage/testing/pull/310
+  https://github.com/stratis-storage/testing/pull/308
+  https://github.com/stratis-storage/testing/pull/307
+  https://github.com/stratis-storage/testing/pull/306
   https://github.com/stratis-storage/testing/pull/299
   https://github.com/stratis-storage/testing/pull/295
   https://github.com/stratis-storage/testing/pull/293
@@ -31,6 +36,9 @@ Recommended release for development: Fedora 40
 
 - Drop raid_meta_allocs checks:
   https://github.com/stratis-storage/testing/pull/288
+
+- Add simple script to get pool-level metadata:
+  https://github.com/stratis-storage/testing/pull/309
 
 - Tidies and Maintenance:
   https://github.com/stratis-storage/testing/pull/296
