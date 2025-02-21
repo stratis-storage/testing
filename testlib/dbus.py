@@ -511,6 +511,22 @@ class StratisDbus:
         return iface.Metadata(current, timeout=StratisDbus._TIMEOUT)
 
     @staticmethod
+    def pool_bind_keyring(pool_path, key_desc):
+        """
+        Bind the pool in an additional token slot with a key in the keyring.
+        :param str pool_path: The object path of the pool
+        :param str key_desc: key description to use
+        :return: results of the call
+        :rtype: The D-Bus types s, q, and b
+        :raises dbus.exceptions.DBusException:
+        """
+        iface = dbus.Interface(
+            StratisDbus._BUS.get_object(StratisDbus._BUS_NAME, pool_path),
+            StratisDbus._POOL_IFACE,
+        )
+        return iface.BindKeyring(key_desc, (False, 0), timeout=StratisDbus._TIMEOUT)
+
+    @staticmethod
     def fs_get_metadata(pool_path, *, fs_name=None, current=True):
         """
         Get filesystem-level metadata
