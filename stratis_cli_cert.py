@@ -417,6 +417,77 @@ class StratisCliCertify(
                 True,
             )
 
+    @skip(_skip_condition(1))
+    def test_pool_create_encrypted_multiple_keys(self):
+        """
+        Test creating an encrypted pool with multiple keys bound.
+        """
+        with KernelKey("test-password") as key_desc:
+            pool_name = p_n()
+            self._unittest_command(
+                [
+                    _STRATIS_CLI,
+                    "pool",
+                    "create",
+                    "--key-desc",
+                    key_desc,
+                    pool_name,
+                    StratisCliCertify.DISKS[0],
+                ],
+                0,
+                True,
+                True,
+            )
+            self._unittest_command(
+                [
+                    _STRATIS_CLI,
+                    "pool",
+                    "bind",
+                    "keyring",
+                    pool_name,
+                    key_desc,
+                ],
+                0,
+                True,
+                True,
+            )
+
+    @skip(_skip_condition(1))
+    def test_pool_create_encrypted_rebind_with_new_key(self):
+        """
+        Test creating an encrypted pool with multiple keys bound.
+        """
+        with KernelKey("test-password") as key_desc:
+            pool_name = p_n()
+            self._unittest_command(
+                [
+                    _STRATIS_CLI,
+                    "pool",
+                    "create",
+                    "--key-desc",
+                    key_desc,
+                    pool_name,
+                    StratisCliCertify.DISKS[0],
+                ],
+                0,
+                True,
+                True,
+            )
+            with KernelKey("new-password") as new_desc:
+                self._unittest_command(
+                    [
+                        _STRATIS_CLI,
+                        "pool",
+                        "rebind",
+                        "keyring",
+                        pool_name,
+                        new_desc,
+                    ],
+                    0,
+                    True,
+                    True,
+                )
+
     @skip(_skip_condition(3))
     def test_pool_create_encrypted_with_cache(self):
         """
