@@ -266,11 +266,37 @@ class PoolMetadataMonitor(unittest.TestCase):
             time.sleep(sleep_time(stop_time, 16))
 
             for object_path, _, _ in StratisDbus.pool_list():
+                for _ in range(5):
+                    (written_0, written_0_return_code, _) = (
+                        StratisDbus.pool_get_metadata(object_path, current=False)
+                    )
+                    (current, current_return_code, current_message) = (
+                        StratisDbus.pool_get_metadata(object_path)
+                    )
+                    (written_1, written_1_return_code, written_1_message) = (
+                        StratisDbus.pool_get_metadata(object_path, current=False)
+                    )
+                    if (
+                        written_0_return_code == _OK
+                        and written_1_return_code == _OK
+                        and written_0 == written_1
+                    ):
+                        break
+
+                    time.sleep(1)
+
+                else:
+                    if written_0_return_code != _OK or written_1_return_code != _OK:
+                        raise RuntimeError("Can not obtain written metadata reliably.")
+
+                    written_0 = json.loads(written_0)
+                    written_1 = json.loads(written_1)
+                    raise RuntimeError("Metadata written out to disk is not stable")
+
                 (written, written_return_code, written_message) = (
-                    StratisDbus.pool_get_metadata(object_path, current=False)
-                )
-                (current, current_return_code, current_message) = (
-                    StratisDbus.pool_get_metadata(object_path)
+                    written_1,
+                    written_1_return_code,
+                    written_1_message,
                 )
 
                 if current_return_code == _OK and written_return_code == _OK:
