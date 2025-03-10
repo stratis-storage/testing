@@ -546,6 +546,26 @@ class StratisDbus:
         )
 
     @staticmethod
+    def pool_rebind_keyring(pool_path, key_desc, *, token_slot=None):
+        """
+        Rebind the pool, specifying token slot if given.
+        :param str pool_path: The object path of the pool
+        :param str key_desc: The key description to rebind with
+        :param token_slot: token slot, if specified
+        :type token_slot: int or NoneType
+        :return: results of the call
+        :rtype: The D-Bus types s, q, and b
+        :raises dbus.exceptions.DBusException:
+        """
+        iface = dbus.Interface(
+            StratisDbus._BUS.get_object(StratisDbus._BUS_NAME, pool_path),
+            StratisDbus._POOL_IFACE,
+        )
+        return iface.RebindKeyring(
+            key_desc, (False, 0) if token_slot is None else (True, token_slot)
+        )
+
+    @staticmethod
     def fs_get_metadata(pool_path, *, fs_name=None, current=True):
         """
         Get filesystem-level metadata
