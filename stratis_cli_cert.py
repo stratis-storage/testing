@@ -489,6 +489,55 @@ class StratisCliCertify(
                     True,
                 )
 
+    @skip(_skip_condition(1))
+    def test_pool_create_encrypted_unbind(self):
+        """
+        Test unbinding a pool with two token slots bound with keys.
+        """
+        with KernelKey("test-password") as key_desc:
+            pool_name = p_n()
+            self._unittest_command(
+                [
+                    _STRATIS_CLI,
+                    "pool",
+                    "create",
+                    "--key-desc",
+                    key_desc,
+                    pool_name,
+                    StratisCliCertify.DISKS[0],
+                ],
+                0,
+                True,
+                True,
+            )
+            with KernelKey("new-password") as new_desc:
+                self._unittest_command(
+                    [
+                        _STRATIS_CLI,
+                        "pool",
+                        "bind",
+                        "keyring",
+                        pool_name,
+                        new_desc,
+                    ],
+                    0,
+                    True,
+                    True,
+                )
+                self._unittest_command(
+                    [
+                        _STRATIS_CLI,
+                        "pool",
+                        "unbind",
+                        "keyring",
+                        pool_name,
+                        "--token-slot=0",
+                    ],
+                    0,
+                    True,
+                    True,
+                )
+
     @skip(_skip_condition(3))
     def test_pool_create_encrypted_with_cache(self):
         """
