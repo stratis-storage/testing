@@ -412,6 +412,91 @@ class StratisdCertify(
             )
 
     @skip(_skip_condition(1))
+    def test_pool_create_encrypted_multiple_keys(self):
+        """
+        Test creating an encrypted pool with multiple keys bound.
+        """
+        with KernelKey("test-password") as key_desc:
+            pool_name = p_n()
+            pool_path, _ = make_test_pool(
+                pool_name, StratisCertify.DISKS[0:1], key_desc=key_desc
+            )
+            with KernelKey("new-password") as new_desc:
+                self._unittest_command(
+                    StratisDbus.pool_bind_keyring(pool_path, new_desc),
+                    dbus.UInt16(0),
+                )
+
+    @skip(_skip_condition(1))
+    def test_pool_create_encrypted_unbind(self):
+        """
+        Test binding twice, then unbinding.
+        """
+        with KernelKey("test-password") as key_desc:
+            pool_name = p_n()
+            pool_path, _ = make_test_pool(
+                pool_name, StratisCertify.DISKS[0:1], key_desc=key_desc
+            )
+
+            with KernelKey("new-password") as new_desc:
+                self._unittest_command(
+                    StratisDbus.pool_bind_keyring(pool_path, new_desc),
+                    dbus.UInt16(0),
+                )
+
+                self._unittest_command(
+                    StratisDbus.pool_unbind_keyring(pool_path),
+                    dbus.UInt16(0),
+                )
+
+    @skip(_skip_condition(1))
+    def test_pool_create_encrypted_unbind_with_token(self):
+        """
+        Test binding twice, then unbinding.
+        """
+        with KernelKey("test-password") as key_desc:
+            pool_name = p_n()
+            pool_path, _ = make_test_pool(
+                pool_name, StratisCertify.DISKS[0:1], key_desc=key_desc
+            )
+
+            with KernelKey("new-password") as new_desc:
+                self._unittest_command(
+                    StratisDbus.pool_bind_keyring(pool_path, new_desc),
+                    dbus.UInt16(0),
+                )
+
+                self._unittest_command(
+                    StratisDbus.pool_unbind_keyring(pool_path, token_slot=1),
+                    dbus.UInt16(0),
+                )
+
+    @skip(_skip_condition(1))
+    def test_pool_create_encrypted_rebind(self):
+        """
+        Test rebinding on a newly created pool.
+        """
+        with KernelKey("test-password") as key_desc:
+            pool_name = p_n()
+            pool_path, _ = make_test_pool(
+                pool_name, StratisCertify.DISKS[0:1], key_desc=key_desc
+            )
+
+            with KernelKey("new-password") as new_desc:
+                self._unittest_command(
+                    StratisDbus.pool_bind_keyring(pool_path, new_desc),
+                    dbus.UInt16(0),
+                )
+
+                with KernelKey("rebind-password") as rebind_desc:
+                    self._unittest_command(
+                        StratisDbus.pool_rebind_keyring(
+                            pool_path, rebind_desc, token_slot=1
+                        ),
+                        dbus.UInt16(0),
+                    )
+
+    @skip(_skip_condition(1))
     def test_pool_create_no_overprovisioning(self):
         """
         Test creating a pool with no overprovisioning
