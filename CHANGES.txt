@@ -1,3 +1,53 @@
+testing 3.8.0
+=============
+Recommended release for development: Fedora 40
+
+- Update revision number to r8:
+  https://github.com/stratis-storage/testing/pull/289
+
+- Add some tests for binding, rebinding, unbinding:
+  https://github.com/stratis-storage/testing/pull/312
+
+- Add test for integrity parameters:
+  https://github.com/stratis-storage/testing/pull/304
+
+- Add additional arguments for pool creation and start:
+  https://github.com/stratis-storage/testing/pull/305
+  https://github.com/stratis-storage/testing/pull/303
+
+- Improve post-test checks on metadata:
+  https://github.com/stratis-storage/testing/pull/314
+  https://github.com/stratis-storage/testing/pull/310
+  https://github.com/stratis-storage/testing/pull/308
+  https://github.com/stratis-storage/testing/pull/307
+  https://github.com/stratis-storage/testing/pull/306
+  https://github.com/stratis-storage/testing/pull/299
+  https://github.com/stratis-storage/testing/pull/295
+  https://github.com/stratis-storage/testing/pull/293
+
+- Add tests for snapshot revert:
+  https://github.com/stratis-storage/testing/issues/280
+  https://github.com/stratis-storage/testing/pull/281
+
+- Make test devices 8 GiB instead of 1 TiB:
+  https://github.com/stratis-storage/testing/pull/300
+
+- Do not do D-Bus monitoring for one failing test:
+  https://github.com/stratis-storage/testing/pull/301
+
+- Reapply previously reverted commits:
+  https://github.com/stratis-storage/testing/pull/285
+
+- Drop raid_meta_allocs checks:
+  https://github.com/stratis-storage/testing/pull/288
+
+- Add simple script to get pool-level metadata:
+  https://github.com/stratis-storage/testing/pull/309
+
+- Tidies and Maintenance:
+  https://github.com/stratis-storage/testing/pull/296
+
+
 testing 3.7.0
 =============
 Required stratisd version: 3.7.0
