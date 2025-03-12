@@ -5,6 +5,9 @@ Recommended release for development: Fedora 40
 - Update revision number to r8:
   https://github.com/stratis-storage/testing/pull/289
 
+- Add some tests for binding, rebinding, unbinding:
+  https://github.com/stratis-storage/testing/pull/312
+
 - Add test for integrity parameters:
   https://github.com/stratis-storage/testing/pull/304
 
@@ -13,6 +16,7 @@ Recommended release for development: Fedora 40
   https://github.com/stratis-storage/testing/pull/303
 
 - Improve post-test checks on metadata:
+  https://github.com/stratis-storage/testing/pull/314
   https://github.com/stratis-storage/testing/pull/310
   https://github.com/stratis-storage/testing/pull/308
   https://github.com/stratis-storage/testing/pull/307
