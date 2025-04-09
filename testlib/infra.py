@@ -543,19 +543,12 @@ class DbusMonitor(unittest.TestCase):
             except FileNotFoundError as err:
                 raise RuntimeError("monitor_dbus_signals script not found.") from err
 
-    def run_check(self, stop_time):
+    def run_check(self):
         """
         Stop the D-Bus monitor script and check the results.
-
-        :param int stop_time: the time the test completed
         """
         trace = getattr(self, "trace", None)
         if trace is not None:
-            # A sixteen second wait will make it virtually certain that
-            # stratisd has a chance to do one of its 10 second timer passes on
-            # pools and filesystems _and_ that the D-Bus task has at least one
-            # second to send out any resulting signals.
-            time.sleep(sleep_time(stop_time, 16))
             self.trace.send_signal(signal.SIGINT)
             (stdoutdata, stderrdata) = self.trace.communicate()
 
@@ -677,7 +670,7 @@ class RunPostTestChecks:
         Run post-test checks after test is completed.
         """
         stop_time = time.monotonic_ns()
-        self.dbus_monitor.run_check(stop_time)
+        self.dbus_monitor.run_check()
 
         SysfsMonitor().run_check()
         SymlinkMonitor().run_check()
