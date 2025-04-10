@@ -744,6 +744,11 @@ except KeyboardInterrupt:
         if current == _MO:
             break
     else:
+        # isort: THIRDPARTY
+        from deepdiff import DeepDiff
+
+        diff = DeepDiff(current, _MO)
+        print(diff)
         sys.exit(4)
 
     try:
