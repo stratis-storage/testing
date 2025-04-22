@@ -194,7 +194,7 @@ class StratisdCertify(
 
     def _unittest_set_property(
         self, object_path, param_iface, dbus_param, dbus_value, exception_name
-    ):  # pylint: disable=too-many-arguments
+    ):  # pylint: disable=too-many-positional-arguments,too-many-arguments
         """
         :param object_path: path to the object
         :param param_iface: D-Bus interface to use for parameter

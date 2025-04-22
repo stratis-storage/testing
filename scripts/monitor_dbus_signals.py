@@ -475,7 +475,7 @@ except KeyboardInterrupt:
 
         def __init__(
             self, object_path, interface_name, key, old_value, new_value
-        ):  # pylint: disable=too-many-arguments
+        ):  # pylint: disable=too-many-positional-arguments,too-many-arguments
             self.object_path = object_path
             self.interface_name = interface_name
             self.key = key
@@ -496,7 +496,7 @@ except KeyboardInterrupt:
 
         def __init__(
             self, object_path, interface_name, key, old_value, new_value
-        ):  # pylint: disable=too-many-arguments
+        ):  # pylint: disable=too-many-positional-arguments,too-many-arguments
             self.object_path = object_path
             self.interface_name = interface_name
             self.key = key
@@ -518,7 +518,7 @@ except KeyboardInterrupt:
 
         def __init__(
             self, object_path, interface_name, key, old_value, new_value
-        ):  # pylint: disable=too-many-arguments
+        ):  # pylint: disable=too-many-positional-arguments,too-many-arguments
             self.object_path = object_path
             self.interface_name = interface_name
             self.key = key
