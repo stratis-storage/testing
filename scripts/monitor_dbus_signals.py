@@ -429,6 +429,9 @@ try:
 
 except KeyboardInterrupt:
 
+    # isort: STDLIB
+    import copy
+
     class Diff:  # pylint: disable=too-few-public-methods
         """
         Diff between two different managed object results.
@@ -730,6 +733,23 @@ except KeyboardInterrupt:
     if _CALLBACK_ERRORS:
         print(os.linesep.join(_CALLBACK_ERRORS))
         sys.exit(3)
+
+    # A sixteen second wait will make it virtually certain that
+    # stratisd has a chance to do one of its 10 second timer passes on
+    # pools and filesystems _and_ that the D-Bus task has at least one
+    # second to send out any resulting signals.
+    for _ in range(3):
+        current = copy.deepcopy(_MO)
+        time.sleep(15)
+        if current == _MO:
+            break
+    else:
+        # isort: THIRDPARTY
+        from deepdiff import DeepDiff
+
+        diff = DeepDiff(current, _MO)
+        print(diff)
+        sys.exit(4)
 
     try:
         result = _check()
