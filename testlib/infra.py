@@ -30,7 +30,6 @@ from tempfile import NamedTemporaryFile
 
 # isort: THIRDPARTY
 import dbus
-from justbytes import Range
 
 from .dbus import StratisDbus, manager_interfaces
 from .utils import exec_command, process_exists, terminate_traces
@@ -45,7 +44,6 @@ VAR_TMP = "/var/tmp"
 MOUNT_POINT_SUFFIX = "_stratisd_mounts"
 UMOUNT = "umount"
 MOUNT = "mount"
-STRATIS_METADATA_LEN = Range(8192, 512)
 
 
 def clean_up():  # pylint: disable=too-many-branches,too-many-locals
