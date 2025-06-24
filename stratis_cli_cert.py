@@ -1120,6 +1120,26 @@ class StratisCliCertify(
         )
 
     @skip(_skip_condition(2))
+    def test_pool_add_data_encrypted(self):
+        """
+        Test adding data to an encrypted pool.
+        """
+        with KernelKey("test-password") as key_desc:
+            pool_name = make_test_pool(StratisCliCertify.DISKS[0:1], key_desc)
+            self._unittest_command(
+                [
+                    _STRATIS_CLI,
+                    "pool",
+                    "add-data",
+                    pool_name,
+                    StratisCliCertify.DISKS[1],
+                ],
+                0,
+                True,
+                True,
+            )
+
+    @skip(_skip_condition(2))
     def test_pool_add_data_relative_path(self):
         """
         Test adding data to a pool with a relative device path.
