@@ -734,6 +734,21 @@ class StratisdCertify(
             dbus.UInt16(0),
         )
 
+    @skip(_skip_condition(2))
+    def test_pool_add_data_encrypted(self):
+        """
+        Test adding a data device to an encrypted pool.
+        """
+        with KernelKey("test-password") as key_desc:
+            pool_name = p_n()
+            pool_path, _ = make_test_pool(
+                pool_name, StratisCertify.DISKS[0:1], key_desc=key_desc
+            )
+            self._unittest_command(
+                StratisDbus.pool_add_data(pool_path, StratisCertify.DISKS[1:2]),
+                dbus.UInt16(0),
+            )
+
     @skip(_skip_condition(3))
     def test_pool_add_data_relative_path(self):
         """
