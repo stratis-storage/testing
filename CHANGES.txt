@@ -1,3 +1,18 @@
+testing 3.8.1
+=============
+Recommended release for development: Fedora 41
+
+- Add tests to extend an encrypted pool:
+  https://github.com/stratis-storage/testing/pull/321
+
+- Remove unnecessary justbytes import:
+  https://github.com/stratis-storage/testing/pull/320
+
+- Tidies and Maintenance:
+  https://github.com/stratis-storage/testing/pull/318
+  https://github.com/stratis-storage/testing/pull/297
+
+
 testing 3.8.0
 =============
 Recommended release for development: Fedora 40
