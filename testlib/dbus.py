@@ -260,7 +260,7 @@ class StratisDbus:
         )
 
         return manager_iface.StartPool(
-            id_string, id_type, (False, (False, 0)), (False, 0)
+            id_string, id_type, (False, (False, 0)), (False, 0), False
         )
 
     @staticmethod
