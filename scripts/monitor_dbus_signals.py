@@ -90,7 +90,7 @@ try:
 
     INVALIDATED = Invalidated()
 
-    class MissingInterface:  # pylint: disable=too-few-public-methods
+    class InterfaceMissing:  # pylint: disable=too-few-public-methods
         """
         Used to record in the updated GetManagedObjects value that when a
         property changed signal was received, the interface for that property
@@ -98,9 +98,9 @@ try:
         """
 
         def __repr__(self):
-            return "MissingInterface()"
+            return "Interface(Missing)"
 
-    MISSING_INTERFACE = MissingInterface()
+    INTERFACE_MISSING = InterfaceMissing()
 
     # a minimal chunk of introspection data, enough for the methods needed.
     _SPECS = {
@@ -299,9 +299,9 @@ try:
                 ) or re.fullmatch(_INTERFACE_RE, interface_name) is None:
                     return
 
-                data[interface_name] = MISSING_INTERFACE
+                data[interface_name] = INTERFACE_MISSING
 
-            if data[interface_name] is MISSING_INTERFACE:
+            if data[interface_name] is INTERFACE_MISSING:
                 return
 
             for prop, value in properties_changed.items():
@@ -608,7 +608,7 @@ except KeyboardInterrupt:
         :param str object_path: D-Bus object path
         :param str ifn: a single interface name
         :param old_props: map of keys to stored property values
-        :type old_props: dict or MISSING_INTERFACE
+        :type old_props: dict or INTERFACE_MISSING
         :param dict new_props: map of keys to current property values
 
         :rtype list:
@@ -620,7 +620,7 @@ except KeyboardInterrupt:
         proxy = dbus.SystemBus().get_object(_SERVICE, object_path, introspect=False)
         xml_data = ET.fromstring(_INTROSPECTABLE.Methods.Introspect(proxy, {}))
 
-        if old_props is MISSING_INTERFACE:
+        if old_props is INTERFACE_MISSING:
             diffs.append(MissingInterface(object_path, ifn))
             return diffs
 
