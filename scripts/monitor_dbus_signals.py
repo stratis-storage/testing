@@ -38,6 +38,190 @@ _CALLBACK_ERRORS = []
 
 _EMITS_CHANGED_PROP = "org.freedesktop.DBus.Property.EmitsChangedSignal"
 
+
+class Diff:  # pylint: disable=too-few-public-methods
+    """
+    Diff between two different managed object results.
+    """
+
+
+class AddedProperty(Diff):  # pylint: disable=too-few-public-methods
+    """
+    Property appears in new result but not in recorded result.
+    """
+
+    def __init__(self, object_path, interface_name, key, new_value):
+        self.object_path = object_path
+        self.interface_name = interface_name
+        self.key = key
+        self.new_value = new_value
+
+    def __repr__(self):
+        return (
+            f"AddedProperty({self.object_path!r}, {self.interface_name!r}, "
+            f"{self.key!r}, {self.new_value!r})"
+        )
+
+
+class RemovedProperty(Diff):  # pylint: disable=too-few-public-methods
+    """
+    Property appears in recorded result but not in new result.
+    """
+
+    def __init__(self, object_path, interface_name, key, old_value):
+        self.object_path = object_path
+        self.interface_name = interface_name
+        self.key = key
+        self.old_value = old_value
+
+    def __repr__(self):
+        return (
+            f"RemovedProperty({self.object_path!r}, {self.interface_name!r}, "
+            f"{self.key!r}, {self.old_value!r})"
+        )
+
+
+class DifferentProperty(Diff):  # pylint: disable=too-few-public-methods
+    """
+    Difference between two properties.
+    """
+
+    def __init__(
+        self, object_path, interface_name, key, old_value, new_value
+    ):  # pylint: disable=too-many-positional-arguments,too-many-arguments
+        self.object_path = object_path
+        self.interface_name = interface_name
+        self.key = key
+        self.old_value = old_value
+        self.new_value = new_value
+
+    def __repr__(self):
+        return (
+            f"DifferentProperty({self.object_path!r}, {self.interface_name!r}, "
+            f"{self.key!r}, {self.old_value!r}, {self.new_value!r})"
+        )
+
+
+class NotInvalidatedProperty(Diff):  # pylint: disable=too-few-public-methods
+    """
+    Represents a case where the property should have been invalidated but
+    was updated instead.
+    """
+
+    def __init__(
+        self, object_path, interface_name, key, old_value, new_value
+    ):  # pylint: disable=too-many-positional-arguments,too-many-arguments
+        self.object_path = object_path
+        self.interface_name = interface_name
+        self.key = key
+        self.old_value = old_value
+        self.new_value = new_value
+
+    def __repr__(self):
+        return (
+            f"NotInvalidatedProperty({self.object_path!r}, "
+            f"{self.interface_name!r}, {self.key!r}, {self.old_value!r}, "
+            f"{self.new_value!r})"
+        )
+
+
+class ChangedProperty(Diff):  # pylint: disable=too-few-public-methods
+    """
+    Represents a case where the property should have been constant but
+    seems to have changed.
+    """
+
+    def __init__(
+        self, object_path, interface_name, key, old_value, new_value
+    ):  # pylint: disable=too-many-positional-arguments,too-many-arguments
+        self.object_path = object_path
+        self.interface_name = interface_name
+        self.key = key
+        self.old_value = old_value
+        self.new_value = new_value
+
+    def __repr__(self):
+        return (
+            f"ChangedProperty({self.object_path!r}, "
+            f"{self.interface_name!r}, {self.key!r}, {self.old_value!r}, "
+            f"{self.new_value!r})"
+        )
+
+
+class RemovedObjectPath(Diff):  # pylint: disable=too-few-public-methods
+    """
+    Object path appears in recorded result but not in new result.
+    """
+
+    def __init__(self, object_path, old_value):
+        self.object_path = object_path
+        self.old_value = old_value
+
+    def __repr__(self):
+        return f"RemovedObjectPath({self.object_path!r}, {self.old_value!r})"
+
+
+class AddedInterface(Diff):  # pylint: disable=too-few-public-methods
+    """
+    Interface appears in new result but not in recorded result.
+    """
+
+    def __init__(self, object_path, interface_name, new_value):
+        self.object_path = object_path
+        self.interface_name = interface_name
+        self.new_value = new_value
+
+    def __repr__(self):
+        return (
+            f"AddedInterface({self.object_path!r}, {self.interface_name!r}, "
+            f"{self.new_value!r})"
+        )
+
+
+class AddedObjectPath(Diff):  # pylint: disable=too-few-public-methods
+    """
+    Object path appears in new result but not in recorded result.
+    """
+
+    def __init__(self, object_path, new_value):
+        self.object_path = object_path
+        self.new_value = new_value
+
+    def __repr__(self):
+        return f"AddedObjectPath({self.object_path!r}, {self.new_value!r})"
+
+
+class RemovedInterface(Diff):  # pylint: disable=too-few-public-methods
+    """
+    Interface appears in recorded result but not in new result.
+    """
+
+    def __init__(self, object_path, interface_name, old_value):
+        self.object_path = object_path
+        self.interface_name = interface_name
+        self.old_value = old_value
+
+    def __repr__(self):
+        return (
+            f"RemovedInterface({self.object_path!r}, {self.interface_name!r}, "
+            f"{self.old_value!r})"
+        )
+
+
+class MissingInterface(Diff):  # pylint: disable=too-few-public-methods
+    """
+    Attempted to update a property on this interface, but the interface
+    itself was missing when that happened.
+    """
+
+    def __init__(self, object_path, interface_name):
+        self.object_path = object_path
+        self.interface_name = interface_name
+
+    def __repr__(self):
+        return f"MissingInterface({self.object_path!r}, {self.interface_name!r}"
+
+
 try:
     # isort: STDLIB
     import argparse
@@ -428,178 +612,6 @@ try:
         main()
 
 except KeyboardInterrupt:
-
-    class Diff:  # pylint: disable=too-few-public-methods
-        """
-        Diff between two different managed object results.
-        """
-
-    class AddedProperty(Diff):  # pylint: disable=too-few-public-methods
-        """
-        Property appears in new result but not in recorded result.
-        """
-
-        def __init__(self, object_path, interface_name, key, new_value):
-            self.object_path = object_path
-            self.interface_name = interface_name
-            self.key = key
-            self.new_value = new_value
-
-        def __repr__(self):
-            return (
-                f"AddedProperty({self.object_path!r}, {self.interface_name!r}, "
-                f"{self.key!r}, {self.new_value!r})"
-            )
-
-    class RemovedProperty(Diff):  # pylint: disable=too-few-public-methods
-        """
-        Property appears in recorded result but not in new result.
-        """
-
-        def __init__(self, object_path, interface_name, key, old_value):
-            self.object_path = object_path
-            self.interface_name = interface_name
-            self.key = key
-            self.old_value = old_value
-
-        def __repr__(self):
-            return (
-                f"RemovedProperty({self.object_path!r}, {self.interface_name!r}, "
-                f"{self.key!r}, {self.old_value!r})"
-            )
-
-    class DifferentProperty(Diff):  # pylint: disable=too-few-public-methods
-        """
-        Difference between two properties.
-        """
-
-        def __init__(
-            self, object_path, interface_name, key, old_value, new_value
-        ):  # pylint: disable=too-many-positional-arguments,too-many-arguments
-            self.object_path = object_path
-            self.interface_name = interface_name
-            self.key = key
-            self.old_value = old_value
-            self.new_value = new_value
-
-        def __repr__(self):
-            return (
-                f"DifferentProperty({self.object_path!r}, {self.interface_name!r}, "
-                f"{self.key!r}, {self.old_value!r}, {self.new_value!r})"
-            )
-
-    class NotInvalidatedProperty(Diff):  # pylint: disable=too-few-public-methods
-        """
-        Represents a case where the property should have been invalidated but
-        was updated instead.
-        """
-
-        def __init__(
-            self, object_path, interface_name, key, old_value, new_value
-        ):  # pylint: disable=too-many-positional-arguments,too-many-arguments
-            self.object_path = object_path
-            self.interface_name = interface_name
-            self.key = key
-            self.old_value = old_value
-            self.new_value = new_value
-
-        def __repr__(self):
-            return (
-                f"NotInvalidatedProperty({self.object_path!r}, "
-                f"{self.interface_name!r}, {self.key!r}, {self.old_value!r}, "
-                f"{self.new_value!r})"
-            )
-
-    class ChangedProperty(Diff):  # pylint: disable=too-few-public-methods
-        """
-        Represents a case where the property should have been constant but
-        seems to have changed.
-        """
-
-        def __init__(
-            self, object_path, interface_name, key, old_value, new_value
-        ):  # pylint: disable=too-many-positional-arguments,too-many-arguments
-            self.object_path = object_path
-            self.interface_name = interface_name
-            self.key = key
-            self.old_value = old_value
-            self.new_value = new_value
-
-        def __repr__(self):
-            return (
-                f"ChangedProperty({self.object_path!r}, "
-                f"{self.interface_name!r}, {self.key!r}, {self.old_value!r}, "
-                f"{self.new_value!r})"
-            )
-
-    class RemovedObjectPath(Diff):  # pylint: disable=too-few-public-methods
-        """
-        Object path appears in recorded result but not in new result.
-        """
-
-        def __init__(self, object_path, old_value):
-            self.object_path = object_path
-            self.old_value = old_value
-
-        def __repr__(self):
-            return f"RemovedObjectPath({self.object_path!r}, {self.old_value!r})"
-
-    class AddedInterface(Diff):  # pylint: disable=too-few-public-methods
-        """
-        Interface appears in new result but not in recorded result.
-        """
-
-        def __init__(self, object_path, interface_name, new_value):
-            self.object_path = object_path
-            self.interface_name = interface_name
-            self.new_value = new_value
-
-        def __repr__(self):
-            return (
-                f"AddedInterface({self.object_path!r}, {self.interface_name!r}, "
-                f"{self.new_value!r})"
-            )
-
-    class AddedObjectPath(Diff):  # pylint: disable=too-few-public-methods
-        """
-        Object path appears in new result but not in recorded result.
-        """
-
-        def __init__(self, object_path, new_value):
-            self.object_path = object_path
-            self.new_value = new_value
-
-        def __repr__(self):
-            return f"AddedObjectPath({self.object_path!r}, {self.new_value!r})"
-
-    class RemovedInterface(Diff):  # pylint: disable=too-few-public-methods
-        """
-        Interface appears in recorded result but not in new result.
-        """
-
-        def __init__(self, object_path, interface_name, old_value):
-            self.object_path = object_path
-            self.interface_name = interface_name
-            self.old_value = old_value
-
-        def __repr__(self):
-            return (
-                f"RemovedInterface({self.object_path!r}, {self.interface_name!r}, "
-                f"{self.old_value!r})"
-            )
-
-    class MissingInterface(Diff):  # pylint: disable=too-few-public-methods
-        """
-        Attempted to update a property on this interface, but the interface
-        itself was missing when that happened.
-        """
-
-        def __init__(self, object_path, interface_name):
-            self.object_path = object_path
-            self.interface_name = interface_name
-
-        def __repr__(self):
-            return f"MissingInterface({self.object_path!r}, {self.interface_name!r}"
 
     def _check_props(object_path, ifn, old_props, new_props):
         """
