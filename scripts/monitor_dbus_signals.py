@@ -548,6 +548,7 @@ try:
             _properties_changed,
             dbus_interface="org.freedesktop.DBus.Properties",
             signal_name="PropertiesChanged",
+            bus_name=_TOP_OBJECT.bus_name,
             path_keyword="object_path",
         )
 
