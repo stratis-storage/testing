@@ -542,6 +542,7 @@ try:
 
         bus.add_signal_receiver(
             _properties_changed,
+            dbus_interface="org.freedesktop.DBus.Properties",
             signal_name="PropertiesChanged",
             path_keyword="object_path",
         )
