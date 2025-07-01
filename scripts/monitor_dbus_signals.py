@@ -21,6 +21,7 @@ with respect to their properties.
 # isort: STDLIB
 import os
 import xml.etree.ElementTree as ET
+from typing import List
 
 # isort: THIRDPARTY
 import dbus
@@ -499,7 +500,12 @@ try:
         except Exception as exc:  # pylint: disable=broad-except
             _CALLBACK_ERRORS.append(exc)
 
-    def _monitor(service, manager, manager_interfaces, interface_re):
+    def _monitor(
+        service: str,
+        manager: str,
+        manager_interfaces: List[str],
+        interface_re: re.Pattern,
+    ):
         """
         Monitor the signals and properties of the manager object.
 
