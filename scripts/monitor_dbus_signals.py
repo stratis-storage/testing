@@ -18,6 +18,13 @@ Monitor D-Bus properties and signals and verify that the signals are correct
 with respect to their properties.
 """
 
+# isort: STDLIB
+import os
+import xml.etree.ElementTree as ET
+
+# isort: THIRDPARTY
+import dbus
+
 _INTERFACE_RE = None
 _MO = None
 _SERVICE = None
@@ -225,15 +232,12 @@ class MissingInterface(Diff):  # pylint: disable=too-few-public-methods
 try:
     # isort: STDLIB
     import argparse
-    import os
     import re
     import sys
     import time
-    import xml.etree.ElementTree as ET
     from enum import Enum
 
     # isort: THIRDPARTY
-    import dbus
     import dbus.mainloop.glib
     from gi.repository import GLib
 
