@@ -248,7 +248,7 @@ class StratisDbus:
         return iface.ListKeys(timeout=StratisDbus._TIMEOUT)
 
     @staticmethod
-    def pool_start(id_string, id_type):
+    def pool_start(id_string, id_type, *, remove_cache=False):
         """
         Start a pool
         :param str id: The identifier of the pool to start
@@ -260,7 +260,7 @@ class StratisDbus:
         )
 
         return manager_iface.StartPool(
-            id_string, id_type, (False, (False, 0)), (False, 0), False
+            id_string, id_type, (False, (False, 0)), (False, 0), remove_cache
         )
 
     @staticmethod
