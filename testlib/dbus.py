@@ -248,19 +248,21 @@ class StratisDbus:
         return iface.ListKeys(timeout=StratisDbus._TIMEOUT)
 
     @staticmethod
-    def pool_start(id_string, id_type):
+    def pool_start(id_string, id_type, *, unlock_method=None, remove_cache=False):
         """
         Start a pool
         :param str id: The identifier of the pool to start
         :param str type: The type of identifier ("uuid" or "name")
         """
+
+        unlock_method = (False, (False, 0)) if unlock_method is None else unlock_method
         manager_iface = dbus.Interface(
             StratisDbus._BUS.get_object(StratisDbus._BUS_NAME, StratisDbus._TOP_OBJECT),
             StratisDbus._MNGR_IFACE,
         )
 
         return manager_iface.StartPool(
-            id_string, id_type, (False, (False, 0)), (False, 0), False
+            id_string, id_type, unlock_method, (False, 0), remove_cache
         )
 
     @staticmethod

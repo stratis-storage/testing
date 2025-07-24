@@ -667,7 +667,16 @@ class RunPostTestChecks:
         """
         self.dbus_monitor = DbusMonitor()
         # See: https://github.com/stratis-storage/project/issues/741
-        if test_id is None or not test_id.endswith("test_pool_add_data_init_cache"):
+        if test_id is None or all(
+            not test_id.endswith(test_name)
+            for test_name in [
+                "test_pool_add_data_init_cache",
+                "test_pool_start_by_name",
+                "test_pool_start_stopped",
+                "test_pool_start_without_cache",
+                "test_pool_start_without_cache_encrypted",
+            ]
+        ):
             self.dbus_monitor.setUp()
 
     def teardown(self):
