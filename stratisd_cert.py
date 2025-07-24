@@ -1275,6 +1275,49 @@ class StratisdCertify(
         """
         self._test_permissions(StratisDbus.get_keys, [], False)
 
+    @skip(_skip_condition(1))
+    def test_pool_start_without_cache(self):
+        """
+        Test starting a stopped pool by its name without cache.
+        """
+        pool_name = p_n()
+        make_test_pool(pool_name, StratisCertify.DISKS[0:1])
+
+        self._unittest_command(
+            StratisDbus.pool_stop(pool_name, "name"),
+            dbus.UInt16(0),
+        )
+
+        self._unittest_command(
+            StratisDbus.pool_start(pool_name, "name", remove_cache=True),
+            dbus.UInt16(0),
+        )
+
+    @skip(_skip_condition(1))
+    def test_pool_start_without_cache_encrypted(self):
+        """
+        Test starting an encrypted stopped pool by its name without cache.
+        """
+        pool_name = p_n()
+
+        with KernelKey("test-password") as key_desc:
+            make_test_pool(pool_name, StratisCertify.DISKS[0:1], key_desc=key_desc)
+
+            self._unittest_command(
+                StratisDbus.pool_stop(pool_name, "name"),
+                dbus.UInt16(0),
+            )
+
+            self._unittest_command(
+                StratisDbus.pool_start(
+                    pool_name,
+                    "name",
+                    unlock_method=(True, (False, 0)),
+                    remove_cache=True,
+                ),
+                dbus.UInt16(0),
+            )
+
 
 class StratisdManPageCertify(StratisCertify):
     """
