@@ -110,6 +110,33 @@ class DifferentProperty(Diff):  # pylint: disable=too-few-public-methods
         )
 
 
+class DifferentVariantLevel(Diff):  # pylint: disable=too-few-public-methods
+    """
+    Represents a case where the property value is correct but the variant
+    level does not match. The variant levels among the GetManagedObjects
+    result, the Properties.GetAll result and the PropertiesChanged signal
+    value should always be the same, because both are encoded using dicts,
+    and the values of the dicts are always defined as variant types, since
+    they must be heterogeneous.
+    """
+
+    def __init__(
+        self, object_path, interface_name, key, old_value, new_value
+    ):  # pylint: disable=too-many-positional-arguments,too-many-arguments
+        self.object_path = object_path
+        self.interface_name = interface_name
+        self.key = key
+        self.old_value = old_value
+        self.new_value = new_value
+
+    def __repr__(self):
+        return (
+            f"DifferentVariantLevel({self.object_path!r}, "
+            f"{self.interface_name!r}, {self.key!r}, {self.old_value!r}, "
+            f"{self.new_value!r})"
+        )
+
+
 class NotInvalidatedProperty(Diff):  # pylint: disable=too-few-public-methods
     """
     Represents a case where the property should have been invalidated but
@@ -671,25 +698,33 @@ except KeyboardInterrupt:
                 else EmitsChangedSignal.from_str(emits_signal_prop[0].attrib["value"])
             )
 
-            if new_value != old_value:
-                if emits_signal is EmitsChangedSignal.TRUE:
-                    diffs.append(
-                        DifferentProperty(object_path, ifn, key, old_value, new_value)
-                    )
-
-                if (
-                    emits_signal is EmitsChangedSignal.INVALIDATES
-                    and old_value is not INVALIDATED
-                ):
+            if old_value is INVALIDATED:
+                if emits_signal is not EmitsChangedSignal.INVALIDATES:
                     diffs.append(
                         NotInvalidatedProperty(
                             object_path, ifn, key, old_value, new_value
                         )
                     )
+            else:
+                assert hasattr(old_value, "variant_level")
 
-                if emits_signal is EmitsChangedSignal.CONST:
+                if new_value != old_value:
+                    if emits_signal is EmitsChangedSignal.TRUE:
+                        diffs.append(
+                            DifferentProperty(
+                                object_path, ifn, key, old_value, new_value
+                            )
+                        )
+
+                    if emits_signal is EmitsChangedSignal.CONST:
+                        diffs.append(
+                            ChangedProperty(object_path, ifn, key, old_value, new_value)
+                        )
+                elif new_value.variant_level != old_value.variant_level:
                     diffs.append(
-                        ChangedProperty(object_path, ifn, key, old_value, new_value)
+                        DifferentVariantLevel(
+                            object_path, ifn, key, old_value, new_value
+                        )
                     )
 
         return diffs
