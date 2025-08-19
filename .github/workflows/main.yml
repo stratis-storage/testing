@@ -47,6 +47,8 @@ jobs:
     container: ${{ matrix.image }}
     steps:
       - uses: actions/checkout@v5
+        with:
+          persist-credentials: false
       - name: Install dependencies
         run: >
           dnf install -y
