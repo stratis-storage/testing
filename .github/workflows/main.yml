@@ -26,7 +26,6 @@ jobs:
         include:
           # MANDATORY CHECKS USING CURRENT DEVELOPMENT INTERPRETER
           - dependencies: >
-              libatomic
               pylint
               python3-dbus
               python3-dbus-python-client-gen
