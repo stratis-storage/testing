@@ -32,16 +32,16 @@ jobs:
               python3-justbytes
               python3-gobject
               python3-psutil
-            image: fedora:41  # CURRENT DEVELOPMENT ENVIRONMENT
+            image: fedora:42  # CURRENT DEVELOPMENT ENVIRONMENT
             task: PYTHONPATH=./src make -f Makefile lint
           - dependencies: >
               black
               python3-isort
-            image: fedora:41  # CURRENT DEVELOPMENT ENVIRONMENT
+            image: fedora:42  # CURRENT DEVELOPMENT ENVIRONMENT
             task: make -f Makefile fmt-travis
           # VERIFICATION OF TEST INFRASTRUCTURE
           - dependencies: yamllint
-            image: fedora:41  # CURRENT DEVELOPMENT ENVIRONMENT
+            image: fedora:42  # CURRENT DEVELOPMENT ENVIRONMENT
             task: make -f Makefile yamllint
     runs-on: ubuntu-latest
     container: ${{ matrix.image }}
