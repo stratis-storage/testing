@@ -870,7 +870,7 @@ class StratisdCertify(
             StratisDbus.POOL_IFACE,
             "FsLimit",
             dbus.UInt64(0),
-            "org.freedesktop.DBus.Error.Failed",
+            "org.freedesktop.zbus.Error",
         )
 
     @skip(_skip_condition(1))
