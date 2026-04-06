@@ -26,6 +26,7 @@ import tempfile
 import time
 import unittest
 from enum import Enum
+from pathlib import Path
 from tempfile import NamedTemporaryFile
 
 # isort: THIRDPARTY
@@ -428,7 +429,7 @@ class FilesystemSymlinkMonitor(unittest.TestCase):
 
     maxDiff = None
 
-    def run_check(self, stop_time):
+    def run_check(self, stop_time):  # pylint: disable=too-many-locals
         """
         Check that the filesystem links on the D-Bus and the filesystem links
         expected from looking at filesystem devicemapper paths match exactly.
@@ -455,11 +456,14 @@ class FilesystemSymlinkMonitor(unittest.TestCase):
 
         try:
             found = 0
-            for dev in fnmatch.filter(os.listdir(DEV_MAPPER), "stratis-1-*-thin-fs-*"):
+            for device in fnmatch.filter(
+                os.listdir(DEV_MAPPER), "stratis-1-*-thin-fs-*"
+            ):
+                device_path = os.path.join(DEV_MAPPER, device)
                 found += 1
                 command = [
                     decode_dm,
-                    os.path.join(DEV_MAPPER, dev),
+                    device_path,
                     "--output=symlink",
                 ]
                 try:
@@ -473,6 +477,61 @@ class FilesystemSymlinkMonitor(unittest.TestCase):
                             symlink = stdoutdata.decode("utf-8").strip()
                             self.assertTrue(os.path.exists(symlink))
                             self.assertIn(symlink, filesystems)
+                        else:
+                            raise RuntimeError(
+                                f"{decode_dm} invocation failed: "
+                                f"{stderrdata.decode('utf-8')}"
+                            )
+                    try:
+                        (_, dev, stratis, pool_name, filesystem_name) = Path(
+                            symlink
+                        ).parts
+                    except ValueError as err:
+                        raise RuntimeError(
+                            f"Symlink {symlink} did not decompose into expected parts"
+                        ) from err
+
+                    self.assertEqual(stratis, "stratis")
+                    self.assertEqual(dev, "dev")
+
+                    command = [
+                        decode_dm,
+                        device_path,
+                        "--output=filesystem-name",
+                    ]
+
+                    with subprocess.Popen(
+                        command,
+                        stdout=subprocess.PIPE,
+                        stderr=subprocess.PIPE,
+                    ) as proc:
+                        (stdoutdata, stderrdata) = proc.communicate()
+                        if proc.returncode == 0:
+                            self.assertEqual(
+                                stdoutdata.decode("utf-8").strip(), filesystem_name
+                            )
+                        else:
+                            raise RuntimeError(
+                                f"{decode_dm} invocation failed: "
+                                f"{stderrdata.decode('utf-8')}"
+                            )
+
+                    command = [
+                        decode_dm,
+                        device_path,
+                        "--output=pool-name",
+                    ]
+
+                    with subprocess.Popen(
+                        command,
+                        stdout=subprocess.PIPE,
+                        stderr=subprocess.PIPE,
+                    ) as proc:
+                        (stdoutdata, stderrdata) = proc.communicate()
+                        if proc.returncode == 0:
+                            self.assertEqual(
+                                stdoutdata.decode("utf-8").strip(), pool_name
+                            )
                         else:
                             raise RuntimeError(
                                 f"{decode_dm} invocation failed: "
