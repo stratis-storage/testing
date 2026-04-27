@@ -1,3 +1,38 @@
+testing 3.9.0
+=============
+Recommended release for development: Fedora 43
+
+- Update revision number to 9:
+  https://github.com/stratis-storage/testing/pull/323
+
+- Extend stratis-decode-dm tests:
+  https://github.com/stratis-storage/testing/pull/334
+
+- Change expected error type on failure to set fs limit:
+  https://github.com/stratis-storage/testing/pull/333
+
+- monitor_dbus_signals: check variant_level equality:
+  https://github.com/stratis-storage/testing/pull/328
+
+- Add tests for starting pool without cache:
+  https://github.com/stratis-storage/testing/issues/326
+  https://github.com/stratis-storage/testing/pull/327
+
+- Add value for pool start remove_cache D-Bus argument:
+  https://github.com/stratis-storage/testing/pull/324
+
+- Skip dbus monitor for test_pool_add_different_data_after_cache:
+  https://github.com/stratis-storage/testing/pull/335
+
+- Tidies and Maintenance:
+  https://github.com/stratis-storage/testing/pull/336
+  https://github.com/stratis-storage/testing/pull/332
+  https://github.com/stratis-storage/testing/pull/331
+  https://github.com/stratis-storage/testing/pull/330
+  https://github.com/stratis-storage/testing/pull/329
+  https://github.com/stratis-storage/testing/pull/325
+
+
 testing 3.8.1
 =============
 Recommended release for development: Fedora 41
