@@ -30,7 +30,7 @@ _LOSETUP_BIN = "/usr/sbin/losetup"
 _SIZE_OF_DEVICE = 8 * (1024**3)  # 8 GiB
 
 
-class _LogBlockdev:  # pylint: disable=too-few-public-methods
+class _LogBlockdev:
     """
     Allows only running blockdev commands if the result will be logged.
     """
@@ -42,7 +42,7 @@ class _LogBlockdev:  # pylint: disable=too-few-public-methods
         try:
             with subprocess.Popen(self.cmd, stdout=subprocess.PIPE) as proc:
                 output = proc.stdout.readline().strip().decode("utf-8")
-        except:  # pylint: disable=bare-except
+        except:
             return f"could not gather output of {self.cmd}"
 
         return f"output of {self.cmd}: {output}"

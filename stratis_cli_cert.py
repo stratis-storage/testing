@@ -14,7 +14,6 @@
 """
 Tests of the stratis CLI.
 """
-# pylint: disable=too-many-lines
 
 # isort: STDLIB
 import argparse
@@ -169,9 +168,7 @@ class StratisCliManPageCertify(StratisCertify):
         self._unittest_command(["man", "--where", "stratis"], 0, True, False)
 
 
-class StratisCliCertify(
-    StratisdSystemdStart, StratisCertify
-):  # pylint: disable=too-many-public-methods
+class StratisCliCertify(StratisdSystemdStart, StratisCertify):
     """
     Unit tests for the stratis-cli package.
     """
@@ -1516,7 +1513,7 @@ class StratisCliCertify(
             [
                 "dd",
                 "if=/dev/urandom",
-                f'of={os.path.join(mountpoints[0], "file1")}',
+                f"of={os.path.join(mountpoints[0], 'file1')}",
                 "bs=4096",
                 "count=256",
                 "conv=fsync",

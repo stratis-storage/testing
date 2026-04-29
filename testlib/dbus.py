@@ -14,6 +14,7 @@
 """
 DBus methods for blackbox testing.
 """
+
 # isort: STDLIB
 import os
 
@@ -98,7 +99,6 @@ def _get_timeout(value):
     return timeout_int / 1000
 
 
-# pylint: disable=too-many-public-methods
 class StratisDbus:
     "Wrappers around stratisd DBus calls"
 
