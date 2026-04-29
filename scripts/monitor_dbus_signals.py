@@ -47,13 +47,13 @@ _CALLBACK_ERRORS = []
 _EMITS_CHANGED_PROP = "org.freedesktop.DBus.Property.EmitsChangedSignal"
 
 
-class Diff:  # pylint: disable=too-few-public-methods
+class Diff:
     """
     Diff between two different managed object results.
     """
 
 
-class AddedProperty(Diff):  # pylint: disable=too-few-public-methods
+class AddedProperty(Diff):
     """
     Property appears in new result but not in recorded result.
     """
@@ -71,7 +71,7 @@ class AddedProperty(Diff):  # pylint: disable=too-few-public-methods
         )
 
 
-class RemovedProperty(Diff):  # pylint: disable=too-few-public-methods
+class RemovedProperty(Diff):
     """
     Property appears in recorded result but not in new result.
     """
@@ -89,14 +89,12 @@ class RemovedProperty(Diff):  # pylint: disable=too-few-public-methods
         )
 
 
-class DifferentProperty(Diff):  # pylint: disable=too-few-public-methods
+class DifferentProperty(Diff):
     """
     Difference between two properties.
     """
 
-    def __init__(
-        self, object_path, interface_name, key, old_value, new_value
-    ):  # pylint: disable=too-many-positional-arguments,too-many-arguments
+    def __init__(self, object_path, interface_name, key, old_value, new_value):
         self.object_path = object_path
         self.interface_name = interface_name
         self.key = key
@@ -110,7 +108,7 @@ class DifferentProperty(Diff):  # pylint: disable=too-few-public-methods
         )
 
 
-class DifferentVariantLevel(Diff):  # pylint: disable=too-few-public-methods
+class DifferentVariantLevel(Diff):
     """
     Represents a case where the property value is correct but the variant
     level does not match. The variant levels among the GetManagedObjects
@@ -120,9 +118,7 @@ class DifferentVariantLevel(Diff):  # pylint: disable=too-few-public-methods
     they must be heterogeneous.
     """
 
-    def __init__(
-        self, object_path, interface_name, key, old_value, new_value
-    ):  # pylint: disable=too-many-positional-arguments,too-many-arguments
+    def __init__(self, object_path, interface_name, key, old_value, new_value):
         self.object_path = object_path
         self.interface_name = interface_name
         self.key = key
@@ -137,15 +133,13 @@ class DifferentVariantLevel(Diff):  # pylint: disable=too-few-public-methods
         )
 
 
-class NotInvalidatedProperty(Diff):  # pylint: disable=too-few-public-methods
+class NotInvalidatedProperty(Diff):
     """
     Represents a case where the property should have been invalidated but
     was updated instead.
     """
 
-    def __init__(
-        self, object_path, interface_name, key, old_value, new_value
-    ):  # pylint: disable=too-many-positional-arguments,too-many-arguments
+    def __init__(self, object_path, interface_name, key, old_value, new_value):
         self.object_path = object_path
         self.interface_name = interface_name
         self.key = key
@@ -160,15 +154,13 @@ class NotInvalidatedProperty(Diff):  # pylint: disable=too-few-public-methods
         )
 
 
-class ChangedProperty(Diff):  # pylint: disable=too-few-public-methods
+class ChangedProperty(Diff):
     """
     Represents a case where the property should have been constant but
     seems to have changed.
     """
 
-    def __init__(
-        self, object_path, interface_name, key, old_value, new_value
-    ):  # pylint: disable=too-many-positional-arguments,too-many-arguments
+    def __init__(self, object_path, interface_name, key, old_value, new_value):
         self.object_path = object_path
         self.interface_name = interface_name
         self.key = key
@@ -183,7 +175,7 @@ class ChangedProperty(Diff):  # pylint: disable=too-few-public-methods
         )
 
 
-class RemovedObjectPath(Diff):  # pylint: disable=too-few-public-methods
+class RemovedObjectPath(Diff):
     """
     Object path appears in recorded result but not in new result.
     """
@@ -196,7 +188,7 @@ class RemovedObjectPath(Diff):  # pylint: disable=too-few-public-methods
         return f"RemovedObjectPath({self.object_path!r}, {self.old_value!r})"
 
 
-class AddedInterface(Diff):  # pylint: disable=too-few-public-methods
+class AddedInterface(Diff):
     """
     Interface appears in new result but not in recorded result.
     """
@@ -213,7 +205,7 @@ class AddedInterface(Diff):  # pylint: disable=too-few-public-methods
         )
 
 
-class AddedObjectPath(Diff):  # pylint: disable=too-few-public-methods
+class AddedObjectPath(Diff):
     """
     Object path appears in new result but not in recorded result.
     """
@@ -226,7 +218,7 @@ class AddedObjectPath(Diff):  # pylint: disable=too-few-public-methods
         return f"AddedObjectPath({self.object_path!r}, {self.new_value!r})"
 
 
-class RemovedInterface(Diff):  # pylint: disable=too-few-public-methods
+class RemovedInterface(Diff):
     """
     Interface appears in recorded result but not in new result.
     """
@@ -243,7 +235,7 @@ class RemovedInterface(Diff):  # pylint: disable=too-few-public-methods
         )
 
 
-class MissingInterface(Diff):  # pylint: disable=too-few-public-methods
+class MissingInterface(Diff):
     """
     Attempted to update a property on this interface, but the interface
     itself was missing when that happened.
@@ -295,7 +287,7 @@ try:
                     return item
             return None
 
-    class Invalidated:  # pylint: disable=too-few-public-methods
+    class Invalidated:
         """
         Used to record in the updated GetManagedObjects value that a value has
         been invalidated.
@@ -306,7 +298,7 @@ try:
 
     INVALIDATED = Invalidated()
 
-    class InterfaceMissing:  # pylint: disable=too-few-public-methods
+    class InterfaceMissing:
         """
         Used to record in the updated GetManagedObjects value that when a
         property changed signal was received, the interface for that property
@@ -424,7 +416,7 @@ try:
                     _MO[object_path][interface] = props
             else:
                 _MO[object_path] = interfaces_added
-        except Exception as exc:  # pylint: disable=broad-except
+        except Exception as exc:
             _CALLBACK_ERRORS.append(exc)
 
     def _interfaces_removed(object_path, interfaces):
@@ -457,7 +449,7 @@ try:
                 # that the object itself has been removed.
                 if _MO[object_path] == {}:
                     del _MO[object_path]
-        except Exception as exc:  # pylint: disable=broad-except
+        except Exception as exc:
             _CALLBACK_ERRORS.append(exc)
 
     def _properties_changed(*props_changed, object_path=None):
@@ -524,7 +516,7 @@ try:
                 data[interface_name][prop] = value
             for prop in properties_invalidated:
                 data[interface_name][prop] = INVALIDATED
-        except Exception as exc:  # pylint: disable=broad-except
+        except Exception as exc:
             _CALLBACK_ERRORS.append(exc)
 
     def _monitor(
@@ -544,7 +536,7 @@ try:
         :type interface_re: re.Pattern
         """
 
-        global _TOP_OBJECT, _TOP_OBJECT_PATH, _TOP_OBJECT_INTERFACES, _SERVICE, _MO, _INTERFACE_RE  # pylint: disable=global-statement
+        global _TOP_OBJECT, _TOP_OBJECT_PATH, _TOP_OBJECT_INTERFACES, _SERVICE, _MO, _INTERFACE_RE  # noqa: PLW0603
 
         dbus.mainloop.glib.DBusGMainLoop(set_as_default=True)
         bus = dbus.SystemBus()
@@ -556,7 +548,7 @@ try:
         while True:
             try:
                 _TOP_OBJECT = bus.get_object(service, _TOP_OBJECT_PATH)
-            except Exception as err:  # pylint: disable=broad-exception-caught
+            except Exception as err:
                 print(
                     f'Failed to get top object "{_TOP_OBJECT_PATH}" for '
                     f'service "{_SERVICE}". Error: {err}. Retrying.'
@@ -588,7 +580,7 @@ try:
         while True:
             try:
                 _MO = _MAKE_MO()
-            except Exception as err:  # pylint: disable=broad-exception-caught
+            except Exception as err:
                 print(
                     "Failed to get initial GetManagedObjects result for "
                     f'service "{_SERVICE}" and top object '
@@ -747,7 +739,7 @@ except KeyboardInterrupt:
         if _MO is None:
             return []
 
-        mos = _MAKE_MO()  # pylint: disable=not-callable
+        mos = _MAKE_MO()
 
         diffs = []
 
@@ -755,16 +747,13 @@ except KeyboardInterrupt:
         new_object_paths = frozenset(mos.keys())
 
         for object_path in old_object_paths - new_object_paths:
-            diffs.append(
-                # pylint: disable=unsubscriptable-object
-                RemovedObjectPath(object_path, _MO[object_path])
-            )
+            diffs.append(RemovedObjectPath(object_path, _MO[object_path]))
 
         for object_path in new_object_paths - old_object_paths:
             diffs.append(AddedObjectPath(object_path, mos[object_path]))
 
         for object_path in new_object_paths & old_object_paths:
-            old_data = _MO[object_path]  # pylint: disable=unsubscriptable-object
+            old_data = _MO[object_path]
             new_data = mos[object_path]
 
             old_ifns = frozenset(old_data.keys())
@@ -792,7 +781,7 @@ except KeyboardInterrupt:
 
     try:
         result = _check()
-    except Exception as exco:  # pylint: disable=broad-except
+    except Exception as exco:
         print(f"{exco}")
         sys.exit(4)
 

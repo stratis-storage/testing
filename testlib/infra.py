@@ -14,6 +14,7 @@
 """
 Methods and classes that do infrastructure tasks.
 """
+
 # isort: STDLIB
 import base64
 import fnmatch
@@ -47,7 +48,7 @@ UMOUNT = "umount"
 MOUNT = "mount"
 
 
-def clean_up():  # pylint: disable=too-many-branches,too-many-locals
+def clean_up():  # noqa: PLR0912
     """
     Try to clean up after a test failure.
 
@@ -130,13 +131,13 @@ def clean_up():  # pylint: disable=too-many-branches,too-many-locals
     if remnant_filesystems != {}:
         error_strings.append(
             f"remnant filesystems: "
-            f'{", ".join(map(lambda x: f"{x[0]} in pool {x[1]}", remnant_filesystems.items(),))}'
+            f"{', '.join(map(lambda x: f'{x[0]} in pool {x[1]}', remnant_filesystems.items()))}"
         )
 
     remnant_pools = StratisDbus.pool_list()
     if remnant_pools != []:
         error_strings.append(
-            f'remnant pools: {", ".join(name for _, name, _ in remnant_pools)}'
+            f"remnant pools: {', '.join(name for _, name, _ in remnant_pools)}"
         )
 
     (remnant_keys, return_code, message) = StratisDbus.get_keys()
@@ -144,14 +145,13 @@ def clean_up():  # pylint: disable=too-many-branches,too-many-locals
         error_strings.append(
             f"failed to obtain information about Stratis keys: {message}"
         )
-    else:
-        if remnant_keys != []:
-            error_strings.append(f'remnant keys: {", ".join(remnant_keys)}')
+    elif remnant_keys != []:
+        error_strings.append(f"remnant keys: {', '.join(remnant_keys)}")
 
     for mountpoint_dir in fnmatch.filter(os.listdir(VAR_TMP), f"*{MOUNT_POINT_SUFFIX}"):
         try:
             shutil.rmtree(os.path.join(VAR_TMP, mountpoint_dir))
-        except Exception as err:  # pylint: disable=broad-exception-caught
+        except Exception as err:
             error_strings.append(
                 f"failed to clean up temporary mountpoint dir {mountpoint_dir}: {err}"
             )
@@ -159,7 +159,7 @@ def clean_up():  # pylint: disable=too-many-branches,too-many-locals
     assert isinstance(error_strings, list)
     if error_strings:
         raise RuntimeError(
-            f'clean_up may not have succeeded: {"; ".join(error_strings)}'
+            f"clean_up may not have succeeded: {'; '.join(error_strings)}"
         )
 
 
@@ -251,7 +251,7 @@ class PoolMetadataMonitor(unittest.TestCase):
         elif features is not None:
             self.assertNotIn("Encryption", metadata["features"])
 
-    def run_check(self, stop_time):  # pylint: disable=too-many-locals
+    def run_check(self, stop_time):
         """
         Run the check.
 
@@ -259,8 +259,7 @@ class PoolMetadataMonitor(unittest.TestCase):
         """
         stratisd_tools = "stratisd-tools"
 
-        if PoolMetadataMonitor.verify:  # pylint: disable=no-member
-
+        if PoolMetadataMonitor.verify:
             # Wait for D-Bus to settle, so D-Bus and metadata can be compared
             time.sleep(sleep_time(stop_time, 16))
 
@@ -335,9 +334,9 @@ class PoolMetadataMonitor(unittest.TestCase):
                                     proc.returncode,
                                     0,
                                     (
-                                        f'stdout: {stdoutdata.decode("utf-8")}'
+                                        f"stdout: {stdoutdata.decode('utf-8')}"
                                         "; "
-                                        f'stderr: {stderrdata.decode("utf-8")}'
+                                        f"stderr: {stderrdata.decode('utf-8')}"
                                     ),
                                 )
                         except FileNotFoundError as err:
@@ -370,7 +369,7 @@ class SysfsMonitor(unittest.TestCase):
         """
         Run the check.
         """
-        if SysfsMonitor.verify_sysfs:  # pylint: disable=no-member
+        if SysfsMonitor.verify_sysfs:
             dm_devices = {
                 os.path.basename(
                     os.path.realpath(os.path.join(DEV_MAPPER, dmdev))
@@ -409,7 +408,7 @@ class SymlinkMonitor(unittest.TestCase):
         """
         Run the check.
         """
-        if SymlinkMonitor.verify_devices:  # pylint: disable=no-member
+        if SymlinkMonitor.verify_devices:
             try:
                 disallowed_symlinks = []
                 for dev in os.listdir("/dev/disk/by-id"):
@@ -429,7 +428,7 @@ class FilesystemSymlinkMonitor(unittest.TestCase):
 
     maxDiff = None
 
-    def run_check(self, stop_time):  # pylint: disable=too-many-locals
+    def run_check(self, stop_time):
         """
         Check that the filesystem links on the D-Bus and the filesystem links
         expected from looking at filesystem devicemapper paths match exactly.
@@ -437,7 +436,7 @@ class FilesystemSymlinkMonitor(unittest.TestCase):
         :param int stop_time: the time the test completed
         """
 
-        if not FilesystemSymlinkMonitor.verify_devices:  # pylint: disable=no-member
+        if not FilesystemSymlinkMonitor.verify_devices:
             return
 
         decode_dm = "stratis-decode-dm"
@@ -565,7 +564,7 @@ class DbusMonitor(unittest.TestCase):
         """
         Set up the D-Bus monitor for a test run.
         """
-        if DbusMonitor.monitor_dbus:  # pylint: disable=no-member
+        if DbusMonitor.monitor_dbus:
             command = [
                 MONITOR_DBUS_SIGNALS,
                 StratisDbus.BUS_NAME,
@@ -573,11 +572,7 @@ class DbusMonitor(unittest.TestCase):
             ]
             command.extend(
                 f"--top-interface={intf}"
-                for intf in manager_interfaces(
-                    # pylint: disable=no-member
-                    DbusMonitor.highest_revision_number
-                    + 1
-                )
+                for intf in manager_interfaces(DbusMonitor.highest_revision_number + 1)
             )
 
             only_check = (
@@ -589,7 +584,6 @@ class DbusMonitor(unittest.TestCase):
             )
             command.append(f"--only-check={only_check}")
 
-            # pylint: disable=consider-using-with
             try:
                 self.trace = subprocess.Popen(
                     command,
@@ -616,18 +610,18 @@ class DbusMonitor(unittest.TestCase):
             self.trace.send_signal(signal.SIGINT)
             (stdoutdata, stderrdata) = self.trace.communicate()
 
-            if self.trace.returncode == 3:
+            if self.trace.returncode == 3:  # noqa: PLR2004
                 raise RuntimeError(
                     "Failure while processing D-Bus signals: "
-                    f'stderr: {stderrdata.decode("utf-8")}, '
-                    f'stdout: {stdoutdata.decode("utf-8")}'
+                    f"stderr: {stderrdata.decode('utf-8')}, "
+                    f"stdout: {stdoutdata.decode('utf-8')}"
                 )
 
-            if self.trace.returncode == 4:
+            if self.trace.returncode == 4:  # noqa: PLR2004
                 raise RuntimeError(
                     "Failure while comparing D-Bus states: "
-                    f'stderr: {stderrdata.decode("utf-8")}, '
-                    f'stdout: {stdoutdata.decode("utf-8")}'
+                    f"stderr: {stderrdata.decode('utf-8')}, "
+                    f"stdout: {stdoutdata.decode('utf-8')}"
                 )
 
             msg = stdoutdata.decode("utf-8")
@@ -647,7 +641,7 @@ class DbusMonitor(unittest.TestCase):
             )
 
 
-class KernelKey:  # pylint: disable=attribute-defined-outside-init
+class KernelKey:
     """
     A handle for operating on keys in the kernel keyring. The specified key will
     be available for the lifetime of the test when used with the Python with
@@ -767,7 +761,7 @@ class RunPostTestChecks:
         PoolMetadataMonitor.verify = PostTestCheck.POOL_METADATA in post_test_check
 
 
-class MountPointManager:  # pylint: disable=too-few-public-methods
+class MountPointManager:
     """
     Handle mounting Stratis filesystems in a temp directory.
     """

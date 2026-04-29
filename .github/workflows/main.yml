@@ -26,17 +26,15 @@ jobs:
         include:
           # MANDATORY CHECKS USING CURRENT DEVELOPMENT INTERPRETER
           - dependencies: >
-              pylint
               python3-dbus
               python3-dbus-python-client-gen
               python3-justbytes
               python3-gobject
               python3-psutil
+              ruff
             image: fedora:43  # CURRENT DEVELOPMENT ENVIRONMENT
-            task: PYTHONPATH=./src make -f Makefile lint
-          - dependencies: >
-              black
-              python3-isort
+            task: make -f Makefile lint
+          - dependencies: ruff
             image: fedora:43  # CURRENT DEVELOPMENT ENVIRONMENT
             task: make -f Makefile fmt-travis
           # VERIFICATION OF TEST INFRASTRUCTURE

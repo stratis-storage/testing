@@ -14,7 +14,6 @@
 """
 Tests of stratisd.
 """
-# pylint: disable=too-many-lines
 
 # isort: STDLIB
 import argparse
@@ -151,7 +150,7 @@ class StratisCertify(unittest.TestCase):
         :raises: AssertionError if the actual return code is not
                  equal to the expected return code
         """
-        if len(result) == 3:
+        if len(result) == 3:  # noqa: PLR2004
             (_, return_code, msg) = result
         else:
             (return_code, msg) = result
@@ -165,9 +164,7 @@ class StratisCertify(unittest.TestCase):
         )
 
 
-class StratisdCertify(
-    StratisdSystemdStart, StratisCertify
-):  # pylint: disable=too-many-public-methods
+class StratisdCertify(StratisdSystemdStart, StratisCertify):
     """
     Tests on stratisd, the principal daemon.
     """
@@ -194,7 +191,7 @@ class StratisdCertify(
 
     def _unittest_set_property(
         self, object_path, param_iface, dbus_param, dbus_value, exception_name
-    ):  # pylint: disable=too-many-positional-arguments,too-many-arguments
+    ):
         """
         :param object_path: path to the object
         :param param_iface: D-Bus interface to use for parameter
@@ -1202,7 +1199,7 @@ class StratisdCertify(
             [
                 "dd",
                 "if=/dev/urandom",
-                f'of={os.path.join(mountpoints[0], "file1")}',
+                f"of={os.path.join(mountpoints[0], 'file1')}",
                 "bs=4096",
                 "count=256",
                 "conv=fsync",

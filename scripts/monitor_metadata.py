@@ -89,7 +89,7 @@ def run(namespace):
         with open(
             os.path.join(
                 namespace.output_dir,
-                f'{datetime.datetime.now().strftime("%Y_%m_%d-%I_%M_%S_%p")}.json',
+                f"{datetime.datetime.now().strftime('%Y_%m_%d-%I_%M_%S_%p')}.json",
             ),
             mode="w",
             encoding="utf-8",
