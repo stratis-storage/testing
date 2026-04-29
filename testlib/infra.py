@@ -15,7 +15,6 @@
 Methods and classes that do infrastructure tasks.
 """
 
-# isort: STDLIB
 import base64
 import fnmatch
 import json
@@ -30,7 +29,6 @@ from enum import Enum
 from pathlib import Path
 from tempfile import NamedTemporaryFile
 
-# isort: THIRDPARTY
 import dbus
 
 from .dbus import StratisDbus, manager_interfaces

@@ -15,10 +15,8 @@
 DBus methods for blackbox testing.
 """
 
-# isort: STDLIB
 import os
 
-# isort: THIRDPARTY
 import dbus
 
 from .utils import random_string

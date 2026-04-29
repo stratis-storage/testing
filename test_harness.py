@@ -15,7 +15,6 @@
 Simple test harness for running test scripts on loopbacked devices.
 """
 
-# isort: STDLIB
 import argparse
 import itertools
 import logging
@@ -23,7 +22,6 @@ import os
 import subprocess
 import tempfile
 
-# isort: LOCAL
 from testlib.infra import PostTestCheck
 
 _LOSETUP_BIN = "/usr/sbin/losetup"

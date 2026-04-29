@@ -15,7 +15,6 @@
 Tests of stratisd.
 """
 
-# isort: STDLIB
 import argparse
 import json
 import os
@@ -24,10 +23,8 @@ import sys
 import unittest
 from tempfile import NamedTemporaryFile
 
-# isort: THIRDPARTY
 import dbus
 
-# isort: LOCAL
 from testlib.dbus import StratisDbus, fs_n, p_n
 from testlib.infra import (
     DbusMonitor,

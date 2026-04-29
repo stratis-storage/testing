@@ -15,14 +15,12 @@
 Tests of the stratis CLI.
 """
 
-# isort: STDLIB
 import argparse
 import os
 import subprocess
 import sys
 import unittest
 
-# isort: LOCAL
 from testlib.dbus import StratisDbus, fs_n, p_n
 from testlib.infra import (
     DbusMonitor,
