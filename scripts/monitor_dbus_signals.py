@@ -536,7 +536,7 @@ try:
         :type interface_re: re.Pattern
         """
 
-        global _TOP_OBJECT, _TOP_OBJECT_PATH, _TOP_OBJECT_INTERFACES, _SERVICE, _MO, _INTERFACE_RE
+        global _TOP_OBJECT, _TOP_OBJECT_PATH, _TOP_OBJECT_INTERFACES, _SERVICE, _MO, _INTERFACE_RE  # noqa: PLW0603
 
         dbus.mainloop.glib.DBusGMainLoop(set_as_default=True)
         bus = dbus.SystemBus()

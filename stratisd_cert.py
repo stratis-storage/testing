@@ -150,7 +150,7 @@ class StratisCertify(unittest.TestCase):
         :raises: AssertionError if the actual return code is not
                  equal to the expected return code
         """
-        if len(result) == 3:
+        if len(result) == 3:  # noqa: PLR2004
             (_, return_code, msg) = result
         else:
             (return_code, msg) = result

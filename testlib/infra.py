@@ -48,7 +48,7 @@ UMOUNT = "umount"
 MOUNT = "mount"
 
 
-def clean_up():
+def clean_up():  # noqa: PLR0912
     """
     Try to clean up after a test failure.
 
@@ -145,9 +145,8 @@ def clean_up():
         error_strings.append(
             f"failed to obtain information about Stratis keys: {message}"
         )
-    else:
-        if remnant_keys != []:
-            error_strings.append(f"remnant keys: {', '.join(remnant_keys)}")
+    elif remnant_keys != []:
+        error_strings.append(f"remnant keys: {', '.join(remnant_keys)}")
 
     for mountpoint_dir in fnmatch.filter(os.listdir(VAR_TMP), f"*{MOUNT_POINT_SUFFIX}"):
         try:
@@ -611,14 +610,14 @@ class DbusMonitor(unittest.TestCase):
             self.trace.send_signal(signal.SIGINT)
             (stdoutdata, stderrdata) = self.trace.communicate()
 
-            if self.trace.returncode == 3:
+            if self.trace.returncode == 3:  # noqa: PLR2004
                 raise RuntimeError(
                     "Failure while processing D-Bus signals: "
                     f"stderr: {stderrdata.decode('utf-8')}, "
                     f"stdout: {stdoutdata.decode('utf-8')}"
                 )
 
-            if self.trace.returncode == 4:
+            if self.trace.returncode == 4:  # noqa: PLR2004
                 raise RuntimeError(
                     "Failure while comparing D-Bus states: "
                     f"stderr: {stderrdata.decode('utf-8')}, "
