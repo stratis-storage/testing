@@ -17,17 +17,14 @@
 Stash Stratis metadata for a specific pool.
 """
 
-# isort: STDLIB
 import argparse
 import datetime
 import os
 import time
 import xml.etree.ElementTree as ET
 
-# isort: THIRDPARTY
 import dbus
 
-# isort: FIRSTPARTY
 from dbus_python_client_gen import make_class
 
 _SPECS = {

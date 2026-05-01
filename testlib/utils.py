@@ -15,7 +15,6 @@
 Utility functions for blackbox testing.
 """
 
-# isort: STDLIB
 import os
 import random
 import string
@@ -23,7 +22,6 @@ from functools import wraps
 from subprocess import PIPE, Popen, run
 from tempfile import NamedTemporaryFile
 
-# isort: THIRDPARTY
 import psutil
 
 
