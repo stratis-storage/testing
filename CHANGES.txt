@@ -1,3 +1,17 @@
+testing 3.9.1
+=============
+Recommended release for development: Fedora 43
+Required stratisd version: 3.9.2
+Required stratis-cli version: 3.9.0
+
+- Revert "Change expected error type on failure to set fs limit":
+  https://github.com/stratis-storage/testing/pull/340
+
+- Tidies and Maintenance:
+  https://github.com/stratis-storage/testing/pull/339
+  https://github.com/stratis-storage/testing/pull/338
+
+
 testing 3.9.0
 =============
 Recommended release for development: Fedora 43
