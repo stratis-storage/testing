@@ -122,7 +122,7 @@ Recommended release for development: Fedora 39
 - Change StartPool invocation for new revision (reverted):
   https://github.com/stratis-storage/testing/pull/263
 
-- Verify intergrity meta-allocation is rounded (reverted):
+- Verify integrity meta-allocation is rounded (reverted):
   https://github.com/stratis-storage/testing/pull/279
 
 - Make RAID metadata tests more interesting (reverted):

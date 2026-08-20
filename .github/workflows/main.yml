@@ -1,7 +1,6 @@
 ---
 name: testing CI
 
-# yamllint disable-line rule:truthy
 on:
   push:
     branches:
@@ -37,10 +36,6 @@ jobs:
           - dependencies: ruff
             image: fedora:43  # CURRENT DEVELOPMENT ENVIRONMENT
             task: make -f Makefile fmt-travis
-          # VERIFICATION OF TEST INFRASTRUCTURE
-          - dependencies: yamllint
-            image: fedora:43  # CURRENT DEVELOPMENT ENVIRONMENT
-            task: make -f Makefile yamllint
     runs-on: ubuntu-latest
     container: ${{ matrix.image }}
     steps:
@@ -58,3 +53,8 @@ jobs:
         run: python --version
       - name: Run test
         run: ${{ matrix.task }}
+
+  general_checks:
+    uses: stratis-storage/github-actions/.github/workflows/reusable_general.yml@master
+    with:
+      fedora-container-image-number: 43  # CURRENT DEVELOPMENT ENVIRONMENT

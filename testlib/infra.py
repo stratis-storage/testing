@@ -766,7 +766,7 @@ class MountPointManager:
 
     def __init__(self):
         """
-        Initalizer.
+        Initializer.
 
         :rtype: None
         """

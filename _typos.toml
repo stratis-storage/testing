@@ -1,0 +1,1 @@
+default.extend-ignore-re = ["a(.*)"] # ignore D-Bus introspection data
