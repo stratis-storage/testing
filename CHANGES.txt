@@ -1,3 +1,12 @@
+testing 3.10.0
+==============
+Recommended release for development: Fedora 44
+
+- Tidies and Maintenance:
+  https://github.com/stratis-storage/testing/pull/343
+  https://github.com/stratis-storage/testing/pull/342
+
+
 testing 3.9.1
 =============
 Recommended release for development: Fedora 43
