@@ -698,6 +698,33 @@ class StratisdCertify(StratisdSystemdStart, StratisCertify):
             dbus.UInt16(0),
         )
 
+    @skip(_skip_condition(3))
+    def test_pool_remove_cache(self):
+        """
+        Test removing a previously added cache.
+        """
+        pool_name = p_n()
+        pool_path, _ = make_test_pool(pool_name, StratisCertify.DISKS[0:1])
+
+        self._unittest_command(StratisDbus.fs_create(pool_path, fs_n()), dbus.UInt16(0))
+
+        self._unittest_command(
+            StratisDbus.pool_add_data(pool_path, StratisCertify.DISKS[1:2]),
+            dbus.UInt16(0),
+        )
+
+        self._unittest_command(
+            StratisDbus.pool_init_cache(pool_path, StratisCertify.DISKS[2:3]),
+            dbus.UInt16(0),
+        )
+
+        self._unittest_command(StratisDbus.fs_create(pool_path, fs_n()), dbus.UInt16(0))
+
+        self._unittest_command(
+            StratisDbus.pool_remove_cache(pool_path),
+            dbus.UInt16(0),
+        )
+
     @skip(_skip_condition(2))
     def test_pool_create_with_cache(self):
         """

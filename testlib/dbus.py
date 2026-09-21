@@ -104,7 +104,7 @@ class StratisDbus:
     _BUS = dbus.SystemBus()
     _BUS_NAME = "org.storage.stratis3"
     _TOP_OBJECT = "/org/storage/stratis3"
-    REVISION_NUMBER = 9
+    REVISION_NUMBER = 10
     _REVISION = f"r{REVISION_NUMBER}"
     BUS_NAME = _BUS_NAME
     TOP_OBJECT = _TOP_OBJECT
@@ -564,6 +564,21 @@ class StratisDbus:
         return iface.RebindKeyring(
             key_desc, (False, 0) if token_slot is None else (True, token_slot)
         )
+
+    @staticmethod
+    def pool_remove_cache(pool_path):
+        """
+        Remove a pool's cache.
+        :param str pool_path: The object path of the pool
+        :return: results of the call
+        :rtype: The D-Bus types s, q, and b
+        :raises dbus.exceptions.DBusException:
+        """
+        iface = dbus.Interface(
+            StratisDbus._BUS.get_object(StratisDbus._BUS_NAME, pool_path),
+            StratisDbus._POOL_IFACE,
+        )
+        return iface.RemoveCache()
 
     @staticmethod
     def fs_get_metadata(pool_path, *, fs_name=None, current=True):

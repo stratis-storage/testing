@@ -829,6 +829,73 @@ class StratisCliCertify(StratisdSystemdStart, StratisCertify):
             True,
         )
 
+    @skip(_skip_condition(3))
+    def test_pool_remove_cache(self):
+        """
+        Test removing a previously added cache from a pool.
+        """
+
+        pool_name = make_test_pool(StratisCliCertify.DISKS[0:1])
+
+        self._unittest_command(
+            [
+                _STRATIS_CLI,
+                "filesystem",
+                "create",
+                pool_name,
+                fs_n(),
+            ],
+            0,
+            True,
+            True,
+        )
+
+        self._unittest_command(
+            [
+                _STRATIS_CLI,
+                "pool",
+                "add-data",
+                pool_name,
+                StratisCliCertify.DISKS[1],
+            ],
+            0,
+            True,
+            True,
+        )
+
+        self._unittest_command(
+            [
+                _STRATIS_CLI,
+                "pool",
+                "init-cache",
+                pool_name,
+                StratisCliCertify.DISKS[2],
+            ],
+            0,
+            True,
+            True,
+        )
+
+        self._unittest_command(
+            [
+                _STRATIS_CLI,
+                "filesystem",
+                "create",
+                pool_name,
+                fs_n(),
+            ],
+            0,
+            True,
+            True,
+        )
+
+        self._unittest_command(
+            [_STRATIS_CLI, "pool", "remove-cache", f"--name={pool_name}"],
+            0,
+            True,
+            True,
+        )
+
     @skip(_skip_condition(1))
     def test_pool_stop_started(self):
         """
